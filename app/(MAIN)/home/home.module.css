@@ -1,0 +1,90 @@
+/* app/(main)/home/home.module.css */
+
+/* Container principal da página */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Espaço entre os elementos */
+}
+
+/* Estilos para o cabeçalho de boas-vindas */
+.header {
+  padding: 1rem;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.subtitle {
+  margin: 0;
+  color: #aaa;
+  font-size: 1rem;
+}
+
+/* Grid para os cards de estatísticas */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Layout responsivo */
+  gap: 1.5rem;
+}
+
+/* Estilo individual de cada card */
+.statCard {
+  background-color: #1e1e1e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+  border-color: #bb86fc; /* Cor de destaque roxa */
+}
+
+/* Número grande no card */
+.statValue {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+}
+
+/* Rótulo/descrição no card */
+.statLabel {
+  font-size: 1rem;
+  color: #aaa;
+  margin: 0;
+}
+
+/* Container para botões de ação rápida */
+.actionsContainer {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.actionButton {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #bb86fc;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.actionButton:hover {
+    background-color: #a269f0;
+}

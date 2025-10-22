@@ -1,0 +1,12 @@
+/* components/app-layout.module.css */
+
+.mainWrapper {
+  display: flex;
+  height: 100vh; /* Ocupa a altura toda da tela */
+}
+
+.contentWrapper {
+  flex-grow: 1; /* Faz essa coluna ocupar todo o espaço restante */
+  padding: 24px; /* Um espaçamento interno */
+  overflow-y: auto; /* Adiciona scroll se o conteúdo for maior que a tela */
+}

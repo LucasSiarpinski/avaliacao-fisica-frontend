@@ -1,0 +1,49 @@
+/* components/SideBar.module.css */
+
+.sidebar {
+  width: 250px;
+  background-color: #1e1e1e; /* Um pouco mais claro que o fundo principal */
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #333;
+  height: 100vh; /* Ocupa a altura toda */
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 2.5rem; /* Mais espaço abaixo do logo */
+  color: #fff;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Isso empurra o footer para o final */
+}
+
+.navItem {
+  display: flex; /* Para alinhar ícone e texto */
+  align-items: center;
+  gap: 0.8rem; /* Espaço entre ícone e texto */
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  color: #e0e0e0;
+  text-decoration: none; /* Remove sublinhado do link */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.navItem:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.footer {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 2rem; /* Espaço acima do footer */
+}

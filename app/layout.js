@@ -1,13 +1,10 @@
 // app/layout.js
-import { redirect } from "next/navigation";
-import "./globals.css"; // se tiver estilos globais
+// Remova o import { redirect } se ele não for mais usado
+import "./globals.css";
 
 export default function RootLayout({ children }) {
-  // Redireciona apenas se a rota atual for a raiz "/"
-  if (typeof window !== "undefined" && window.location.pathname === "/") {
-    redirect("/login");
-  }
-
+  // Se o usuário acessar '/', o 'page.js' fará o redirect primeiro.
+  // Caso contrário, renderiza a estrutura de HTML.
   return (
     <html lang="pt-BR">
       <body>{children}</body>

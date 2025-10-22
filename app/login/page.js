@@ -1,6 +1,7 @@
 // app/login/page.js
 "use client";
 
+import styles from './login.css';
 import { useState } from 'react';
 
 export default function LoginPage() {
