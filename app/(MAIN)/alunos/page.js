@@ -1,128 +1,124 @@
-// app/alunos/page.js
-
 "use client";
 
-import { useState } from 'react';
-// import { useRouter } from 'next/navigation'; // Importe se precisar de navegação
+import React, { useState } from 'react';
+import styles from './alunos.module.css';
+import AlunoModal from '@/components/AlunoModal'; // Importa o modal da pasta components
 
-// --- DADOS MOCK (Serão substituídos pela chamada da API no backend) ---
 const mockAlunos = [
-    { id: 1, nome: "Ana Silva", matricula: "1001", avaliacoes: 3, data: "2025-10-15" },
-    { id: 2, nome: "Bruno Costa", matricula: "1002", avaliacoes: 1, data: "2025-09-20" },
-    { id: 3, nome: "Carlos Souza", matricula: "1003", avaliacoes: 0, data: "2025-10-01" },
+  { id: 101, matricula: '2025001', nome: 'Ana Silva', cpf: '111.222.333-44', ultimaAvaliacao: '2025-10-15' },
+  { id: 102, matricula: '2025002', nome: 'Bruno Costa', cpf: '222.333.444-55', ultimaAvaliacao: '2025-09-20' },
+  { id: 103, matricula: '2025003', nome: 'Carlos Souza', cpf: '333.444.555-66', ultimaAvaliacao: 'N/A' },
+  { id: 104, matricula: '2025004', nome: 'Daniela Martins', cpf: '444.555.666-77', ultimaAvaliacao: '2025-10-18' },
+  { id: 105, matricula: '2025005', nome: 'Bruno Almeida', cpf: '555.666.777-88', ultimaAvaliacao: '2025-10-20' },
 ];
 
-export default function AlunosPage() {
-    const [alunos, setAlunos] = useState(mockAlunos);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    
-    // Lógica de busca
-    const filteredAlunos = alunos.filter(aluno =>
-        aluno.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        aluno.matricula.includes(searchTerm)
-    );
+export default function AlunosPage() { // <--- Note o nome correto
+  const [alunos, setAlunos] = useState(mockAlunos);
+  const [termoBusca, setTermoBusca] = useState('');
+  const [categoriaBusca, setCategoriaBusca] = useState('nome');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Lógica para ABRIR o modal de cadastro/edição
-    const handleCreateEdit = (aluno = null) => {
-        // Implementar lógica de preenchimento do formulário se for edição
-        setIsModalOpen(true);
-    };
-
-    // Lógica para EXCLUIR (será uma chamada de API)
-    const handleDelete = (id) => {
-        if (confirm("Tem certeza que deseja excluir este aluno?")) {
-            setAlunos(alunos.filter(a => a.id !== id));
-            // Chamada de API para o backend será feita aqui
-        }
+  // --- FUNÇÃO ATUALIZADA ---
+  const handleAdicionarAluno = (novoAluno) => {
+    const alunoParaAdicionar = {
+      ...novoAluno,
+      id: Date.now(),
+      ultimaAvaliacao: 'N/A',
+      dataNascimento: novoAluno.dataNascimento || 'N/A',
+      genero: novoAluno.genero || 'N/A',
+      telefone: novoAluno.telefone || 'N/A',
+      email: novoAluno.email || 'N/A',
     };
     
-    // Lógica para INICIAR AVALIAÇÃO (Navegação para a próxima rota)
-    const handleStartEvaluation = (id) => {
-        // Implementar router.push(`/avaliacao/${id}`);
-        console.log(`Iniciando avaliação para o aluno ID: ${id}`);
-    };
+    setAlunos(prevAlunos => [...prevAlunos, alunoParaAdicionar]);
+    
+    // RETORNA o aluno recém-criado para o modal
+    return alunoParaAdicionar; 
+  };
+  
+  const alunosFiltrados = alunos.filter(aluno => {
+    if (!termoBusca) return true;
+    const buscaLowerCase = termoBusca.toLowerCase();
+    switch (categoriaBusca) {
+      case 'id': return String(aluno.id).includes(termoBusca);
+      case 'matricula': return String(aluno.matricula).toLowerCase().includes(buscaLowerCase);
+      case 'cpf': return aluno.cpf.includes(termoBusca);
+      case 'nome': default: return aluno.nome.toLowerCase().includes(buscaLowerCase);
+    }
+  });
 
-    return (
-        <div className="crud-page-wrapper">
-            <main className="crud-main-content">
-                <div className="crud-header">
-                    <h1 className="crud-title">Gerenciamento de Alunos</h1>
-                    
-                    <div className="crud-actions">
-                        {/* Botão de Cadastro */}
-                        <button 
-                            onClick={() => handleCreateEdit(null)} 
-                            className="create-button"
-                        >
-                            + Novo Aluno
-                        </button>
-                        
-                        {/* Campo de Busca */}
-                        <input
-                            type="text"
-                            placeholder="Buscar por nome ou matrícula..."
-                            className="search-input"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
+  return (
+    <div className={styles.container}>
+      
+      {isModalOpen && (
+        <AlunoModal
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleAdicionarAluno}
+        />
+      )}
 
-                {/* Tabela de Alunos */}
-                <div className="table-container">
-                    <table className="alunos-table">
-                        <thead>
-                            <tr>
-                                <th>Matrícula</th>
-                                <th>Nome Completo</th>
-                                <th>Avaliações</th>
-                                <th>Última Avaliação</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredAlunos.length > 0 ? (
-                                filteredAlunos.map((aluno) => (
-                                    <tr key={aluno.id}>
-                                        <td>{aluno.matricula}</td>
-                                        <td>{aluno.nome}</td>
-                                        <td>{aluno.avaliacoes}</td>
-                                        <td>{aluno.avaliacoes > 0 ? aluno.data : 'N/A'}</td>
-                                        <td className="action-buttons-cell">
-                                            <button onClick={() => handleStartEvaluation(aluno.id)} className="action-btn-primary">
-                                                Avaliar
-                                            </button>
-                                            <button onClick={() => handleCreateEdit(aluno)} className="action-btn-secondary">
-                                                Editar
-                                            </button>
-                                            <button onClick={() => handleDelete(aluno.id)} className="action-btn-danger">
-                                                Excluir
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" className="no-results">Nenhum aluno encontrado.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </main>
-            
-            {/* Modal de Cadastro/Edição (A ser implementado) */}
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>{aluno ? 'Editar Aluno' : 'Cadastrar Novo Aluno'}</h2>
-                        {/* Formulário de Cadastro Simples */}
-                        <p>Formulário de cadastro/edição aqui...</p>
-                        <button onClick={() => setIsModalOpen(false)}>Fechar</button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+      <header className={styles.header}>
+        <h1 className={styles.title}>Gerenciamento de Alunos</h1>
+        <button 
+          onClick={() => setIsModalOpen(true)} 
+          className={styles.newStudentButton}
+        >
+          + Novo Aluno
+        </button>
+      </header>
+
+      <div className={styles.searchContainer}>
+        <select
+          className={styles.searchCategory}
+          value={categoriaBusca}
+          onChange={(e) => setCategoriaBusca(e.target.value)}
+        >
+          <option value="nome">Nome</option>
+          <option value="id">ID</option>
+          <option value="matricula">Matrícula</option>
+          <option value="cpf">CPF</option>
+        </select>
+        <input
+          type="text"
+          placeholder={`Buscar por ${categoriaBusca}...`}
+          className={styles.searchBar}
+          value={termoBusca}
+          onChange={(e) => setTermoBusca(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.tableContainer}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Matrícula</th>
+              <th>Nome Completo</th>
+              <th>CPF</th>
+              <th>Última Avaliação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {alunosFiltrados.map((aluno) => (
+              <tr key={aluno.id}>
+                <td>{aluno.id}</td>
+                <td>{aluno.matricula}</td>
+                <td>{aluno.nome}</td>
+                <td>{aluno.cpf}</td>
+                <td>{aluno.ultimaAvaliacao}</td>
+                <td>
+                  <div className={styles.actions}>
+                    <button className={`${styles.actionButton} ${styles.editButton}`}>Editar</button>
+                    <button className={`${styles.actionButton} ${styles.deleteButton}`}>Excluir</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
+

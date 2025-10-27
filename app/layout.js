@@ -1,13 +1,21 @@
 // app/layout.js
-// Remova o import { redirect } se ele não for mais usado
-import "./globals.css";
+
+import { AuthProvider } from '../contexts/AuthContext';
+import './globals.css'; // Seu CSS global
+
+export const metadata = {
+  title: 'App de Avaliação Física',
+  description: 'TCC de Lucas Miotto',
+};
 
 export default function RootLayout({ children }) {
-  // Se o usuário acessar '/', o 'page.js' fará o redirect primeiro.
-  // Caso contrário, renderiza a estrutura de HTML.
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang="pt-br">
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

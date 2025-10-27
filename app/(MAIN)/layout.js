@@ -1,7 +1,7 @@
 // app/(main)/layout.js
 
 import SideBar from '@/components/SideBar'; // Verifique se o caminho está correto
-import styles from '@/components/SideBar.module.css'; // Vamos usar CSS Modules
+import styles from './app-layout.module.css'; // Vamos usar CSS Modules
 
 export default function MainLayout({ children }) {
   return (

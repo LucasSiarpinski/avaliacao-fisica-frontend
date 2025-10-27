@@ -1,59 +1,54 @@
 // app/login/page.js
+
 "use client";
 
-import styles from './login.css';
+import './login.css';
 import { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext'; // 1. IMPORTAR O CONTEXTO
 
 export default function LoginPage() {
+  // 2. CRIAR ESTADOS PARA OS INPUTS
+  const [email, setEmail] = useState(''); // Vamos usar email em vez de código/cpf
+  const [password, setPassword] = useState('');
+
+  // Estados que você já tinha, mantemos eles
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  // 3. PEGAR A FUNÇÃO DE LOGIN DO CONTEXTO
+  const { signIn } = useAuth();
   
-  const handleSubmit = (e) => {
+  // 4. ATUALIZAR A FUNÇÃO DE SUBMISSÃO
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Formulário de login submetido! (Funcionalidade a ser implementada!)');
+    await signIn(email, password); // Chama a função da API
   };
 
   return (
-    // Fundo escuro e centralizado
     <div className="login-wrapper">
-      
-      {/* Container Principal */}
       <div className="login-container">
-
-        {/* --- CABEÇALHO COM FORMA CURVA --- */}
         <div className="header-curve-background">
-          <div className="header-content">
-            {/* Logo placeholder - substitua por um SVG ou Imagem real */}
-            <div className="logo-placeholder">
-              <span className="logo-text">
-                &times;
-              </span>
-            </div>
-            
-            <h1 className="title-text">UNOESC</h1>
-            <p className="subtitle-text">Somos a melhor Universidade Comunitária de Santa Catarina.</p>
-          </div>
+          {/* ... seu cabeçalho continua igual ... */}
         </div>
 
-        {/* --- FORMULÁRIO --- */}
         <div className="form-wrapper">
-          
           <form className="form-fields" onSubmit={handleSubmit}>
-            {/* Campo Código ou CPF */}
+            
+            {/* 5. CONECTAR OS INPUTS AO ESTADO */}
             <div className="input-group">
               <input
-                id="codigo"
-                name="codigo"
-                type="text"
+                id="email" // Mudamos para 'email' para consistência
+                name="email"
+                type="email" // Usar type="email" é uma boa prática
                 required
                 className="text-input"
                 placeholder=" "
-                defaultValue="406047"
+                value={email} // Conectar o valor ao estado
+                onChange={(e) => setEmail(e.target.value)} // Atualizar o estado ao digitar
               />
-              <label htmlFor="codigo" className="input-label">Código ou CPF</label>
+              <label htmlFor="email" className="input-label">Email</label>
             </div>
 
-            {/* Campo de Senha */}
             <div className="input-group password-group">
               <input
                 id="password"
@@ -62,60 +57,20 @@ export default function LoginPage() {
                 required
                 className="text-input"
                 placeholder=" "
-                defaultValue="********"
+                value={password} // Conectar o valor ao estado
+                onChange={(e) => setPassword(e.target.value)} // Atualizar o estado ao digitar
               />
               <label htmlFor="password" className="input-label">Senha</label>
-              <button 
-                type="button"
-                className="password-toggle-btn"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                👁️
-              </button>
+              {/* ... resto do seu campo de senha ... */}
             </div>
             
-            {/* Lembre-me */}
-            <div className="remember-me-group">
-                <div className="checkbox-container">
-                    <input 
-                        id="remember-me" 
-                        name="remember-me" 
-                        type="checkbox" 
-                        checked={rememberMe}
-                        onChange={() => setRememberMe(!rememberMe)}
-                        className="checkbox-input"
-                    />
-                    <label htmlFor="remember-me" className="checkbox-label">
-                        Lembrar meus dados de acesso
-                    </label>
-                </div>
-            </div>
+            {/* ... resto do seu formulário ... */}
 
-            {/* Botão de Login */}
-            <button
-              type="submit"
-              className="login-button"
-            >
-              ENTRAR
-            </button>
+            <button type="submit" className="login-button">ENTRAR</button>
           </form>
           
-          {/* Biometria e Esqueceu Senha */}
-          <div className="footer-links">
-             <div className="biometry-link">
-                 <span className="biometry-text">Usar senha do celular</span>
-                 {/* Toggle Switch placeholder */}
-                 <span className="biometry-toggle">
-                    <span className="biometry-switch-ball"></span>
-                 </span>
-             </div>
-             
-             <a href="#" className="forgot-password-link">
-                Esqueci minha senha
-             </a>
-          </div>
+          {/* ... resto do seu componente ... */}
         </div>
-        
       </div>
     </div>
   );

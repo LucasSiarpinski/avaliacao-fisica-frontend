@@ -1,0 +1,109 @@
+/* components/AlunoModal.module.css */
+
+.overlay {
+  position: fixed; /* Fica fixo na tela, mesmo com rolagem */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7); /* Fundo preto semi-transparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Garante que fique na frente de tudo */
+}
+
+.modal {
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px; /* Largura máxima */
+  border: 1px solid #333;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #333;
+  padding-bottom: 1rem;
+}
+
+.header h2 {
+  margin: 0;
+  color: #fff;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #ccc;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  box-sizing: border-box;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #bb86fc;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.actions button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.cancelButton {
+  background-color: #333;
+  color: #fff;
+}
+
+.cancelButton:hover {
+  background-color: #444;
+}
+
+.saveButton {
+  background-color: #bb86fc;
+  color: #fff;
+}
+
+.saveButton:hover {
+  background-color: #a269f0;
+}

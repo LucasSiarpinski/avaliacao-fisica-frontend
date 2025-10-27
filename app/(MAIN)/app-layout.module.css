@@ -10,3 +10,15 @@
   padding: 24px; /* Um espaçamento interno */
   overflow-y: auto; /* Adiciona scroll se o conteúdo for maior que a tela */
 }
+
+/* --- ADICIONADO PARA RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+  .mainWrapper {
+    flex-direction: column; /* Muda a direção de horizontal para vertical */
+    height: auto; /* Altura automática, não mais 100vh */
+  }
+
+  .contentWrapper {
+    padding: 1rem; /* Menor preenchimento em telas pequenas */
+  }
+}

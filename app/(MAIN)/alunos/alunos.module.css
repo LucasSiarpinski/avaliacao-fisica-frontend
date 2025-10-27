@@ -1,0 +1,143 @@
+/* app/(main)/alunos/alunos.module.css */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    margin: 0;
+}
+
+.newStudentButton {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #bb86fc;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.newStudentButton:hover {
+    background-color: #a269f0;
+}
+
+.tableContainer {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden; /* Garante que as bordas arredondadas funcionem na tabela */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Remove espaço entre células */
+}
+
+.table th, .table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #333;
+}
+
+.table th {
+    background-color: #252525;
+    font-weight: bold;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none; /* Remove a borda da última linha */
+}
+
+.table tbody tr:hover {
+    background-color: #2a2a2a;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionButton {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.editButton {
+    background-color: #3b82f6; /* Azul */
+}
+
+.deleteButton {
+    background-color: #ef4444; /* Vermelho */
+}
+
+/* Adicione esta classe ao final do seu arquivo de estilo */
+
+.searchBar {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    width: 100%;
+    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+}
+
+.searchBar:focus {
+    outline: none;
+    border-color: #bb86fc;
+}
+/* Adicione estas classes ao final do seu arquivo alunos.module.css */
+
+.searchContainer {
+  display: flex;
+  gap: 0.5rem; /* Pequeno espaço entre o menu e a barra de busca */
+  width: 100%;
+}
+
+.searchCategory {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  cursor: pointer;
+}
+
+.searchCategory:focus {
+  outline: none;
+  border-color: #bb86fc;
+}
+
+/* Ajuste na searchBar para funcionar bem dentro do flex container */
+.searchBar {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  width: 100%; /* Ocupa o espaço restante */
+  flex-grow: 1; /* Faz a barra de busca crescer para preencher o espaço */
+  box-sizing: border-box; 
+}
+
+.searchBar:focus {
+    outline: none;
+    border-color: #bb86fc;
+}

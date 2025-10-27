@@ -1,19 +1,18 @@
-/* components/SideBar.module.css */
-
 .sidebar {
   width: 250px;
-  background-color: #1e1e1e; /* Um pouco mais claro que o fundo principal */
+  background-color: #1e1e1e;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #333;
-  height: 100vh; /* Ocupa a altura toda */
+  height: 100vh;
+  flex-shrink: 0; 
 }
 
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 2.5rem; /* Mais espaço abaixo do logo */
+  margin-bottom: 2.5rem;
   color: #fff;
 }
 
@@ -21,19 +20,19 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  flex-grow: 1; /* Isso empurra o footer para o final */
+  flex-grow: 1; /* Isto é o que empurra o footer para baixo no desktop */
 }
 
 .navItem {
-  display: flex; /* Para alinhar ícone e texto */
+  display: flex;
   align-items: center;
-  gap: 0.8rem; /* Espaço entre ícone e texto */
+  gap: 0.8rem;
   padding: 1rem;
   border-radius: 8px;
   cursor: pointer;
   margin-bottom: 0.5rem;
   color: #e0e0e0;
-  text-decoration: none; /* Remove sublinhado do link */
+  text-decoration: none;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
@@ -45,5 +44,31 @@
 .footer {
   font-size: 0.8rem;
   color: #888;
-  margin-top: 2rem; /* Espaço acima do footer */
+  margin-top: 2rem;
 }
+
+/* --- BLOCO DE RESPONSIVIDADE --- */
+/* Este bloco corrige o layout em telas menores que 768px */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto; /* Altura automática */
+    border-right: none;
+    border-bottom: 1px solid #333;
+    box-sizing: border-box;
+  }
+
+  .logo {
+    margin-bottom: 1rem;
+  }
+
+  .navList {
+    flex-grow: 0; /* Remove o espaço extra (o bloco preto) */
+  }
+
+  /* Oculta o footer da sidebar em telas pequenas */
+  .footer {
+    display: none;
+  }
+}
+

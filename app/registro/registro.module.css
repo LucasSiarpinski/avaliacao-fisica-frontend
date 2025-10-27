@@ -1,0 +1,174 @@
+/* ======= app/registro/registro.module.css ======= */
+/* NOTE: Todas as classes com hífen (ex: auth-wrapper) 
+  foram renomeadas para camelCase (ex: authWrapper) 
+  para facilitar o uso com CSS Modules no React.
+*/
+
+/* ======= CORPO GERAL E ANIMAÇÃO ======= */
+.authWrapper {
+  background: linear-gradient(145deg, #65aa9b 0%, #2f68658c 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.authContainer {
+  background: #fff;
+  width: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ======= CABEÇALHO CURVADO ======= */
+.headerCurveBackground {
+  background: linear-gradient(135deg, #5bc46c, #65bd4a);
+  padding: 45px 20px 80px;
+  border-bottom-left-radius: 50% 20%;
+  border-bottom-right-radius: 50% 20%;
+  position: relative;
+  color: #fff;
+  text-align: center;
+}
+
+.logoPlaceholder {
+  background: rgba(255, 255, 255, 0.15);
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.titleText {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.subtitleText {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* ======= FORMULÁRIO E INPUTS ======= */
+.formWrapper {
+  padding: 30px 35px 40px;
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.inputGroup {
+  position: relative;
+}
+
+.textInput {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  outline: none;
+  font-size: 1rem;
+  background: transparent;
+  transition: border-color 0.3s;
+}
+
+.textInput:focus {
+  border-color: #0074c2;
+}
+
+.inputLabel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  color: #999;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.textInput:focus + .inputLabel,
+.textInput:not(:placeholder-shown) + .inputLabel {
+  top: -10px;
+  font-size: 0.8rem;
+  color: #0074c2;
+  background: white;
+  padding: 0 5px;
+}
+
+/* ======= SENHA + ÍCONE ======= */
+.passwordGroup {
+  position: relative;
+}
+
+.passwordToggleBtn {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+/* ======= BOTÃO REGISTRAR ======= */
+.registerButton {
+  margin-top: 10px;
+  background: #0074c2;
+  color: #fff;
+  font-size: 1rem;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.registerButton:hover {
+  background: #005b98;
+}
+
+/* ======= RODAPÉ ======= */
+.footerLinkContainer {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.loginLink {
+  color: #0074c2;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
+}
+
+/* ======= RESPONSIVIDADE ======= */
+@media (max-width: 480px) {
+  .authContainer {
+    width: 90%;
+  }
+  .headerCurveBackground {
+    padding: 35px 15px 70px;
+  }
+  .formWrapper {
+    padding: 25px;
+  }
+}
