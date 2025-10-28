@@ -1,70 +1,99 @@
+// app/(main)/alunos/page.js
+
 "use client";
 
-import React, { useState } from 'react';
-import styles from './alunos.module.css';
-import AlunoModal from '@/components/AlunoModal'; // Importa o modal da pasta components
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import styles from './alunos.module.css'; // Certifique-se que este CSS tem o estilo para ':disabled'
+import { useAuth } from '../../../contexts/AuthContext';
+import api from '../../../services/api';
 
-const mockAlunos = [
-  { id: 101, matricula: '2025001', nome: 'Ana Silva', cpf: '111.222.333-44', ultimaAvaliacao: '2025-10-15' },
-  { id: 102, matricula: '2025002', nome: 'Bruno Costa', cpf: '222.333.444-55', ultimaAvaliacao: '2025-09-20' },
-  { id: 103, matricula: '2025003', nome: 'Carlos Souza', cpf: '333.444.555-66', ultimaAvaliacao: 'N/A' },
-  { id: 104, matricula: '2025004', nome: 'Daniela Martins', cpf: '444.555.666-77', ultimaAvaliacao: '2025-10-18' },
-  { id: 105, matricula: '2025005', nome: 'Bruno Almeida', cpf: '555.666.777-88', ultimaAvaliacao: '2025-10-20' },
-];
+export default function AlunosPage() {
+  const router = useRouter();
+  const [alunos, setAlunos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [alunoSelecionadoId, setAlunoSelecionadoId] = useState(null); // Mantemos o estado de seleção
 
-export default function AlunosPage() { // <--- Note o nome correto
-  const [alunos, setAlunos] = useState(mockAlunos);
   const [termoBusca, setTermoBusca] = useState('');
   const [categoriaBusca, setCategoriaBusca] = useState('nome');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
-  // --- FUNÇÃO ATUALIZADA ---
-  const handleAdicionarAluno = (novoAluno) => {
-    const alunoParaAdicionar = {
-      ...novoAluno,
-      id: Date.now(),
-      ultimaAvaliacao: 'N/A',
-      dataNascimento: novoAluno.dataNascimento || 'N/A',
-      genero: novoAluno.genero || 'N/A',
-      telefone: novoAluno.telefone || 'N/A',
-      email: novoAluno.email || 'N/A',
-    };
-    
-    setAlunos(prevAlunos => [...prevAlunos, alunoParaAdicionar]);
-    
-    // RETORNA o aluno recém-criado para o modal
-    return alunoParaAdicionar; 
+  const fetchAlunos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/alunos');
+      setAlunos(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar alunos:", error);
+      toast.error("Não foi possível carregar a lista de alunos.");
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAlunos();
+    }
+  }, [isAuthenticated]);
+
+  const handleExcluirAluno = async () => {
+    if (!alunoSelecionadoId) return; // Segurança extra
+    const confirmar = window.confirm("Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita.");
+    if (!confirmar) return;
+
+    try {
+      await api.delete(`/alunos/${alunoSelecionadoId}`);
+      toast.success("Aluno excluído com sucesso!");
+      setAlunoSelecionadoId(null); // Limpa a seleção após excluir
+      await fetchAlunos();
+    } catch (error) {
+      console.error("Erro ao excluir aluno:", error);
+      toast.error("Não foi possível excluir o aluno.");
+    }
+  };
+
   const alunosFiltrados = alunos.filter(aluno => {
     if (!termoBusca) return true;
     const buscaLowerCase = termoBusca.toLowerCase();
     switch (categoriaBusca) {
       case 'id': return String(aluno.id).includes(termoBusca);
       case 'matricula': return String(aluno.matricula).toLowerCase().includes(buscaLowerCase);
-      case 'cpf': return aluno.cpf.includes(termoBusca);
+      case 'cpf': return aluno.cpf?.includes(termoBusca);
       case 'nome': default: return aluno.nome.toLowerCase().includes(buscaLowerCase);
     }
   });
 
   return (
     <div className={styles.container}>
-      
-      {isModalOpen && (
-        <AlunoModal
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleAdicionarAluno}
-        />
-      )}
-
+      {/* --- CABEÇALHO COM BOTÕES SEMPRE VISÍVEIS --- */}
       <header className={styles.header}>
         <h1 className={styles.title}>Gerenciamento de Alunos</h1>
-        <button 
-          onClick={() => setIsModalOpen(true)} 
-          className={styles.newStudentButton}
-        >
-          + Novo Aluno
-        </button>
+        <div className={styles.headerActions}>
+          <button onClick={() => router.push('/alunos/novo')} className={styles.newStudentButton}>
+            + Novo Aluno
+          </button>
+
+          {/* Os botões agora estão sempre aqui */}
+          <button
+            onClick={() => router.push(`/alunos/${alunoSelecionadoId}`)}
+            className={`${styles.actionButton} ${styles.editButton}`}
+            // 1. ADICIONAMOS O ATRIBUTO 'disabled'
+            // O botão fica desabilitado se 'alunoSelecionadoId' for null (ou seja, ninguém selecionado)
+            disabled={!alunoSelecionadoId}
+          >
+            Editar Selecionado
+          </button>
+          <button
+            onClick={handleExcluirAluno}
+            className={`${styles.actionButton} ${styles.deleteButton}`}
+            // 2. ADICIONAMOS O ATRIBUTO 'disabled' AQUI TAMBÉM
+            disabled={!alunoSelecionadoId}
+          >
+            Excluir Selecionado
+          </button>
+        </div>
       </header>
 
       <div className={styles.searchContainer}>
@@ -87,38 +116,54 @@ export default function AlunosPage() { // <--- Note o nome correto
         />
       </div>
 
+      {/* --- TABELA COM SELEÇÃO NA LINHA (Continua igual) --- */}
       <div className={styles.tableContainer}>
         <table className={styles.table}>
           <thead>
             <tr>
+              <th></th>
               <th>ID</th>
               <th>Matrícula</th>
               <th>Nome Completo</th>
               <th>CPF</th>
-              <th>Última Avaliação</th>
-              <th>Ações</th>
+              <th>Status Anamnese</th>
             </tr>
           </thead>
           <tbody>
-            {alunosFiltrados.map((aluno) => (
-              <tr key={aluno.id}>
-                <td>{aluno.id}</td>
-                <td>{aluno.matricula}</td>
-                <td>{aluno.nome}</td>
-                <td>{aluno.cpf}</td>
-                <td>{aluno.ultimaAvaliacao}</td>
-                <td>
-                  <div className={styles.actions}>
-                    <button className={`${styles.actionButton} ${styles.editButton}`}>Editar</button>
-                    <button className={`${styles.actionButton} ${styles.deleteButton}`}>Excluir</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {loading ? (
+              <tr><td colSpan="6">Carregando alunos...</td></tr>
+            ) : alunosFiltrados.length === 0 ? (
+              <tr><td colSpan="6">Nenhum aluno encontrado.</td></tr>
+            ) : (
+              alunosFiltrados.map((aluno) => (
+                <tr
+                  key={aluno.id}
+                  className={aluno.id === alunoSelecionadoId ? styles.selectedRow : ''}
+                  onClick={() => setAlunoSelecionadoId(aluno.id)}
+                >
+                  <td>
+                    {/* O feedback visual da seleção (ícone ou cor) */}
+                    {aluno.id === alunoSelecionadoId && <span className={styles.checkIcon}>✓</span>}
+                    {/* Você pode esconder o input real se quiser */}
+                    <input
+                      type="radio"
+                      name="alunoSelecionado"
+                      checked={aluno.id === alunoSelecionadoId}
+                      readOnly
+                      style={{ display: 'none' }} // Esconde a bolinha
+                    />
+                  </td>
+                  <td>{aluno.id}</td>
+                  <td>{aluno.matricula}</td>
+                  <td>{aluno.nome}</td>
+                  <td>{aluno.cpf || 'N/A'}</td>
+                  <td>{aluno.anamneseStatus}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
     </div>
   );
 }
-

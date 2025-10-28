@@ -4,23 +4,39 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    padding: 2rem; /* Adicionado padding ao container geral */
+    background-color: #121212; /* Fundo escuro padrão */
+    color: #e0e0e0; /* Cor de texto clara */
+    min-height: calc(100vh - 60px); /* Ajusta altura considerando um possível header/navbar */
 }
 
+/* --- AJUSTES NO CABEÇALHO --- */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; /* ATIVA O FLEXBOX */
+    justify-content: space-between; /* Empurra título para esquerda, botões para direita */
+    align-items: center; /* Alinha verticalmente */
+    border-bottom: 1px solid #333; /* Adiciona uma linha divisória */
+    padding-bottom: 1rem; /* Espaçamento abaixo da linha */
+    margin-bottom: 1rem; /* Espaço antes da busca */
 }
 
 .title {
     margin: 0;
+    color: #fff; /* Título mais branco */
 }
 
+/* --- NOVA CLASSE PARA AGRUPAR OS BOTÕES --- */
+.headerActions {
+    display: flex; /* Alinha os botões horizontalmente */
+    gap: 1rem; /* Espaço entre os botões */
+}
+
+/* --- ESTILOS DOS BOTÕES (Já estavam bons) --- */
 .newStudentButton {
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
     color: #fff;
-    background-color: #bb86fc;
+    background-color: #8a2be2; /* Roxo */
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -29,83 +45,48 @@
 }
 
 .newStudentButton:hover {
-    background-color: #a269f0;
+    background-color: #7a1fd6; /* Roxo um pouco mais escuro no hover */
 }
 
-.tableContainer {
-    background-color: #1e1e1e;
-    border: 1px solid #333;
-    border-radius: 8px;
-    overflow: hidden; /* Garante que as bordas arredondadas funcionem na tabela */
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse; /* Remove espaço entre células */
-}
-
-.table th, .table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #333;
-}
-
-.table th {
-    background-color: #252525;
-    font-weight: bold;
-}
-
-.table tbody tr:last-child td {
-    border-bottom: none; /* Remove a borda da última linha */
-}
-
-.table tbody tr:hover {
-    background-color: #2a2a2a;
-}
-
-.actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
+/* Base para os botões de ação Editar/Excluir */
 .actionButton {
-    padding: 0.4rem 0.8rem;
+    padding: 0.8rem 1.5rem; /* Aumentado um pouco para consistência */
     border: none;
-    border-radius: 5px;
+    border-radius: 8px; /* Borda igual ao botão Novo */
     cursor: pointer;
+    font-weight: bold;
     color: #fff;
+    transition: background-color 0.2s, opacity 0.2s;
 }
 
 .editButton {
-    background-color: #3b82f6; /* Azul */
+    background-color: #007bff; /* Azul */
+}
+.editButton:hover:not(:disabled) {
+    background-color: #0056b3;
 }
 
 .deleteButton {
-    background-color: #ef4444; /* Vermelho */
+    background-color: #dc3545; /* Vermelho */
+}
+.deleteButton:hover:not(:disabled) {
+    background-color: #c82333;
 }
 
-/* Adicione esta classe ao final do seu arquivo de estilo */
-
-.searchBar {
-    padding: 0.8rem;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 1px solid #333;
-    background-color: #2a2a2a;
-    color: #e0e0e0;
-    width: 100%;
-    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+/* Estilo para botões desabilitados */
+.actionButton:disabled,
+.editButton:disabled,
+.deleteButton:disabled {
+  background-color: #555;
+  color: #888;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
-.searchBar:focus {
-    outline: none;
-    border-color: #bb86fc;
-}
-/* Adicione estas classes ao final do seu arquivo alunos.module.css */
-
+/* --- ESTILOS DA BUSCA (Já estavam bons) --- */
 .searchContainer {
   display: flex;
-  gap: 0.5rem; /* Pequeno espaço entre o menu e a barra de busca */
+  gap: 0.5rem;
   width: 100%;
 }
 
@@ -124,7 +105,6 @@
   border-color: #bb86fc;
 }
 
-/* Ajuste na searchBar para funcionar bem dentro do flex container */
 .searchBar {
   padding: 0.8rem;
   font-size: 1rem;
@@ -132,12 +112,66 @@
   border: 1px solid #333;
   background-color: #2a2a2a;
   color: #e0e0e0;
-  width: 100%; /* Ocupa o espaço restante */
-  flex-grow: 1; /* Faz a barra de busca crescer para preencher o espaço */
+  width: 100%;
+  flex-grow: 1;
   box-sizing: border-box; 
 }
 
 .searchBar:focus {
     outline: none;
     border-color: #bb86fc;
+}
+
+/* --- ESTILOS DA TABELA (Já estavam bons) --- */
+.tableContainer {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden; 
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse; 
+}
+
+.table th, .table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    white-space: nowrap; /* Evita que o texto quebre linha */
+}
+
+.table th {
+    background-color: #252525;
+    font-weight: bold;
+    color: #fff; /* Cabeçalho mais branco */
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none; 
+}
+
+/* Estilo para hover na linha */
+.table tbody tr:hover {
+  background-color: #2a2a2a; 
+  cursor: pointer;
+}
+
+/* Estilo para linha selecionada */
+.selectedRow {
+  background-color: #2a3a4a; 
+  border-left: 3px solid #007bff; 
+}
+
+/* Estilo para o ícone de check (ou outro feedback visual) */
+.checkIcon {
+  color: #007bff;
+  font-weight: bold;
+  margin-right: 0.5rem; /* Espaço antes do ID */
+}
+
+/* Esconder a bolinha original do radio button (opcional) */
+.table input[type="radio"] {
+  display: none; 
 }

@@ -1,17 +1,16 @@
 // app/layout.js
 
 import { AuthProvider } from '../contexts/AuthContext';
-import './globals.css'; // Seu CSS global
+import { Toaster } from 'react-hot-toast'; // <-- 1. IMPORTE O TOASTER
+import './globals.css';
 
-export const metadata = {
-  title: 'App de Avaliação Física',
-  description: 'TCC de Lucas Miotto',
-};
+// ... (seu metadata) ...
 
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-br">
       <body>
+        <Toaster position="top-right" /> {/* <-- 2. ADICIONE O COMPONENTE */}
         <AuthProvider>
           {children}
         </AuthProvider>
