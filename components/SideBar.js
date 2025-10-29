@@ -1,44 +1,60 @@
 // components/SideBar.js
 
-import Link from 'next/link'; // Importa o componente de Link do Next.js
-import styles from './SideBar.module.css'; // Importa nossos estilos
+"use client";
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '../contexts/AuthContext';
+import styles from './SideBar.module.css';
+
+// 1. IMPORTANDO ÍCONES PROFISSIONAIS
+import { LuLayoutDashboard, LuUsers, LuSettings, LuFileText, LuLogOut } from "react-icons/lu";
 
 export default function SideBar() {
-  return (
-    <aside className={styles.sidebar}>
-      <div className={styles.logo}>UNOESC Portal</div>
-      
-      <nav>
-        <ul className={styles.navList}>
-          <li>
-            <Link href="/home" className={styles.navItem}>
-              {/* Você pode adicionar um ícone SVG aqui depois */}
-              <span>🏠</span> Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link href="/alunos" className={styles.navItem}>
-              <span>👤</span> Alunos
-            </Link>
-          </li>
-          <li>
-            <Link href="/configuracoes" className={styles.navItem}>
-              <span>⚙️</span> Configurações
-            </Link>
-          </li>
-          <li>
-            <Link href="/relatorios" className={styles.navItem}>
-              {/* Você pode adicionar um ícone SVG aqui depois */}
-              <span>🏠</span> Relatórios
-            </Link>
-          </li>
-        </ul>
-      </nav>
+    const pathname = usePathname();
+    const { user, signOut } = useAuth();
 
-      <div className={styles.footer}>
-        <p>Minhas Disciplinas</p>
-        <p>© 2025 UNOESC - Todos os direitos reservados.</p>
-      </div>
-    </aside>
-  );
+    // 2. LISTA DE ITENS COM OS NOVOS ÍCONES
+    const navItems = [
+        { href: '/home', label: 'Dashboard', icon: <LuLayoutDashboard /> },
+        { href: '/alunos', label: 'Alunos', icon: <LuUsers /> },
+        { href: '/configuracoes', label: 'Configurações', icon: <LuSettings /> },
+        { href: '/relatorios', label: 'Relatórios', icon: <LuFileText /> },
+    ];
+
+    return (
+        <aside className={styles.sidebar}>
+            <div className={styles.logo}>UNOESC Portal</div>
+
+            <nav className={styles.nav}>
+                <ul className={styles.navList}>
+                    {navItems.map(item => (
+                        <li key={item.href}>
+                            <Link href={item.href} className={pathname.startsWith(item.href) ? `${styles.navItem} ${styles.active}` : styles.navItem}>
+                                <span className={styles.icon}>{item.icon}</span>
+                                <span className={styles.label}>{item.label}</span>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+
+            <div className={styles.footer}>
+                <div className={styles.userInfo}>
+                    <div className={styles.avatar}>{user?.name?.charAt(0).toUpperCase()}</div>
+                    <span className={styles.userName}>{user?.name}</span>
+                </div>
+
+                <button onClick={signOut} className={styles.logoutButton}>
+                    <span className={styles.icon}><LuLogOut /></span>
+                    <span className={styles.label}>Sair</span>
+                </button>
+                
+                <div className={styles.copyright}>
+                    <p>Minhas Disciplinas</p>
+                    <p>© 2025 UNOESC</p>
+                </div>
+            </div>
+        </aside>
+    );
 }

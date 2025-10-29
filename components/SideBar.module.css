@@ -1,74 +1,127 @@
+/* components/SideBar.module.css */
+
 .sidebar {
   width: 250px;
-  background-color: #1e1e1e;
-  padding: 1.5rem;
+  background-color: #1e1e1e; /* Cor de fundo escura */
+  color: #a0a0a0; /* Cor de texto padrão (cinza claro) */
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: 1.5rem 0;
   border-right: 1px solid #333;
-  height: 100vh;
-  flex-shrink: 0; 
 }
 
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 2.5rem;
   color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.nav {
+  flex-grow: 1; /* Faz a navegação ocupar o espaço disponível */
 }
 
 .navList {
   list-style: none;
   padding: 0;
   margin: 0;
-  flex-grow: 1; /* Isto é o que empurra o footer para baixo no desktop */
 }
 
+/* --- ESTILO GERAL DOS ITENS DE NAVEGAÇÃO --- */
 .navItem {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
-  color: #e0e0e0;
+  padding: 1rem 1.5rem;
   text-decoration: none;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  color: #a0a0a0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-left: 4px solid transparent; /* Borda invisível para alinhamento */
 }
 
+.icon {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+}
+
+/* --- EFEITO HOVER (QUANDO PASSA O MOUSE) --- */
 .navItem:hover {
-  background-color: #333;
+  background-color: #2a2a2a;
   color: #fff;
 }
 
+/* --- ESTILO DO ITEM ATIVO (A MÁGICA) --- */
+.active {
+  /* Reutiliza os estilos do navItem */
+  composes: navItem; 
+
+  /* E adiciona os destaques */
+  background-color: #2c283a; /* Fundo roxo sutil */
+  color: #fff; /* Texto branco */
+  font-weight: 500;
+  border-left-color: #bb86fc; /* Borda roxa de destaque */
+}
+
+/* --- FOOTER (JÁ ESTAVA BOM, PEQUENOS AJUSTES) --- */
 .footer {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid #333;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #8a2be2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.userName {
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+.logoutButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: transparent;
+  border: 1px solid #555;
+  color: #a0a0a0;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.logoutButton:hover {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.copyright {
+  margin-top: 1.5rem;
   font-size: 0.8rem;
   color: #888;
-  margin-top: 2rem;
+  text-align: center;
 }
-
-/* --- BLOCO DE RESPONSIVIDADE --- */
-/* Este bloco corrige o layout em telas menores que 768px */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    height: auto; /* Altura automática */
-    border-right: none;
-    border-bottom: 1px solid #333;
-    box-sizing: border-box;
-  }
-
-  .logo {
-    margin-bottom: 1rem;
-  }
-
-  .navList {
-    flex-grow: 0; /* Remove o espaço extra (o bloco preto) */
-  }
-
-  /* Oculta o footer da sidebar em telas pequenas */
-  .footer {
-    display: none;
-  }
-}
-

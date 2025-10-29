@@ -1,10 +1,13 @@
+/* app/(main)/alunos/[id]/alunoDetalhe.module.css */
+
 .container {
   padding: 2rem;
-  background-color: #1e1e1e;
-  color: #ccc;
+  background-color: #121212; /* Fundo principal escuro */
+  color: #e0e0e0;
   min-height: 100vh;
 }
 
+/* --- CABEÇALHO --- */
 .header {
   display: flex;
   justify-content: space-between;
@@ -12,6 +15,10 @@
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #333;
+}
+
+.header h1 {
+  color: #fff;
 }
 
 .actions {
@@ -22,34 +29,50 @@
 .backButton, .saveButton {
   padding: 0.8rem 1.5rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
+  transition: background-color 0.2s, opacity 0.2s;
 }
 
 .backButton {
   background-color: #333;
   color: white;
 }
-
-.saveButton {
-  background-color: #007bff;
-  color: white;
+.backButton:hover {
+  background-color: #444;
 }
 
+.saveButton {
+  background-color: #8a2be2; /* Roxo */
+  color: white;
+}
+.saveButton:hover:not(:disabled) {
+  background-color: #7a1fd6;
+}
+.saveButton:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* --- ABAS DE NAVEGAÇÃO --- */
 .tabContainer {
   margin-bottom: 2rem;
   display: flex;
   gap: 0.5rem;
+  border-bottom: 1px solid #333;
 }
 
 .tabContainer button {
   padding: 0.8rem 1.5rem;
-  background-color: #2a2a2a;
+  background-color: transparent;
   color: #aaa;
   border: none;
-  border-bottom: 3px solid transparent;
+  border-bottom: 4px solid transparent;
   cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .tabContainer button:disabled {
@@ -58,32 +81,108 @@
 }
 
 .tabContainer .activeTab {
-  color: white;
-  border-bottom: 3px solid #007bff;
+  color: #bb86fc; /* Roxo claro para a aba ativa */
+  border-bottom: 4px solid #bb86fc;
 }
 
+/* --- CONTEÚDO PRINCIPAL E FORMULÁRIO --- */
 .content {
-  background-color: #252526;
+  background-color: #1e1e1e;
   padding: 2rem;
   border-radius: 8px;
+  border: 1px solid #333;
 }
 
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 1.5rem 2rem; /* Espaço vertical e horizontal */
 }
 
-.formGrid input, .formGrid textarea {
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.formGroup input, .formGroup textarea {
   width: 100%;
   padding: 0.8rem;
   background-color: #333;
   border: 1px solid #555;
   border-radius: 5px;
   color: white;
+  font-size: 1rem;
 }
 
-.textarea {
-  grid-column: 1 / -1; /* Ocupa as duas colunas */
-  min-height: 100px;
+.formGroup input:focus, .formGroup textarea:focus {
+    outline: none;
+    border-color: #bb86fc;
+}
+
+.formGroup input:disabled {
+  background-color: #2a2a2a;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.fullWidth {
+  grid-column: 1 / -1; /* Faz o elemento ocupar as duas colunas */
+}
+
+.formSectionTitle {
+  grid-column: 1 / -1;
+  color: #bb86fc;
+  font-size: 1.2rem;
+  margin-top: 1.5rem;
+  margin-bottom: -0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #444;
+}
+
+.formSectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+/* Container principal do grupo de rádio */
+.formGroupRadio {
+  display: flex;
+  align-items: center; /* Alinha o label "Ativo:" com as opções */
+  gap: 15px; /* Espaço entre o label "Ativo:" e os botões */
+  margin-bottom: 20px; /* Espaçamento igual aos outros campos */
+}
+
+/* Container que agrupa os botões "Sim" e "Não" */
+.radioOptionsContainer {
+  display: flex;
+  align-items: center;
+  gap: 25px; /* Espaço entre a opção "Sim" e a "Não" */
+}
+
+/* Container para cada par de (botão + label) */
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaço entre o círculo do rádio e o texto (Sim/Não) */
+}
+
+.radioOption label {
+  cursor: pointer; /* Muda o cursor para indicar que o texto é clicável */
+  font-weight: normal; /* Garante que não fique em negrito como o label principal */
+}
+
+.radioOption input[type="radio"] {
+  cursor: pointer;
+}
+
+/* Seleciona o h3 que está DENTRO da seção de status */
+.statusSection .formSectionTitle {
+  border-bottom: none;     /* Remove a linha/borda inferior */
+  margin-bottom: 0;        /* Remove a margem inferior para aproximar os campos */
+  padding-bottom: 10px;    /* Ajuste o espaçamento interno, se necessário */
 }

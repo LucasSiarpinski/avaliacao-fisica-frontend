@@ -175,3 +175,26 @@
 .table input[type="radio"] {
   display: none; 
 }
+
+/* app/(main)/alunos/alunos.module.css */
+
+/* ... (todos os seus outros estilos .container, .table, etc.) ... */
+
+/* --- NOVOS ESTILOS PARA O STATUS --- */
+.statusAtivo, .statusInativo {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px; /* Faz ficar arredondado como uma "pílula" */
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.statusAtivo {
+  background-color: #28a74533; /* Fundo verde transparente */
+  color: #28a745; /* Texto verde */
+}
+
+.statusInativo {
+  background-color: #dc354533; /* Fundo vermelho transparente */
+  color: #dc3545; /* Texto vermelho */
+}
