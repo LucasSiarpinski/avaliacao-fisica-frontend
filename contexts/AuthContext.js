@@ -1,4 +1,4 @@
-"use client"; // <--- PASSO MAIS IMPORTANTE!
+"use client";
 
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,53 +11,52 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Efeito que roda quando o app carrega
+  // O useEffect agora serve para carregar os dados do usuário que salvamos
+  // no localStorage. Isso evita que a UI "pisque" (mostrando "Olá, !" 
+  // antes de mostrar "Olá, Lucas!").
   useEffect(() => {
-    async function loadUserFromStorage() {
-      const token = localStorage.getItem('@TCCAuth:token');
-      if (token) {
-        try {
-          // Diz ao axios para usar este token em todas as requisições futuras
-          api.defaults.headers.Authorization = `Bearer ${token}`;
-          // Aqui poderíamos buscar os dados do usuário com o token, mas por enquanto vamos guardar o que temos
-          const userData = JSON.parse(localStorage.getItem('@TCCAuth:user'));
-          setUser(userData);
-        } catch (e) {
-          localStorage.clear();
-        }
+    function loadUserFromStorage() {
+      const storedUser = localStorage.getItem('@TCCAuth:user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       }
       setLoading(false);
     }
     loadUserFromStorage();
   }, []);
 
-  async function signIn(email, password) {
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      const { user: userData, token } = response.data;
+async function signIn(email, password) {
+  try {
+    const response = await api.post('/auth/login', { email, password });
+    const { user: userData } = response.data;
+    localStorage.setItem('@TCCAuth:user', JSON.stringify(userData));
+    setUser(userData);
 
-      // 1. Salvar os dados no localStorage para persistir a sessão
-      localStorage.setItem('@TCCAuth:user', JSON.stringify(userData));
-      localStorage.setItem('@TCCAuth:token', token);
-
-      // 2. Atualizar o header do axios com o novo token
-      api.defaults.headers.Authorization = `Bearer ${token}`;
-
-      // 3. Atualizar o estado
-      setUser(userData);
-
-      // 4. Redirecionar para a página principal
-      router.push('/home'); // Vamos criar essa página em breve
-    } catch (error) {
-      console.error('Falha no login:', error.response?.data?.error);
-      // Aqui você pode/deve mostrar um alerta de erro para o usuário
-      alert(error.response?.data?.error || 'Não foi possível fazer login.');
-    }
+    // 4. Forçar um recarregamento completo para a página home
+    //    Isso garante que o cookie de autenticação seja enviado na próxima requisição.
+    window.location.href = '/home'; // <--- A SOLUÇÃO
+    
+  } catch (error) {
+    console.error('Falha no login:', error.response?.data?.error);
+    alert(error.response?.data?.error || 'Não foi possível fazer login.');
   }
+}
 
-  function signOut() {
-    localStorage.clear();
+  async function signOut() {
+    // 1. Limpamos o usuário do localStorage e do estado.
+    localStorage.removeItem('@TCCAuth:user');
     setUser(null);
+
+    try {
+      // 2. [NOVO] Chamamos a rota de logout no backend.
+      //    Isso vai instruir o servidor a limpar o cookie HttpOnly.
+      await api.post('/auth/logout');
+    } catch (error) {
+      // Mesmo que a chamada falhe, continuamos o processo de logout no frontend.
+      console.error("Erro ao fazer logout no backend:", error);
+    }
+    
+    // 3. Redirecionamos o usuário para a página de login.
     router.push('/login');
   }
 
@@ -68,5 +67,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook customizado para facilitar o uso
 export const useAuth = () => useContext(AuthContext);

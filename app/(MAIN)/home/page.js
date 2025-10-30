@@ -8,7 +8,7 @@ export default function HomePage() {
       
       {/* Seção do Cabeçalho */}
       <header className={styles.header}>
-        <h1 className={styles.title}>Olá, Lucas!</h1>
+        <h1 className={styles.title}>Olá, ? !</h1>
         <p className={styles.subtitle}>Bem-vindo ao seu painel de avaliação física.</p>
       </header>
 
@@ -32,15 +32,6 @@ export default function HomePage() {
           </div>
 
         </div>
-      </section>
-      
-      {/* Seção de Ações Rápidas */}
-      <section>
-          <h2 style={{color: '#ccc'}}>Ações Rápidas</h2>
-          <div className={styles.actionsContainer}>
-              <button className={styles.actionButton}>Cadastrar Novo Aluno</button>
-              <button className={styles.actionButton}>Iniciar Avaliação</button>
-          </div>
       </section>
 
     </div>

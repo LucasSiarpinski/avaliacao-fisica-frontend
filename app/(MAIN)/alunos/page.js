@@ -2,32 +2,31 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
-import styles from './alunos.module.css';
-import { useAuth } from '../../../contexts/AuthContext';
-import api from '../../../services/api';
-
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import styles from "./alunos.module.css";
+import { useAuth } from "../../../contexts/AuthContext";
+import api from "../../../services/api";
 
 export default function AlunosPage() {
   const router = useRouter();
   const [alunos, setAlunos] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // --- 1. LÓGICA DE SELEÇÃO (QUE VOCÊ GOSTOU) ---
   const [alunoSelecionadoId, setAlunoSelecionadoId] = useState(null);
 
-  const [termoBusca, setTermoBusca] = useState('');
-  const [categoriaBusca, setCategoriaBusca] = useState('nome');
-  
+  const [termoBusca, setTermoBusca] = useState("");
+  const [categoriaBusca, setCategoriaBusca] = useState("nome");
+
   // --- 2. LÓGICA DE PROTEÇÃO (A SEGURANÇA) ---
   const { isAuthenticated, loading: authLoading } = useAuth();
 
   // Protege a rota: se não estiver logado, redireciona para o login
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [isAuthenticated, authLoading, router]);
 
@@ -37,14 +36,14 @@ export default function AlunosPage() {
       fetchAlunos();
     }
     if (!authLoading && !isAuthenticated) {
-       setLoading(false);
+      setLoading(false);
     }
   }, [isAuthenticated, authLoading]);
 
   const fetchAlunos = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/alunos');
+      const response = await api.get("/alunos");
       setAlunos(response.data);
     } catch (error) {
       console.error("Erro ao buscar alunos:", error);
@@ -56,7 +55,9 @@ export default function AlunosPage() {
 
   const handleExcluirAluno = async () => {
     if (!alunoSelecionadoId) return;
-    const confirmar = window.confirm("Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita.");
+    const confirmar = window.confirm(
+      "Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
+    );
     if (!confirmar) return;
 
     try {
@@ -70,14 +71,19 @@ export default function AlunosPage() {
     }
   };
 
-  const alunosFiltrados = alunos.filter(aluno => {
+  const alunosFiltrados = alunos.filter((aluno) => {
     if (!termoBusca) return true;
     const buscaLowerCase = termoBusca.toLowerCase();
     switch (categoriaBusca) {
-      case 'id': return String(aluno.id).includes(termoBusca);
-      case 'matricula': return String(aluno.matricula).toLowerCase().includes(buscaLowerCase);
-      case 'cpf': return aluno.cpf?.includes(termoBusca);
-      case 'nome': default: return aluno.nome.toLowerCase().includes(buscaLowerCase);
+      case "id":
+        return String(aluno.id).includes(termoBusca);
+      case "matricula":
+        return String(aluno.matricula).toLowerCase().includes(buscaLowerCase);
+      case "cpf":
+        return aluno.cpf?.includes(termoBusca);
+      case "nome":
+      default:
+        return aluno.nome.toLowerCase().includes(buscaLowerCase);
     }
   });
 
@@ -92,7 +98,10 @@ export default function AlunosPage() {
       <header className={styles.header}>
         <h1 className={styles.title}>Gerenciamento de Alunos</h1>
         <div className={styles.headerActions}>
-          <button onClick={() => router.push('/alunos/novo')} className={styles.newStudentButton}>
+          <button
+            onClick={() => router.push("/alunos/novo")}
+            className={styles.newStudentButton}
+          >
             + Novo Aluno
           </button>
           <button
@@ -120,34 +129,44 @@ export default function AlunosPage() {
       {/* --- TABELA ATUALIZADA --- */}
       <div className={styles.tableContainer}>
         <table className={styles.table}>
-          <thead>
-            <tr>
-              <th></th> {/* Coluna da seleção */}
+          <thead><tr>
+              <th></th>
               <th>Nome Completo</th>
               <th>Matrícula</th>
-              <th>Status</th> {/* <-- 1. NOVA COLUNA NO CABEÇALHO */}
+              <th>Status</th> 
               <th>Status Anamnese</th>
             </tr>
           </thead>
           <tbody>
             {alunosFiltrados.length === 0 && !loading ? (
-              // Ajustamos o colSpan para refletir o novo número de colunas
-              <tr><td colSpan="5">Nenhum aluno encontrado.</td></tr> 
+              <tr>
+                <td colSpan="5">Nenhum aluno encontrado.</td>
+              </tr>
             ) : (
               alunosFiltrados.map((aluno) => (
                 <tr
                   key={aluno.id}
-                  className={aluno.id === alunoSelecionadoId ? styles.selectedRow : ''}
+                  className={
+                    aluno.id === alunoSelecionadoId ? styles.selectedRow : ""
+                  }
                   onClick={() => setAlunoSelecionadoId(aluno.id)}
                 >
                   <td>
-                    {aluno.id === alunoSelecionadoId && <span className={styles.checkIcon}>✓</span>}
+                    {aluno.id === alunoSelecionadoId && (
+                      <span className={styles.checkIcon}>✓</span>
+                    )}
                   </td>
                   <td>{aluno.nome}</td>
                   <td>{aluno.matricula}</td>
                   {/* <-- 2. NOVA CÉLULA PARA EXIBIR O STATUS --> */}
                   <td>
-                    <span className={aluno.status === 'ATIVO' ? styles.statusAtivo : styles.statusInativo}>
+                    <span
+                      className={
+                        aluno.status === "ATIVO"
+                          ? styles.statusAtivo
+                          : styles.statusInativo
+                      }
+                    >
                       {aluno.status}
                     </span>
                   </td>
