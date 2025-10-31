@@ -1,0 +1,407 @@
+/* app/(MAIN)/professores/professores.module.css */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    background-color: #1a1a1a; /* Fundo do container da página */
+    color: #e0e0e0; 
+    min-height: calc(100vh - 40px); /* Ajusta altura para não sobrepor o footer/header se houver */
+    border-radius: 12px; /* Borda arredondada para o container principal */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* --- CABEÇALHO e AÇÕES --- */
+.header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding-bottom: 1rem; 
+    border-bottom: 1px solid #333; 
+    margin-bottom: 1.5rem; 
+}
+
+.title {
+    margin: 0;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.headerActions {
+    display: flex; 
+    gap: 1rem; 
+    align-items: center; 
+    /* flex-wrap: wrap; */ /* <-- REMOVIDO para impedir que os botões empilhem */
+    justify-content: flex-end;
+}
+
+/* Botão Novo Professor (roxo) */
+.newButton {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #8a2be2; /* Roxo */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    white-space: nowrap; /* Impede que o texto do botão quebre */
+}
+.newButton:hover {
+    background-color: #7a1fd6; 
+    transform: translateY(-2px);
+}
+.newButton:disabled {
+  background-color: #555;
+  color: #888;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Base para os botões de ação Editar/Excluir */
+.actionButton {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #fff;
+    transition: background-color 0.2s, opacity 0.2s, transform 0.1s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    white-space: nowrap; /* Impede que o texto do botão quebre */
+}
+
+.editButton {
+    background-color: #4a4a4a; /* Cinza escuro */
+}
+.editButton:hover:not(:disabled) {
+    background-color: #5a5a5a;
+    transform: translateY(-2px);
+}
+
+.deleteButton {
+    background-color: #4a4a4a; /* Cinza escuro */
+}
+.deleteButton:hover:not(:disabled) {
+    background-color: #5a5a5a;
+    transform: translateY(-2px);
+}
+
+/* Estilo para botões desabilitados */
+.actionButton:disabled {
+  background-color: #333;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: none;
+  transform: none;
+}
+
+/* --- BUSCA --- */
+.searchContainer {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.searchBar {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  width: 100%;
+  flex-grow: 1;
+  box-sizing: border-box; 
+  transition: border-color 0.2s;
+}
+
+.searchBar:focus {
+    outline: none;
+    border-color: #8a2be2; /* Borda roxa no foco */
+    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
+}
+
+/* --- TABELA --- */
+.tableContainer {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 10px;
+    overflow: auto; /* Permite scroll horizontal em mobile */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse; 
+    min-width: 600px; /* Reduzido um pouco pois removemos uma coluna */
+}
+
+.table th, .table td {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+/* Coluna do Check (ícone de seleção) */
+.table th:first-child,
+.table td:first-child {
+    width: 40px; /* Largura fixa para a coluna do check */
+    padding-right: 0.5rem;
+    padding-left: 1.25rem;
+}
+
+
+.table th {
+    background-color: #252525;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.table tbody tr:hover {
+  background-color: #2a2a2a; 
+  cursor: pointer;
+}
+
+.selectedRow {
+  background-color: #312b40 !important; /* Fundo roxo mais suave */
+  border-left: 3px solid #8a2be2; /* Borda roxa à esquerda */
+}
+
+.noResults {
+    text-align: center !important;
+    padding: 2rem !important;
+    color: #888;
+    font-style: italic;
+}
+
+/* Icone de check para linha selecionada */
+.checkIcon {
+  color: #8a2be2; /* Roxo */
+  font-weight: bold;
+  font-size: 1.2rem; /* Aumentar um pouco o check */
+}
+
+/* --- STATUS E PERMISSÕES (Roles) --- */
+.roleAdmin, .roleProfessor, .statusActive, .statusInactive {
+  padding: 0.3rem 0.7rem;
+  border-radius: 15px; 
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.roleAdmin {
+    background-color: #ffc10720; /* Amarelo Tênue */
+    color: #ffc107; /* Amarelo Forte */
+}
+
+.roleProfessor {
+    background-color: #17a2b820; /* Ciano Tênue */
+    color: #17a2b8; /* Ciano Forte */
+}
+
+.statusActive {
+  background-color: #28a74520; /* Verde Tênue */
+  color: #28a745; /* Verde Forte */
+}
+
+.statusInactive {
+  /* Cor do Inativo mudada para Vermelho */
+  background-color: #dc354520; /* Vermelho Tênue */
+  color: #dc3545; /* Vermelho Forte */
+}
+
+/* --- MODAL --- */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background-color: #1e1e1e;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.3s ease-out;
+    border: 1px solid #333;
+}
+
+.modalTitle {
+    color: #fff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.75rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.formLabel {
+    color: #e0e0e0;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.formInput, .formSelect {
+    padding: 0.75rem;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box; 
+}
+
+.formInput:focus, .formSelect:focus {
+    outline: none;
+    border-color: #8a2be2; /* Roxo no foco */
+    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
+}
+
+.errorMessage {
+    color: #dc3545;
+    background-color: #dc354520;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #dc3545;
+    text-align: center;
+    font-weight: 500;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.saveButton, .cancelButton {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.saveButton {
+    background-color: #8a2be2; /* Roxo */
+    color: #fff;
+}
+.saveButton:hover:not(:disabled) {
+    background-color: #7a1fd6;
+}
+.saveButton:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    background-color: #6c757d; /* Cinza */
+    color: #fff;
+}
+.cancelButton:hover {
+    background-color: #5a6268;
+}
+
+/* Animação simples para o Modal */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* --- Responsividade --- */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        border-radius: 0; /* Em mobile, pode ser sem borda arredondada */
+    }
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .title {
+        font-size: 1.6rem;
+    }
+    .headerActions {
+        width: 100%;
+        /* Correção para os botões não empilharem */
+        /* flex-wrap: wrap; */ /* REMOVIDO */
+        justify-content: flex-start;
+        overflow-x: auto; /* Permite scroll horizontal nos botões se não couberem */
+        padding-bottom: 0.5rem; /* Espaço para a barra de scroll */
+    }
+    .newButton, .actionButton {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        flex-shrink: 0; /* Impede que os botões encolham */
+    }
+    .searchContainer {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    .searchBar {
+        width: 100%;
+    }
+
+    .tableContainer {
+        border-radius: 6px;
+    }
+    .table {
+        min-width: 500px; /* Mantém a tabela com scroll horizontal */
+    }
+    
+    .table th, .table td {
+        padding: 0.7rem;
+        font-size: 0.85rem;
+    }
+    /* Estilização da primeira coluna (check) em mobile */
+    .table th:first-child,
+    .table td:first-child {
+        padding-left: 1rem;
+    }
+
+
+    .modalContent {
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+    .modalActions {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    .saveButton, .cancelButton {
+        width: 100%;
+    }
+}
+

@@ -20,6 +20,8 @@ export default function SideBar() {
         { href: '/alunos', label: 'Alunos', icon: <LuUsers /> },
         { href: '/configuracoes', label: 'Configurações', icon: <LuSettings /> },
         { href: '/relatorios', label: 'Relatórios', icon: <LuFileText /> },
+        { href: '/professores', label: 'Cadastro de professores', icon: <LuFileText /> },
+
     ];
 
     return (
