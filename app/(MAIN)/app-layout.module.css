@@ -22,3 +22,28 @@
     padding: 1rem; /* Menor preenchimento em telas pequenas */
   }
 }
+
+.mainContent {
+    /* A MÁGICA ESTÁ AQUI: 
+      Empurra o conteúdo 280px para a direita (a largura exata da sua sidebar)
+    */
+    margin-left: 280px; 
+    
+    padding: 2rem; /* Apenas um respiro/espaçamento interno */
+    width: 100%; /* Garante que ocupe o espaço */
+
+    /* Uma transição suave, para combinar com a da sidebar */
+    transition: margin-left 0.3s ease-in-out;
+}
+
+
+
+@media (max-width: 900px) {
+  .mainContent {
+    /* ...a sidebar vai ser escondida (com 'transform'),
+      então o conteúdo principal volta a ocupar 100% da tela.
+    */
+    margin-left: 0;
+    padding: 1.5rem; /* Um padding um pouco menor para mobile */
+  }
+}

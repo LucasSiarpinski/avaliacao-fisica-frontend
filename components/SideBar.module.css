@@ -1,127 +1,201 @@
-/* components/SideBar.module.css */
-
+/* --- CONTAINER PRINCIPAL DA SIDEBAR --- */
 .sidebar {
-  width: 250px;
-  background-color: #1e1e1e; /* Cor de fundo escura */
-  color: #a0a0a0; /* Cor de texto padrão (cinza claro) */
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem 0;
-  border-right: 1px solid #333;
+    width: 280px; 
+    height: 100vh;
+    
+    /* --- REMOVA/COMENTE ISTO --- */
+    /* position: fixed; */ /* <-- O PROBLEMA ESTÁ AQUI */
+    /* top: 0; */
+    /* left: 0; */
+    
+    /* --- ADICIONE ISSO --- */
+    flex-shrink: 0; /* Impede que a sidebar encolha */
+    
+    background-color: #1f1f1f;
+    padding: 24px 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    
+    display: flex;
+    flex-direction: column;
+    
+    transition: transform 0.3s ease-in-out; 
+    
+    /* Z-index só é necessário se for 'fixed' ou 'absolute' */
+    /* z-index: 1000; */ 
+}
+
+/* --- CABEÇALHO DA SIDEBAR (LOGO + BOTÃO FECHAR) --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #fff;
-  text-align: center;
-  margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4CAF50; /* Verde UNOESC */
 }
 
+/* Botão de Fechar (Visível apenas no mobile) */
+.mobileCloseButton {
+    display: none; /* Escondido no Desktop */
+    background: none;
+    border: none;
+    color: #a0a0a0;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.mobileCloseButton:hover {
+    color: white;
+}
+
+/* --- NAVEGAÇÃO PRINCIPAL --- */
 .nav {
-  flex-grow: 1; /* Faz a navegação ocupar o espaço disponível */
+    flex-grow: 1; /* Empurra o footer para baixo */
+    overflow-y: auto; /* Permite scroll se os itens não couberem */
 }
 
 .navList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Espaçamento entre os links */
 }
 
-/* --- ESTILO GERAL DOS ITENS DE NAVEGAÇÃO --- */
 .navItem {
-  display: flex;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  text-decoration: none;
-  color: #a0a0a0;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  border-left: 4px solid transparent; /* Borda invisível para alinhamento */
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espaço entre ícone e texto */
+    
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: #a0a0a0; /* Cor do link inativo */
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+    font-weight: 500;
+}
+
+.navItem:hover {
+    background-color: #333333;
+    color: white;
+}
+
+/* Link Ativo */
+.active {
+    background-color: #4CAF50; /* Fundo verde */
+    color: black; /* Texto escuro para contraste */
+    font-weight: 600;
+}
+.active:hover {
+    background-color: #388E3C; /* Verde mais escuro no hover */
+    color: black;
 }
 
 .icon {
-  display: flex;
-  align-items: center;
-  margin-right: 1rem;
-  font-size: 1.2rem;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
 }
 
-/* --- EFEITO HOVER (QUANDO PASSA O MOUSE) --- */
-.navItem:hover {
-  background-color: #2a2a2a;
-  color: #fff;
+.label {
+    font-size: 0.95rem;
+    flex-grow: 1; /* Garante que o texto ocupe o espaço */
 }
 
-/* --- ESTILO DO ITEM ATIVO (A MÁGICA) --- */
-.active {
-  /* Reutiliza os estilos do navItem */
-  composes: navItem; 
 
-  /* E adiciona os destaques */
-  background-color: #2c283a; /* Fundo roxo sutil */
-  color: #fff; /* Texto branco */
-  font-weight: 500;
-  border-left-color: #bb86fc; /* Borda roxa de destaque */
-}
-
-/* --- FOOTER (JÁ ESTAVA BOM, PEQUENOS AJUSTES) --- */
+/* --- RODAPÉ (USER + LOGOUT) --- */
 .footer {
-  margin-top: auto;
-  padding: 1rem;
-  border-top: 1px solid #333;
+    border-top: 1px solid #333333;
+    padding-top: 20px;
+    margin-top: 20px;
 }
 
 .userInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 0 5px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #8a2be2;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: #4CAF50; /* Verde */
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
 }
 
 .userName {
-  font-weight: 500;
-  color: #e0e0e0;
+    font-size: 0.9rem;
+    color: white;
+    font-weight: 500;
+    /* Evita que nomes longos quebrem o layout */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .logoutButton {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: transparent;
-  border: 1px solid #555;
-  color: #a0a0a0;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-weight: bold;
-  transition: background-color 0.2s, color 0.2s;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    
+    background-color: transparent;
+    color: #FF6347; /* Vermelho/Tomate para Sair */
+    border: 1px solid #FF6347;
+    transition: background-color 0.3s;
 }
 
 .logoutButton:hover {
-  background-color: #dc3545;
-  color: white;
-  border-color: #dc3545;
+    background-color: #FF634720; /* Fundo vermelho transparente */
 }
 
 .copyright {
-  margin-top: 1.5rem;
-  font-size: 0.8rem;
-  color: #888;
-  text-align: center;
+    font-size: 0.75rem;
+    color: #555555;
+    text-align: center;
+    margin-top: 20px;
+}
+
+
+@media (max-width: 900px) {
+    
+    .sidebar {
+        /* --- ADICIONE ISSO AQUI DENTRO --- */
+        position: fixed; /* Só no mobile ela flutua */
+        top: 0;
+        left: 0;
+        z-index: 1000; /* Agora sim, o z-index é necessário */
+        
+        /* Por padrão, o menu está escondido fora da tela */
+        transform: translateX(-100%); 
+    }
+    
+    /* Quando 'isOpen' é true, a classe 'mobileOpen' é aplicada */
+    .mobileOpen {
+        transform: translateX(0); /* Traz o menu para a tela */
+    }
+    
+    /* Mostra o botão de fechar "X" no mobile */
+    .mobileCloseButton {
+        display: block;
+    }
 }

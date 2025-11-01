@@ -32,6 +32,13 @@ export default function AlunoDetalhePage() {
     medicamentosEmUso: "",
     habitos: "",
     observacoes: "",
+    parq_q1: null,
+    parq_q2: null,
+    parq_q3: null,
+    parq_q4: null,
+    parq_q5: null,
+    parq_q6: null,
+    parq_q7: null,
   });
 
   const [activeTab, setActiveTab] = useState("dadosPessoais");
@@ -112,7 +119,7 @@ export default function AlunoDetalhePage() {
     return <div>Carregando dados do aluno...</div>;
   }
 
-  return (
+ return (
     <div className={styles.container}>
       <header className={styles.header}>
         <h1>
@@ -141,31 +148,36 @@ export default function AlunoDetalhePage() {
           onClick={() => setActiveTab("dadosPessoais")}
           className={activeTab === "dadosPessoais" ? styles.activeTab : ""}
         >
-          Dados Pessoais & Anamnese
+          Dados Pessoais
         </button>
         <button
           onClick={() => setActiveTab("avaliacoes")}
           disabled={isCreating}
           className={activeTab === "avaliacoes" ? styles.activeTab : ""}
         >
-          Histórico de Avaliações
+          Questionário Anamnese
         </button>
         <button
           onClick={() => setActiveTab("documentos")}
           disabled={isCreating}
           className={activeTab === "documentos" ? styles.activeTab : ""}
         >
-          Documentos
+          Questionário PAR-Q
+        </button>
+        <button
+          onClick={() => setActiveTab("arquivos")}
+          disabled={isCreating}
+          className={activeTab === "arquivos" ? styles.activeTab : ""}
+        >
+          Arquivos
         </button>
       </div>
 
       <main className={styles.content}>
         {activeTab === "dadosPessoais" && (
-          // O Fragment <> foi removido pois agora tudo está dentro da formGrid
           <div className={styles.formGrid}>
             {/* --- SEÇÃO DE STATUS (MOVIDA PARA DENTRO DA GRID) --- */}
             {!isCreating && (
-              // Adicionamos a classe "fullWidth" para ocupar todo o espaço horizontal
               <div className={`${styles.statusSection} ${styles.fullWidth}`}>
                 <h3 className={styles.formSectionTitle}>Status</h3>
                 <div className={styles.formGroupRadio}>
@@ -310,7 +322,16 @@ export default function AlunoDetalhePage() {
               />
             </div>
 
-            {/* --- SEÇÃO DE ANAMNESE --- */}
+            {/* --- SEÇÃO DE ANAMNESE (REMOVIDA DESTA ABA) --- */}
+            
+          </div>
+        )}
+
+        {activeTab === "avaliacoes" && (
+          // Reutilizamos a classe formGrid para manter o layout
+          <div className={styles.formGrid}>
+            
+            {/* --- SEÇÃO DE ANAMNESE (MOVIDA PARA CÁ) --- */}
             <h3 className={styles.formSectionTitle}>Anamnese</h3>
             <div className={`${styles.formGroup} ${styles.fullWidth}`}>
               <label htmlFor="objetivos">Objetivos</label>
@@ -359,17 +380,143 @@ export default function AlunoDetalhePage() {
                 onChange={handleChange}
               ></textarea>
             </div>
+
+          </div>
+        )}
+        
+        {activeTab === "documentos" && (
+          <div className={styles.formGrid}>
+            <h3 className={styles.formSectionTitle}>Questionário PAR-Q</h3>
+            <p className={`${styles.formDescription} ${styles.fullWidth}`}>
+              Este questionário visa identificar riscos à saúde. Se o aluno responder "SIM" a qualquer pergunta, recomende uma avaliação médica antes de iniciar os testes físicos de esforço.
+            </p>
+
+            {/* Pergunta 1 */}
+            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+              <label>1. Seu médico já mencionou alguma vez que você possui um problema do coração e lhe recomendou que só fizesse atividade física sob supervisão médica?</label>
+              <div className={styles.radioOptionsContainer}>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq1_sim" name="parq_q1" value="SIM" 
+                         checked={aluno.parq_q1 === "SIM"} onChange={handleChange} />
+                  <label htmlFor="parq1_sim">Sim</label>
+                </div>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq1_nao" name="parq_q1" value="NAO" 
+                         checked={aluno.parq_q1 === "NAO"} onChange={handleChange} />
+                  <label htmlFor="parq1_nao">Não</label>
+                </div>
+              </div>
+            </div>
+
+            {/* Pergunta 2 */}
+            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+              <label>2. Você sente dor no tórax quando realiza atividade física?</label>
+              <div className={styles.radioOptionsContainer}>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq2_sim" name="parq_q2" value="SIM" 
+                         checked={aluno.parq_q2 === "SIM"} onChange={handleChange} />
+                  <label htmlFor="parq2_sim">Sim</label>
+                </div>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq2_nao" name="parq_q2" value="NAO" 
+                         checked={aluno.parq_q2 === "NAO"} onChange={handleChange} />
+                  <label htmlFor="parq2_nao">Não</label>
+                </div>
+              </div>
+            </div>
+
+            {/* Pergunta 3 */}
+            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+              <label>3. Você sentiu dor no tórax quando estava realizando atividade física no último mês?</label>
+              <div className={styles.radioOptionsContainer}>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq3_sim" name="parq_q3" value="SIM" 
+                         checked={aluno.parq_q3 === "SIM"} onChange={handleChange} />
+                  <label htmlFor="parq3_sim">Sim</label>
+                </div>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq3_nao" name="parq_q3" value="NAO" 
+                         checked={aluno.parq_q3 === "NAO"} onChange={handleChange} />
+                  <label htmlFor="parq3_nao">Não</label>
+                </div>
+              </div>
+            </div>
+
+            {/* Pergunta 4 */}
+            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+              <label>4. Você já perdeu o equilíbrio por causa de tontura ou alguma vez perdeu a consciência?</label>
+              <div className={styles.radioOptionsContainer}>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq4_sim" name="parq_q4" value="SIM" 
+                         checked={aluno.parq_q4 === "SIM"} onChange={handleChange} />
+                  <label htmlFor="parq4_sim">Sim</label>
+                </div>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq4_nao" name="parq_q4" value="NAO" 
+                         checked={aluno.parq_q4 === "NAO"} onChange={handleChange} />
+                  <label htmlFor="parq4_nao">Não</label>
+                </div>
+              </div>
+            </div>
+
+            {/* Pergunta 5 */}
+            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+              <label>5. Você tem algum problema ósseo ou articular que poderia ser agravado com a prática de atividade física?</label>
+              <div className={styles.radioOptionsContainer}>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq5_sim" name="parq_q5" value="SIM" 
+                         checked={aluno.parq_q5 === "SIM"} onChange={handleChange} />
+                  <label htmlFor="parq5_sim">Sim</label>
+                </div>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq5_nao" name="parq_q5" value="NAO" 
+                         checked={aluno.parq_q5 === "NAO"} onChange={handleChange} />
+                  <label htmlFor="parq5_nao">Não</label>
+                </div>
+              </div>
+            </div>
+
+             {/* Pergunta 6 */}
+            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+              <label>6. Seu médico está prescrevendo uso de medicamentos para a sua pressão arterial ou coração?</label>
+              <div className={styles.radioOptionsContainer}>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq6_sim" name="parq_q6" value="SIM" 
+                         checked={aluno.parq_q6 === "SIM"} onChange={handleChange} />
+                  <label htmlFor="parq6_sim">Sim</label>
+                </div>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq6_nao" name="parq_q6" value="NAO" 
+                         checked={aluno.parq_q6 === "NAO"} onChange={handleChange} />
+                  <label htmlFor="parq6_nao">Não</label>
+                </div>
+              </div>
+            </div>
+
+             {/* Pergunta 7 */}
+            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+              <label>7. Você conhece alguma outra razão pela qual você não deveria praticar atividade física?</label>
+              <div className={styles.radioOptionsContainer}>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq7_sim" name="parq_q7" value="SIM" 
+                         checked={aluno.parq_q7 === "SIM"} onChange={handleChange} />
+                  <label htmlFor="parq7_sim">Sim</label>
+                </div>
+                <div className={styles.radioOption}>
+                  <input type="radio" id="parq7_nao" name="parq_q7" value="NAO" 
+                         checked={aluno.parq_q7 === "NAO"} onChange={handleChange} />
+                  <label htmlFor="parq7_nao">Não</label>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 
-        {activeTab === "avaliacoes" && (
+        {activeTab === "arquivos" && (
           <div>
-            <h2>Histórico de Avaliações (Em breve)</h2>
-          </div>
-        )}
-        {activeTab === "documentos" && (
-          <div>
-            <h2>Documentos e Anamnese (Em breve)</h2>
+            <h2>Aba para inserir e visualizar arquivos</h2>
+            <p>Em breve</p>
           </div>
         )}
       </main>

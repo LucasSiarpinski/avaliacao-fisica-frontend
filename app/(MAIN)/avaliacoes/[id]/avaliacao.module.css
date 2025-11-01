@@ -1,0 +1,237 @@
+.container {
+  padding: 2rem;
+  background-color: #1a1a1a; /* Fundo do card */
+  color: #e0e0e0;
+  min-height: calc(100vh - 40px);
+  border-radius: 12px;
+  border: 1px solid #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* --- CABEÇALHO --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #333;
+  flex-wrap: wrap; 
+  gap: 1.5rem; 
+}
+
+.header h1 {
+  color: #fff;
+  margin: 0; 
+  font-size: 1.8rem;
+}
+
+.alunoName {
+  color: #bb86fc; /* Roxo */
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.backButton, .saveButton {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s, opacity 0.2s;
+  white-space: nowrap; 
+}
+
+.backButton {
+  background-color: #4a4a4a;
+  color: white;
+}
+.backButton:hover {
+  background-color: #5a5a5a;
+}
+
+.saveButton {
+  background-color: #8a2be2; /* Roxo */
+  color: white;
+}
+.saveButton:hover:not(:disabled) {
+  background-color: #7a1fd6;
+}
+.saveButton:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* --- ABAS DE NAVEGAÇÃO --- */
+.tabContainer {
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid #333;
+  overflow-x: auto; 
+  padding-bottom: 0.5rem; 
+}
+
+.tabButton {
+  padding: 0.8rem 1.5rem;
+  background-color: transparent;
+  color: #aaa;
+  border: none;
+  border-bottom: 4px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tabButton.activeTab {
+  color: #bb86fc; 
+  border-bottom: 4px solid #bb86fc;
+}
+
+/* --- CONTEÚDO PRINCIPAL E FORMULÁRIO --- */
+.content {
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 COLUNAS */
+  gap: 1.5rem 2rem; 
+}
+
+.formGrid.twoColumns {
+  grid-template-columns: repeat(2, 1fr); /* 2 COLUNAS */
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.formGroup input, 
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #333;
+  border: 1px solid #555;
+  border-radius: 5px;
+  color: white;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.formGroup input:focus, 
+.formGroup textarea:focus,
+.formGroup select:focus {
+    outline: none;
+    border-color: #bb86fc;
+}
+
+.fullWidth {
+  grid-column: 1 / -1; /* Ocupa todas as colunas */
+}
+
+.formSectionTitle {
+  grid-column: 1 / -1;
+  color: #bb86fc;
+  font-size: 1.2rem;
+  margin-top: 1.5rem;
+  margin-bottom: -0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #444;
+}
+
+.formSectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+/* Container de cada pergunta do PAR-Q */
+.parqQuestion {
+  padding: 1rem;
+  background-color: #2a2a2a; 
+  border-radius: 8px;
+  border-left: 4px solid #8a2be2; /* Destaque roxo */
+  margin-bottom: 12px;
+}
+
+.parqQuestion label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: #e0e0e0;
+}
+
+/* Container que agrupa os botões "Sim" e "Não" */
+.radioOptionsContainer {
+  display: flex;
+  align-items: center;
+  gap: 25px; 
+}
+
+/* Container para cada par de (botão + label) */
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+}
+.radioOption label {
+  cursor: pointer; 
+  font-weight: normal; 
+  color: #e0e0e0;
+}
+.radioOption input[type="radio"] {
+  cursor: pointer;
+}
+
+/* --- Responsividade --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    border-radius: 0;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .content {
+    padding: 1rem;
+  }
+  /* Formulário vira coluna única */
+  .formGrid, .formGrid.twoColumns {
+    grid-template-columns: 1fr;
+    gap: 1rem; 
+  }
+  .parqQuestion {
+    padding: 1rem;
+  }
+}
+
+/* --- ADICIONE ESTES ESTILOS --- */
+.formGroup input:disabled,
+.formGroup textarea:disabled {
+  background-color: #2a2a2a; /* Fundo um pouco mais escuro */
+  color: #888; /* Texto cinza */
+  cursor: not-allowed;
+  opacity: 0.7;
+}

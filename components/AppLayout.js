@@ -1,37 +1,36 @@
-// Caminho: app/(MAIN)/layout.js
+// Caminho CORRETO: app/(MAIN)/layout.js
+
 "use client";
 
 import { useState } from 'react';
+// 1. Ajuste o caminho para buscar DENTRO da pasta 'components'
 import SideBar from '@/components/SideBar'; 
-import styles from '@/components/AppLayout.module.css';
+import styles from '@/components/AppLayout.module.css'; // 2. Ajuste o caminho
+
 import { LuMenu } from "react-icons/lu";
 
 export default function AppLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // 1. Crie funções específicas
-    const openMobileMenu = () => setIsMobileMenuOpen(true);
-    const closeMobileMenu = () => setIsMobileMenuOpen(false);
+    const toggleMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
 
     return (
         <div className={styles.layoutWrapper}>
-            
-            {/* 2. O Overlay agora SÓ FECHA */}
             {isMobileMenuOpen && (
-                <div className={styles.mobileOverlay} onClick={closeMobileMenu}></div>
+                <div className={styles.mobileOverlay} onClick={toggleMenu}></div>
             )}
 
-            {/* 3. Passe a função 'closeMenu' para a Sidebar */}
             <SideBar 
                 isOpen={isMobileMenuOpen} 
-                closeMenu={closeMobileMenu} 
+                toggleMenu={toggleMenu} // Você pode renomear para 'onClose' se preferir
             />
 
             <main className={styles.mainContent}>
                 
                 <header className={styles.mobileHeader}>
-                    {/* 4. O Botão Hamburger agora SÓ ABRE */}
-                    <button onClick={openMobileMenu} className={styles.mobileToggle}>
+                    <button onClick={toggleMenu} className={styles.mobileToggle}>
                         <LuMenu />
                     </button>
                     <div className={styles.mobileLogo}>UNOESC</div>

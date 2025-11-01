@@ -20,6 +20,10 @@
     padding-bottom: 1rem; 
     border-bottom: 1px solid #333; 
     margin-bottom: 1.5rem; 
+    
+    /* --- ADICIONE ISSO --- */
+    flex-wrap: wrap; /* << A MÁGICA: Permite que os botões quebrem para a linha de baixo */
+    gap: 1.5rem;     /* << BÔNUS: Adiciona um espaço se (e somente se) quebrar a linha */
 }
 
 .title {

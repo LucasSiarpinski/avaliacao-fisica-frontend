@@ -1,37 +1,42 @@
-/* app/(main)/alunos/alunos.module.css */
-
 .container {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    padding: 2rem; /* Adicionado padding ao container geral */
-    background-color: #121212; /* Fundo escuro padrão */
-    color: #e0e0e0; /* Cor de texto clara */
-    min-height: calc(100vh - 60px); /* Ajusta altura considerando um possível header/navbar */
+    padding: 2rem; 
+    background-color: #121212; 
+    color: #e0e0e0; 
+    min-height: calc(100vh - 60px); 
+    border-radius: 12px; /* Adicionado para consistência */
 }
 
 /* --- AJUSTES NO CABEÇALHO --- */
 .header {
-    display: flex; /* ATIVA O FLEXBOX */
-    justify-content: space-between; /* Empurra título para esquerda, botões para direita */
-    align-items: center; /* Alinha verticalmente */
-    border-bottom: 1px solid #333; /* Adiciona uma linha divisória */
-    padding-bottom: 1rem; /* Espaçamento abaixo da linha */
-    margin-bottom: 1rem; /* Espaço antes da busca */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid #333; 
+    padding-bottom: 1rem; 
+    margin-bottom: 1rem; 
+    
+    /* Para responsividade */
+    flex-wrap: wrap; 
+    gap: 1.5rem;     
 }
 
 .title {
     margin: 0;
-    color: #fff; /* Título mais branco */
+    color: #fff; 
+    font-size: 1.8rem; /* Ajuste leve de tamanho */
 }
 
-/* --- NOVA CLASSE PARA AGRUPAR OS BOTÕES --- */
+/* --- CLASSE PARA AGRUPAR OS BOTÕES --- */
 .headerActions {
-    display: flex; /* Alinha os botões horizontalmente */
-    gap: 1rem; /* Espaço entre os botões */
+    display: flex; 
+    gap: 1rem; 
+    align-items: center;
 }
 
-/* --- ESTILOS DOS BOTÕES (Já estavam bons) --- */
+/* --- ESTILOS DOS BOTÕES --- */
 .newStudentButton {
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
@@ -42,21 +47,23 @@
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 .newStudentButton:hover {
-    background-color: #7a1fd6; /* Roxo um pouco mais escuro no hover */
+    background-color: #7a1fd6; 
 }
 
 /* Base para os botões de ação Editar/Excluir */
 .actionButton {
-    padding: 0.8rem 1.5rem; /* Aumentado um pouco para consistência */
+    padding: 0.8rem 1.5rem; 
     border: none;
-    border-radius: 8px; /* Borda igual ao botão Novo */
+    border-radius: 8px; 
     cursor: pointer;
     font-weight: bold;
     color: #fff;
     transition: background-color 0.2s, opacity 0.2s;
+    white-space: nowrap;
 }
 
 .editButton {
@@ -83,7 +90,7 @@
   opacity: 0.6;
 }
 
-/* --- ESTILOS DA BUSCA (Já estavam bons) --- */
+/* --- ESTILOS DA BUSCA --- */
 .searchContainer {
   display: flex;
   gap: 0.5rem;
@@ -122,79 +129,223 @@
     border-color: #bb86fc;
 }
 
-/* --- ESTILOS DA TABELA (Já estavam bons) --- */
+/* --- ESTILOS DA TABELA --- */
 .tableContainer {
     background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 8px;
-    overflow: hidden; 
+    overflow-x: auto; /* Alterado de 'hidden' para 'auto' para permitir scroll horizontal em mobile */
 }
 
 .table {
     width: 100%;
     border-collapse: collapse; 
+    min-width: 600px; /* Adicionado min-width para garantir scroll */
 }
 
 .table th, .table td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid #333;
-    white-space: nowrap; /* Evita que o texto quebre linha */
+    white-space: nowrap; 
 }
 
 .table th {
     background-color: #252525;
     font-weight: bold;
-    color: #fff; /* Cabeçalho mais branco */
+    color: #fff; 
 }
 
 .table tbody tr:last-child td {
     border-bottom: none; 
 }
 
-/* Estilo para hover na linha */
 .table tbody tr:hover {
   background-color: #2a2a2a; 
   cursor: pointer;
 }
 
-/* Estilo para linha selecionada */
 .selectedRow {
-  background-color: #2a3a4a; 
+  background-color: #2a3a4a !important; /* Manteve o azul de seleção */
   border-left: 3px solid #007bff; 
 }
 
-/* Estilo para o ícone de check (ou outro feedback visual) */
 .checkIcon {
-  color: #007bff;
+  color: #007bff; /* Azul para combinar com a seleção */
   font-weight: bold;
-  margin-right: 0.5rem; /* Espaço antes do ID */
+  margin-right: 0.5rem; 
 }
 
-/* Esconder a bolinha original do radio button (opcional) */
-.table input[type="radio"] {
-  display: none; 
+.noResults {
+    text-align: center !important;
+    padding: 2rem !important;
+    color: #888;
+    font-style: italic;
 }
 
-/* app/(main)/alunos/alunos.module.css */
-
-/* ... (todos os seus outros estilos .container, .table, etc.) ... */
-
-/* --- NOVOS ESTILOS PARA O STATUS --- */
+/* --- ESTILOS PARA O STATUS (Pílulas) --- */
 .statusAtivo, .statusInativo {
   padding: 0.2rem 0.6rem;
-  border-radius: 12px; /* Faz ficar arredondado como uma "pílula" */
+  border-radius: 12px; 
   font-size: 0.8rem;
   font-weight: bold;
   text-transform: uppercase;
+  display: inline-block; /* Garante alinhamento */
 }
 
 .statusAtivo {
-  background-color: #28a74533; /* Fundo verde transparente */
-  color: #28a745; /* Texto verde */
+  background-color: #28a74533; 
+  color: #28a745; 
 }
 
 .statusInativo {
-  background-color: #dc354533; /* Fundo vermelho transparente */
-  color: #dc3545; /* Texto vermelho */
+  background-color: #dc354533; 
+  color: #dc3545; 
+}
+
+
+/* * ==========================================
+ * NOVOS ESTILOS: MODAL DE CONFIRMAÇÃO
+ * ==========================================
+ */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75); /* Mais escuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background-color: #1e1e1e;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    border: 1px solid #333;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modalTitle {
+    color: #fff;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.75rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Botão de Cancelar (Cinza neutro) */
+.cancelButton {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    background-color: #6c757d; 
+    color: #fff;
+}
+.cancelButton:hover {
+    background-color: #5a6268;
+}
+/* O .deleteButton (vermelho) já foi definido acima e será reutilizado */
+
+
+/* Animação simples para o Modal */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+
+/* * ==========================================
+ * NOVOS ESTILOS: RESPONSIVIDADE
+ * ==========================================
+ */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        border-radius: 0; 
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .title {
+        font-size: 1.6rem;
+    }
+
+    .headerActions {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto; /* Permite scroll horizontal nos botões */
+        padding-bottom: 0.5rem; /* Espaço para a barra de scroll */
+    }
+
+    .newStudentButton, .actionButton {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        flex-shrink: 0; /* Impede que os botões encolham */
+    }
+
+    .searchContainer {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .searchBar {
+        width: 100%;
+    }
+
+    .tableContainer {
+        border-radius: 6px;
+    }
+    
+    .table {
+        min-width: 500px; /* Mantém scroll horizontal */
+    }
+    
+    .table th, .table td {
+        padding: 0.7rem;
+        font-size: 0.85rem;
+    }
+
+    .checkIcon {
+        margin-right: 0.2rem;
+    }
+
+    /* Ajustes do Modal em mobile */
+    .modalContent {
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .modalActions {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    /* Botões do modal ocupam 100% da largura */
+    .cancelButton, 
+    .deleteButton {
+        width: 100%;
+    }
 }

@@ -1,0 +1,117 @@
+/* ======================================================================== */
+/* ARQUIVO: components/AppLayout.module.css (Substitua tudo por isto)       */
+/* ======================================================================== */
+
+/* --- O PAI DE TODOS (Desktop) --- */
+.layoutWrapper {
+    display: flex; /* <-- A MÁGICA! Alinha Sidebar e mainContent lado a lado */
+    flex-direction: row; /* (Este é o padrão, mas é bom ser explícito) */
+    min-height: 100vh;
+    background-color: #18181b; /* Fundo escuro */
+}
+
+/* --- O FILHO 2: CONTEÚDO PRINCIPAL (Desktop) --- */
+.mainContent {
+    flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
+    
+    /* Configura o scroll INTERNO apenas para o conteúdo */
+    height: 100vh;
+    overflow-y: auto; /* Adiciona scroll SÓ AQUI */
+    
+    /* Permite que o header e o pageContent se empilhem */
+    display: flex;
+    flex-direction: column;
+}
+
+/* O "neto": A área interna da página com padding */
+.pageContent {
+    padding: 30px 40px;
+    width: 100%;
+}
+
+
+/* ======================================================================== */
+/* --- ESTILOS DO MOBILE (Que já fizemos e estão funcionando) ---           */
+/* ======================================================================== */
+
+.mobileHeader {
+    display: none; /* Escondido no desktop por padrão */
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background-color: #1f1f1f;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    border-bottom: 1px solid #333;
+}
+
+.mobileToggle { /* Seu botão hamburger */
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+.mobileToggle:hover {
+    color: white;
+}
+
+.mobileLogo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4CAF50; /* Verde UNOESC */
+}
+
+/* O Overlay que escurece o fundo */
+.mobileOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 999; /* Abaixo da Sidebar (1000) */
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+/* ======================================================================== */
+/* --- O PONTO DE QUEBRA (Breakpoint) ---                                   */
+/* ======================================================================== */
+
+@media (max-width: 900px) {
+    
+    /* No mobile, o layoutWrapper não precisa mais ser flex,
+       pois a sidebar vai "flutuar" por cima
+    */
+    .layoutWrapper {
+        display: block; /* Volta ao padrão */
+    }
+
+    /* O mainContent volta a ser um bloco normal */
+    .mainContent {
+        height: auto;
+        overflow-y: visible;
+        padding-top: 0; /* Remove padding para o header mobile grudar */
+    }
+
+    /* Mostra o cabeçalho mobile */
+    .mobileHeader {
+        display: flex; 
+    }
+
+    /* Ajusta o padding da página no mobile */
+    .pageContent {
+      padding: 1.5rem;
+    }
+}

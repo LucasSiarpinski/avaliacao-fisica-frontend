@@ -1,8 +1,6 @@
-/* app/(main)/alunos/[id]/alunoDetalhe.module.css */
-
 .container {
   padding: 2rem;
-  background-color: #121212; /* Fundo principal escuro */
+  background-color: #121212; 
   color: #e0e0e0;
   min-height: 100vh;
 }
@@ -15,10 +13,14 @@
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #333;
+  flex-wrap: wrap; /* Adicionado para quebra */
+  gap: 1.5rem; /* Adicionado para espaçamento */
 }
 
 .header h1 {
   color: #fff;
+  margin: 0; /* Remove margem padrão */
+  font-size: 1.8rem;
 }
 
 .actions {
@@ -33,6 +35,7 @@
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.2s, opacity 0.2s;
+  white-space: nowrap; /* Impede quebra de texto */
 }
 
 .backButton {
@@ -62,6 +65,9 @@
   display: flex;
   gap: 0.5rem;
   border-bottom: 1px solid #333;
+  /* Adicionado para responsividade */
+  overflow-x: auto; 
+  padding-bottom: 0.5rem; /* Espaço para scrollbar */
 }
 
 .tabContainer button {
@@ -73,6 +79,9 @@
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
+  /* Adicionado para responsividade */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tabContainer button:disabled {
@@ -96,7 +105,7 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem 2rem; /* Espaço vertical e horizontal */
+  gap: 1.5rem 2rem; 
 }
 
 .formGroup {
@@ -118,6 +127,7 @@
   border-radius: 5px;
   color: white;
   font-size: 1rem;
+  box-sizing: border-box; /* Garante que padding não estoure */
 }
 
 .formGroup input:focus, .formGroup textarea:focus {
@@ -132,7 +142,7 @@
 }
 
 .fullWidth {
-  grid-column: 1 / -1; /* Faz o elemento ocupar as duas colunas */
+  grid-column: 1 / -1; 
 }
 
 .formSectionTitle {
@@ -152,28 +162,28 @@
 /* Container principal do grupo de rádio */
 .formGroupRadio {
   display: flex;
-  align-items: center; /* Alinha o label "Ativo:" com as opções */
-  gap: 15px; /* Espaço entre o label "Ativo:" e os botões */
-  margin-bottom: 20px; /* Espaçamento igual aos outros campos */
+  align-items: center; 
+  gap: 15px; 
+  margin-bottom: 20px; 
 }
 
 /* Container que agrupa os botões "Sim" e "Não" */
 .radioOptionsContainer {
   display: flex;
   align-items: center;
-  gap: 25px; /* Espaço entre a opção "Sim" e a "Não" */
+  gap: 25px; 
 }
 
 /* Container para cada par de (botão + label) */
 .radioOption {
   display: flex;
   align-items: center;
-  gap: 8px; /* Espaço entre o círculo do rádio e o texto (Sim/Não) */
+  gap: 8px; 
 }
 
 .radioOption label {
-  cursor: pointer; /* Muda o cursor para indicar que o texto é clicável */
-  font-weight: normal; /* Garante que não fique em negrito como o label principal */
+  cursor: pointer; 
+  font-weight: normal; 
 }
 
 .radioOption input[type="radio"] {
@@ -182,7 +192,102 @@
 
 /* Seleciona o h3 que está DENTRO da seção de status */
 .statusSection .formSectionTitle {
-  border-bottom: none;     /* Remove a linha/borda inferior */
-  margin-bottom: 0;        /* Remove a margem inferior para aproximar os campos */
-  padding-bottom: 10px;    /* Ajuste o espaçamento interno, se necessário */
+  border-bottom: none;     
+  margin-bottom: 0;        
+  padding-bottom: 10px;    
+}
+
+.formDescription {
+  color: #a0a0a0; 
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Container de cada pergunta do PAR-Q */
+.parqQuestion {
+  padding: 16px;
+  background-color: #2a2a2a; 
+  border-radius: 8px;
+  border-left: 4px solid #4CAF50; 
+  margin-bottom: 12px;
+}
+
+.parqQuestion label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: #e0e0e0; /* Garante que o texto da pergunta seja claro */
+}
+
+
+/* * ==========================================
+ * NOVOS ESTILOS: RESPONSIVIDADE
+ * ==========================================
+ */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        border-radius: 0;
+    }
+
+    /* Cabeçalho empilhado */
+    .header {
+        flex-direction: column;
+        align-items: flex-start; /* Alinha tudo à esquerda */
+        gap: 1.5rem;
+    }
+
+    .header h1 {
+        font-size: 1.6rem;
+    }
+
+    /* Botões do cabeçalho ocupando 100% */
+    .actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Divide em 2 colunas iguais */
+    }
+
+    .backButton, .saveButton {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+        text-align: center; /* Centraliza o texto */
+    }
+
+    /* Abas com scroll horizontal */
+    .tabContainer {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Conteúdo do formulário */
+    .content {
+        padding: 1rem;
+    }
+
+    /* Formulário vira coluna única */
+    .formGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem; /* Reduz espaçamento */
+    }
+
+    /* Ajusta os grupos de Rádio para empilhar */
+    .formGroupRadio {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .radioOptionsContainer {
+        gap: 2rem; /* Aumenta espaço entre Sim/Não */
+    }
+
+    .parqQuestion {
+        padding: 1rem;
+    }
+
+    .parqQuestion label {
+        font-size: 0.9rem;
+    }
 }
