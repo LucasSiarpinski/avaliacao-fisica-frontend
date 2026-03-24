@@ -21,9 +21,8 @@
     border-bottom: 1px solid #333; 
     margin-bottom: 1.5rem; 
     
-    /* --- ADICIONE ISSO --- */
-    flex-wrap: wrap; /* << A MÁGICA: Permite que os botões quebrem para a linha de baixo */
-    gap: 1.5rem;     /* << BÔNUS: Adiciona um espaço se (e somente se) quebrar a linha */
+    flex-wrap: wrap; 
+    gap: 1.5rem;     
 }
 
 .title {
@@ -37,7 +36,6 @@
     display: flex; 
     gap: 1rem; 
     align-items: center; 
-    /* flex-wrap: wrap; */ /* <-- REMOVIDO para impedir que os botões empilhem */
     justify-content: flex-end;
 }
 
@@ -46,17 +44,17 @@
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
     color: #fff;
-    background-color: #8a2be2; /* Roxo */
+    background-color: #5d812e; /* Roxo */
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.2s, transform 0.1s;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    white-space: nowrap; /* Impede que o texto do botão quebre */
+    white-space: nowrap; 
 }
 .newButton:hover {
-    background-color: #7a1fd6; 
+    background-color: #5d812e; 
     transform: translateY(-2px);
 }
 .newButton:disabled {
@@ -76,7 +74,7 @@
     color: #fff;
     transition: background-color 0.2s, opacity 0.2s, transform 0.1s;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    white-space: nowrap; /* Impede que o texto do botão quebre */
+    white-space: nowrap; 
 }
 
 .editButton {
@@ -128,9 +126,41 @@
 
 .searchBar:focus {
     outline: none;
-    border-color: #8a2be2; /* Borda roxa no foco */
+    border-color: #5d812e; /* Borda roxa no foco */
     box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
 }
+
+/* --- [BLOCO ADICIONADO] --- */
+.searchCategory {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background-color: #2a2a2a; /* Fundo escuro */
+  color: #e0e0e0; /* Texto claro */
+  cursor: pointer;
+  
+  /* Seta personalizada (para ficar clara no fundo escuro) */
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  
+  /* Remove o estilo padrão do sistema */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  /* Garante que o padding não "coma" o texto */
+  padding-right: 2.5rem; 
+}
+
+.searchCategory:focus {
+  outline: none;
+  border-color: #5d812e; /* Borda roxa no foco (do seu tema) */
+}
+/* --- [FIM DO BLOCO ADICIONADO] --- */
+
 
 /* --- TABELA --- */
 .tableContainer {
@@ -144,7 +174,7 @@
 .table {
     width: 100%;
     border-collapse: collapse; 
-    min-width: 600px; /* Reduzido um pouco pois removemos uma coluna */
+    min-width: 600px; 
 }
 
 .table th, .table td {
@@ -156,7 +186,7 @@
 /* Coluna do Check (ícone de seleção) */
 .table th:first-child,
 .table td:first-child {
-    width: 40px; /* Largura fixa para a coluna do check */
+    width: 40px; 
     padding-right: 0.5rem;
     padding-left: 1.25rem;
 }
@@ -176,8 +206,8 @@
 }
 
 .selectedRow {
-  background-color: #312b40 !important; /* Fundo roxo mais suave */
-  border-left: 3px solid #8a2be2; /* Borda roxa à esquerda */
+  background-color: #312b40 !important; 
+  border-left: 3px solid #8a2be2; 
 }
 
 .noResults {
@@ -187,11 +217,10 @@
     font-style: italic;
 }
 
-/* Icone de check para linha selecionada */
 .checkIcon {
-  color: #8a2be2; /* Roxo */
+  color: #5d812e; 
   font-weight: bold;
-  font-size: 1.2rem; /* Aumentar um pouco o check */
+  font-size: 1.2rem; 
 }
 
 /* --- STATUS E PERMISSÕES (Roles) --- */
@@ -207,28 +236,26 @@
 }
 
 .roleAdmin {
-    background-color: #ffc10720; /* Amarelo Tênue */
-    color: #ffc107; /* Amarelo Forte */
+    background-color: #ffc10720; 
+    color: #ffc107; 
 }
 
 .roleProfessor {
-    background-color: #17a2b820; /* Ciano Tênue */
-    color: #17a2b8; /* Ciano Forte */
+    background-color: #17a2b820; 
+    color: #17a2b8; 
 }
 
 .statusActive {
-  background-color: #28a74520; /* Verde Tênue */
-  color: #28a745; /* Verde Forte */
+  background-color: #28a74520; 
+  color: #28a745; 
 }
 
 .statusInactive {
-  /* Cor do Inativo mudada para Vermelho */
-  background-color: #dc354520; /* Vermelho Tênue */
-  color: #dc3545; /* Vermelho Forte */
+  background-color: #dc354520; 
+  color: #dc3545; 
 }
 
 /* --- MODAL --- */
-
 .modalOverlay {
     position: fixed;
     top: 0;
@@ -287,7 +314,7 @@
 
 .formInput:focus, .formSelect:focus {
     outline: none;
-    border-color: #8a2be2; /* Roxo no foco */
+    border-color: #5d812e; 
     box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
 }
 
@@ -318,11 +345,11 @@
 }
 
 .saveButton {
-    background-color: #8a2be2; /* Roxo */
+    background-color: #5d812e; 
     color: #fff;
 }
 .saveButton:hover:not(:disabled) {
-    background-color: #7a1fd6;
+    background-color: #5d812e;
 }
 .saveButton:disabled {
     background-color: #555;
@@ -330,14 +357,13 @@
 }
 
 .cancelButton {
-    background-color: #6c757d; /* Cinza */
+    background-color: #6c757d; 
     color: #fff;
 }
 .cancelButton:hover {
     background-color: #5a6268;
 }
 
-/* Animação simples para o Modal */
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95) translateY(10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
@@ -347,7 +373,7 @@
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
-        border-radius: 0; /* Em mobile, pode ser sem borda arredondada */
+        border-radius: 0; 
     }
     .header {
         flex-direction: column;
@@ -359,42 +385,47 @@
     }
     .headerActions {
         width: 100%;
-        /* Correção para os botões não empilharem */
-        /* flex-wrap: wrap; */ /* REMOVIDO */
         justify-content: flex-start;
-        overflow-x: auto; /* Permite scroll horizontal nos botões se não couberem */
-        padding-bottom: 0.5rem; /* Espaço para a barra de scroll */
+        overflow-x: auto; 
+        padding-bottom: 0.5rem; 
     }
     .newButton, .actionButton {
         padding: 0.7rem 1rem;
         font-size: 0.9rem;
-        flex-shrink: 0; /* Impede que os botões encolham */
+        flex-shrink: 0; 
     }
     .searchContainer {
         flex-direction: column;
         gap: 0.8rem;
     }
+
+    /* --- [LINHAS ADICIONADAS PARA RESPONSIVIDADE] --- */
+    .searchCategory {
+        width: 100%; /* Faz o seletor ocupar 100% no mobile */
+        box-sizing: border-box;
+    }
+    
     .searchBar {
         width: 100%;
     }
+    /* --- [FIM DAS LINHAS ADICIONADAS] --- */
 
     .tableContainer {
         border-radius: 6px;
     }
     .table {
-        min-width: 500px; /* Mantém a tabela com scroll horizontal */
+        min-width: 500px; 
     }
     
     .table th, .table td {
         padding: 0.7rem;
         font-size: 0.85rem;
     }
-    /* Estilização da primeira coluna (check) em mobile */
+    
     .table th:first-child,
     .table td:first-child {
         padding-left: 1rem;
     }
-
 
     .modalContent {
         padding: 1.5rem;
@@ -408,4 +439,3 @@
         width: 100%;
     }
 }
-

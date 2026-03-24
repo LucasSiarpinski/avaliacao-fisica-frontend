@@ -1,0 +1,230 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    background-color: #1a1a1a; 
+    color: #e0e0e0; 
+    min-height: calc(100vh - 40px);
+    border-radius: 12px; 
+    border: 1px solid #333; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Cabeçalho --- */
+.header {
+    border-bottom: 1px solid #333; 
+    padding-bottom: 1rem; 
+    margin-bottom: 1rem; 
+}
+
+.title {
+    margin: 0;
+    color: #fff; 
+    font-size: 1.8rem;
+}
+
+/* --- Container do Gerador (Passo-a-passo) --- */
+.reportGenerator {
+    background-color: #1e1e1e;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    max-width: 700px;
+    margin: 2rem auto 0 auto; 
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; 
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; 
+}
+
+.formGroup label {
+    font-size: 1.1rem;
+    color: #ccc;
+    font-weight: 500;
+}
+
+/* --- Passo 1: Busca (Input + Botão) --- */
+.searchContainer {
+    display: flex;
+    gap: 0.5rem;
+}
+.searchInputDisplay {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    flex-grow: 1; /* Ocupa o espaço */
+    cursor: not-allowed; /* Indica que não é para digitar */
+}
+.searchButton {
+    padding: 0 1.2rem;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff; /* Azul */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    flex-shrink: 0; /* Não encolhe */
+}
+.searchButton:hover {
+    background-color: #0056b3;
+}
+
+/* --- Passo 2: Selecionar Avaliação --- */
+.selectInput {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+/* --- Passo 3: Ações --- */
+.actionButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.actionButton {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, opacity 0.2s;
+    text-align: center;
+}
+.actionButton:disabled {
+    background-color: #555;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.pdfButton {
+    background-color: #5d812e;
+    color: white;
+}
+.pdfButton:hover:not(:disabled) {
+    background-color: #5d812e; 
+}
+.emailButton {
+    background-color: #007bff;
+    color: white;
+}
+.emailButton:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+
+/* * ==========================================
+ * ESTILOS DO MODAL DE BUSCA
+ * ==========================================
+ */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background-color: #1e1e1e;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px; /* Modal um pouco maior */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    border: 1px solid #333;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.modalTitle {
+    color: #fff;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modalCloseButton {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+.modalCloseButton:hover {
+    color: #fff;
+}
+
+.modalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Barra de busca DENTRO do modal */
+.modalSearchInput {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    width: 100%;
+    box-sizing: border-box; /* Garante que padding não estoure */
+}
+.modalSearchInput:focus {
+    outline: none;
+    border-color: #5d812e;
+}
+
+/* Lista de resultados DENTRO do modal */
+.modalResultList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px; /* Altura máxima, para scroll */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modalResultItem {
+    background-color: #2a2a2a;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: 1px solid #333;
+}
+.modalResultItem:hover {
+    background-color: #3a3a3a;
+}

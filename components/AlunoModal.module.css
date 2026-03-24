@@ -70,7 +70,7 @@
 
 .formGroup input:focus {
   outline: none;
-  border-color: #bb86fc;
+  border-color: #5d812e;
 }
 
 .actions {
@@ -100,10 +100,10 @@
 }
 
 .saveButton {
-  background-color: #bb86fc;
+  background-color: #5d812e;
   color: #fff;
 }
 
 .saveButton:hover {
-  background-color: #a269f0;
+  background-color: #5d812e;
 }

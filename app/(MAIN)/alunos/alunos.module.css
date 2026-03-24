@@ -41,7 +41,7 @@
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
     color: #fff;
-    background-color: #8a2be2; /* Roxo */
+    background-color: #5d812e; /* Roxo */
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -51,7 +51,7 @@
 }
 
 .newStudentButton:hover {
-    background-color: #7a1fd6; 
+    background-color: #5d812e; 
 }
 
 /* Base para os botões de ação Editar/Excluir */
@@ -109,7 +109,7 @@
 
 .searchCategory:focus {
   outline: none;
-  border-color: #bb86fc;
+  border-color: #5d812e;
 }
 
 .searchBar {
@@ -126,7 +126,7 @@
 
 .searchBar:focus {
     outline: none;
-    border-color: #bb86fc;
+    border-color: #5d812e;
 }
 
 /* --- ESTILOS DA TABELA --- */

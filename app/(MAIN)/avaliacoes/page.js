@@ -122,7 +122,7 @@ export default function AvaliacoesPage() {
                   </td>
                   <td>{ava.aluno?.nome || "Aluno não encontrado"}</td>
                   <td>{ava.aluno?.matricula || "---"}</td>
-                  <td>{ava.avaliador?.nome || "Avaliador não encontrado"}</td>
+                  <td>{ava.avaliador?.name || "Avaliador não encontrado"}</td>
                   <td>
                     {format(new Date(ava.dataAvaliacao), "dd/MM/yyyy 'às' HH:mm")}
                   </td>

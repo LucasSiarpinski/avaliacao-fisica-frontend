@@ -1,0 +1,166 @@
+/* Copiado de alunos.module.css para manter a consistência */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Ajustado */
+    padding: 2rem;
+    background-color: #1a1a1a; /* Cor do "card" */
+    color: #e0e0e0; 
+    min-height: calc(100vh - 40px); /* Ajuste de altura */
+    border-radius: 12px; 
+    border: 1px solid #333; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* --- AJUSTES NO CABEÇALHO --- */
+.header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid #333; 
+    padding-bottom: 1rem; 
+    margin-bottom: 1rem; 
+    flex-wrap: wrap; /* Para responsividade */
+    gap: 1.5rem;
+}
+
+.title {
+    margin: 0;
+    color: #fff; 
+    font-size: 1.8rem;
+}
+
+/* --- CLASSE PARA AGRUPAR OS BOTÕES --- */
+.headerActions {
+    display: flex; 
+    gap: 1rem; 
+}
+
+/* --- ESTILOS DOS BOTÕES --- */
+/* Botão Roxo (Reutilizado de 'newStudentButton') */
+.newStudentButton {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #5d812e; /* Roxo */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+.newStudentButton:hover {
+    background-color: #5d812e; 
+}
+
+/* Botões Cinza (Editar/Excluir) */
+.actionButton {
+    padding: 0.8rem 1.5rem; 
+    border: none;
+    border-radius: 8px; 
+    cursor: pointer;
+    font-weight: bold;
+    color: #fff;
+    transition: background-color 0.2s, opacity 0.2s;
+    white-space: nowrap;
+}
+/* Estilo "Editar" (Azul) */
+.editButton {
+    background-color: #007bff; 
+}
+.editButton:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+/* Estilo para botões desabilitados */
+.actionButton:disabled,
+.editButton:disabled {
+  background-color: #555;
+  color: #888;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* --- ESTILOS DA TABELA --- */
+.tableContainer {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow-x: auto; /* Permite scroll horizontal em mobile */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse; 
+    min-width: 600px; /* Garante que a tabela tenha um tamanho mínimo */
+}
+
+.table th, .table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    white-space: nowrap; 
+}
+
+.table th {
+    background-color: #252525;
+    font-weight: bold;
+    color: #fff; 
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none; 
+}
+
+.table tbody tr:hover {
+  background-color: #2a2a2a; 
+  cursor: pointer;
+}
+
+.selectedRow {
+  background-color: #2a3a4a !important; /* Azul escuro para seleção */
+  border-left: 3px solid #007bff; 
+}
+
+.checkIcon {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.noResults {
+    text-align: center !important;
+    padding: 2rem !important;
+    color: #888;
+    font-style: italic;
+}
+
+/* --- Responsividade (Copiada de Alunos) --- */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        border-radius: 0; 
+    }
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .headerActions {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+    .newStudentButton, .actionButton {
+        flex-shrink: 0;
+    }
+    .tableContainer {
+        border-radius: 6px;
+    }
+    .table {
+        min-width: 500px;
+    }
+    .table th, .table td {
+        padding: 0.7rem;
+        font-size: 0.85rem;
+    }
+}

@@ -123,7 +123,27 @@ export default function AlunosPage() {
 
       {/* --- BUSCA --- */}
       <div className={styles.searchContainer}>
-        {/* ... seu select e input ... */}
+        
+        {/* Seletor de Categoria (ID, Nome, Matrícula) */}
+        <select
+          className={styles.searchCategory}
+          value={categoriaBusca}
+          onChange={(e) => setCategoriaBusca(e.target.value)}
+        >
+          <option value="nome">Nome</option>
+          <option value="matricula">Matrícula</option>
+          <option value="cpf">CPF</option>
+          <option value="id">ID</option>
+        </select>
+        
+        {/* Barra de Busca (Input) */}
+        <input
+          type="text"
+          className={styles.searchBar}
+          placeholder="Buscar por..."
+          value={termoBusca}
+          onChange={(e) => setTermoBusca(e.target.value)}
+        />
       </div>
 
       {/* --- TABELA ATUALIZADA --- */}

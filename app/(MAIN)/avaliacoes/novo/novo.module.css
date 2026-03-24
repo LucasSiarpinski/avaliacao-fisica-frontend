@@ -51,11 +51,11 @@
 }
 
 .startButton {
-  background-color: #8a2be2; /* Roxo */
+  background-color: #5d812e; /* Roxo */
   color: white;
 }
 .startButton:hover:not(:disabled) {
-  background-color: #7a1fd6;
+  background-color: #5d812e;
 }
 .startButton:disabled {
   background-color: #555;
@@ -95,7 +95,7 @@
 
 .selectAluno:focus {
   outline: none;
-  border-color: #bb86fc;
+  border-color: #5d812e;
 }
 
 .loadingText {

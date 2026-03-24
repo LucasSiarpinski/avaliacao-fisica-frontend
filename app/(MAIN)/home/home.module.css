@@ -1,90 +1,149 @@
-/* app/(main)/home/home.module.css */
-
-/* Container principal da página */
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem; /* Espaço entre os elementos */
+  padding: 2rem;
+  /* Removemos o min-height para deixar o conteúdo fluir */
 }
 
-/* Estilos para o cabeçalho de boas-vindas */
+/* --- Cabeçalho --- */
 .header {
-  padding: 1rem;
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  border: 1px solid #333;
+  margin-bottom: 2rem;
 }
 
 .title {
-  margin: 0;
+  color: #fff;
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 700;
+  margin: 0;
+}
+/* Destaque para o nome do usuário */
+.userName {
+  color: #5d812e; /* Roxo claro */
 }
 
 .subtitle {
-  margin: 0;
   color: #aaa;
   font-size: 1rem;
+  margin: 0.25rem 0 0 0;
 }
 
-/* Grid para os cards de estatísticas */
+/* --- Seção de Estatísticas --- */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Layout responsivo */
+  /* Cria colunas responsivas:
+     - auto-fit: quantas colunas couberem
+     - minmax(220px, 1fr): cada coluna tem no mínimo 220px e 1fr de máximo
+  */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
 }
 
-/* Estilo individual de cada card */
 .statCard {
-  background-color: #1e1e1e;
+  background-color: #1a1a1a; /* Cor do "card" */
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid #333;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .statCard:hover {
-  transform: translateY(-5px);
-  border-color: #bb86fc; /* Cor de destaque roxa */
+  transform: translateY(-5px); /* Efeito de levantar */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* Número grande no card */
 .statValue {
   font-size: 2.5rem;
-  font-weight: bold;
-  color: #fff;
+  font-weight: 700;
+  color: #5d812e; /* Roxo claro para o número */
   margin: 0;
 }
 
-/* Rótulo/descrição no card */
 .statLabel {
   font-size: 1rem;
   color: #aaa;
-  margin: 0;
+  margin: 0.5rem 0 0 0;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
-/* Container para botões de ação rápida */
-.actionsContainer {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+/* --- Título das Seções (Ações e Atividade) --- */
+.sectionTitle {
+  font-size: 1.5rem;
+  color: #fff;
+  margin-top: 3rem; /* Mais espaço entre as seções */
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #333;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Ações Rápidas --- */
+.quickActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
 }
 
 .actionButton {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    color: #fff;
-    background-color: #bb86fc;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+  background-color: #5d812e; /* Roxo principal */
+  color: #fff;
+  border: none;
+  padding: 1.5rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease;
 }
 
 .actionButton:hover {
-    background-color: #a269f0;
+  background-color: #5d812e; /* Roxo mais escuro */
+}
+
+/* --- Tabela de Atividade Recente (Reutilizando estilos) --- */
+.tableContainer {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden; 
+  margin-top: 1.5rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse; 
+}
+
+.table th, .table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #333;
+  white-space: nowrap; 
+}
+
+.table th {
+  background-color: #252525;
+  font-weight: bold;
+  color: #fff; 
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none; 
+}
+
+.statusAtivo {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: #28a74533; 
+  color: #28a745; 
+}
+
+.statusPendente {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: #ffc10733; 
+  color: #ffc107; 
 }

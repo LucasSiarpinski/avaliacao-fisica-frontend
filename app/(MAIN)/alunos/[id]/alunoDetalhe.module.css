@@ -47,11 +47,11 @@
 }
 
 .saveButton {
-  background-color: #8a2be2; /* Roxo */
+  background-color: #5d812e; /* Roxo */
   color: white;
 }
 .saveButton:hover:not(:disabled) {
-  background-color: #7a1fd6;
+  background-color: #5d812e;
 }
 .saveButton:disabled {
   background-color: #555;
@@ -90,8 +90,8 @@
 }
 
 .tabContainer .activeTab {
-  color: #bb86fc; /* Roxo claro para a aba ativa */
-  border-bottom: 4px solid #bb86fc;
+  color: #5d812e; /* Roxo claro para a aba ativa */
+  border-bottom: 4px solid #5d812e;
 }
 
 /* --- CONTEÚDO PRINCIPAL E FORMULÁRIO --- */
@@ -147,7 +147,7 @@
 
 .formSectionTitle {
   grid-column: 1 / -1;
-  color: #bb86fc;
+  color: #5d812e;
   font-size: 1.2rem;
   margin-top: 1.5rem;
   margin-bottom: -0.5rem;

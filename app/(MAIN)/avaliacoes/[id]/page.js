@@ -8,7 +8,6 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import api from "../../../../services/api"; 
 
 // --- FUNÇÃO HELPER ---
-// (Coloquei fora do componente para melhor organização)
 function calcularIdade(dataNasc) {
   if (!dataNasc) return "---";
   try {
@@ -26,13 +25,97 @@ function calcularIdade(dataNasc) {
   }
 }
 
-// --- Componentes de Abas ---
-// (Movidos para fora do componente principal para clareza)
+// --- Componente Reutilizável: PAR-Q (Snapshot) ---
+const ParQForm = ({ data, handleChange }) => {
+  const ParQQuestion = ({ name, question }) => (
+    <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
+      <label>{question}</label>
+      <div className={styles.radioOptionsContainer}>
+        <div className={styles.radioOption}>
+          <input type="radio" id={`${name}_sim`} name={name} value="SIM" checked={data[name] === "SIM"} onChange={handleChange} />
+          <label htmlFor={`${name}_sim`}>Sim</label>
+        </div>
+        <div className={styles.radioOption}>
+          <input type="radio" id={`${name}_nao`} name={name} value="NAO" checked={data[name] === "NAO"} onChange={handleChange} />
+          <label htmlFor={`${name}_nao`}>Não</label>
+        </div>
+      </div>
+    </div>
+  );
+  
+  return (
+    <div className={`${styles.formGrid} ${styles.twoColumns}`}>
+      <h3 className={styles.formSectionTitle}>Questionário PAR-Q (Snapshot)</h3>
+      <ParQQuestion name="parq_q1" question="1. Seu médico já mencionou que você possui um problema do coração e que só fizesse atividade física sob supervisão médica?" />
+      <ParQQuestion name="parq_q2" question="2. Você sente dor no tórax quando realiza atividade física?" />
+      <ParQQuestion name="parq_q3" question="3. No último mês, você sentiu dor no tórax quando estava em repouso?" />
+      <ParQQuestion name="parq_q4" question="4. Você perde o equilíbrio devido à tontura ou alguma vez perdeu a consciência?" />
+      <ParQQuestion name="parq_q5" question="5. Você tem algum problema ósseo ou articular (Ex: costas, joelho ou quadril) que poderia ser agravado pela atividade física?" />
+      <ParQQuestion name="parq_q6" question="6. Seu médico está (atualmente) prescrevendo medicamentos para sua pressão arterial ou problema de coração?" />
+      <ParQQuestion name="parq_q7" question="7. Você conhece alguma outra razão pela qual você não deveria praticar atividade física?" />
+    </div>
+  );
+};
+
+
+// --- COMPONENTE ABA 1: Dados Pessoais & PAR-Q ---
+const TabDadosPessoaisEParQ = ({ avaliacao, handleChange }) => {
+  const aluno = avaliacao.aluno;
+  const idade = calcularIdade(aluno?.dataNasc);
+
+  return (
+    <>
+      <div className={`${styles.formGrid} ${styles.twoColumns}`}>
+        <h3 className={styles.formSectionTitle}>Dados do Aluno</h3>
+        <div className={styles.formGroup}>
+          <label>Nome</label>
+          <input type="text" disabled value={aluno?.nome || "Carregando..."} />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Idade</label>
+          <input type="text" disabled value={idade} />
+        </div>
+      </div>
+      <div style={{ height: '1px', background: '#333', margin: '2.5rem 0' }}></div>
+      <ParQForm data={avaliacao} handleChange={handleChange} />
+    </>
+  );
+};
+
+// --- COMPONENTE ABA 2: Anamnese (Snapshot) ---
+const TabAnamnese = ({ data, handleChange }) => {
+  return (
+    <div className={`${styles.formGrid} ${styles.twoColumns}`}>
+      <h3 className={styles.formSectionTitle}>Anamnese (Snapshot)</h3>
+      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+        <label htmlFor="objetivos">Quais são seus principais objetivos?</label>
+        <textarea name="objetivos" id="objetivos" rows="3" value={data.objetivos || ""} onChange={handleChange}></textarea>
+      </div>
+      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+        <label htmlFor="historicoMedico">Histórico de doença?</label>
+        <textarea name="historicoMedico" id="historicoMedico" rows="3" value={data.historicoMedico || ""} onChange={handleChange}></textarea>
+      </div>
+      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+        <label htmlFor="medicamentosEmUso">Medicamentos em uso?</label>
+        <textarea name="medicamentosEmUso" id="medicamentosEmUso" rows="2" value={data.medicamentosEmUso || ""} onChange={handleChange}></textarea>
+      </div>
+       <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+        <label htmlFor="habitos">Hábitos (fumante, álcool, sono)</label>
+        <textarea name="habitos" id="habitos" rows="3" value={data.habitos || ""} onChange={handleChange}></textarea>
+      </div>
+      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+        <label htmlFor="observacoes">Observações adicionais:</label>
+        <textarea name="observacoes" id="observacoes" rows="3" value={data.observacoes || ""} onChange={handleChange}></textarea>
+      </div>
+    </div>
+  );
+};
 
 // --- COMPONENTE ABA 3: Antropometria ---
 const TabAntropometria = ({ data, handleChange }) => {
   return (
     <div className={`${styles.formGrid} ${styles.threeColumns}`}>
+      
       <h3 className={styles.formSectionTitle}>Antropometria Básica</h3>
       <div className={styles.formGroup}>
         <label htmlFor="peso">Peso (kg)</label>
@@ -107,96 +190,58 @@ const TabAntropometria = ({ data, handleChange }) => {
   );
 };
 
-// --- COMPONENTE ABA 2: Anamnese (Snapshot) ---
-const TabAnamnese = ({ data, handleChange }) => {
+// --- [NOVO!] COMPONENTE ABA 4: Testes de Aptidão ---
+const TabTestesAptidao = ({ data, handleChange }) => {
   return (
     <div className={`${styles.formGrid} ${styles.twoColumns}`}>
-      <h3 className={styles.formSectionTitle}>Anamnese (Snapshot)</h3>
+      <h3 className={styles.formSectionTitle}>Testes de Flexibilidade</h3>
       <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-        <label htmlFor="objetivos">Quais são seus principais objetivos? (Ex: hipertrofia, emagrecimento, saúde)</label>
-        <textarea name="objetivos" id="objetivos" rows="3" value={data.objetivos || ""} onChange={handleChange}></textarea>
+        <label htmlFor="testeFlexibilidade">Teste de Sentar e Alcançar (cm)</label>
+        <input 
+          type="number" 
+          step="0.1"
+          name="testeFlexibilidade" 
+          id="testeFlexibilidade" 
+          value={data.testeFlexibilidade || ""} // O valor (ainda não existe)
+          onChange={handleChange} 
+        />
       </div>
-      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-        <label htmlFor="historicoMedico">Você possui algum problema de saúde ou histórico de doença? (Ex: diabetes, hipertensão, lesões)</label>
-        <textarea name="historicoMedico" id="historicoMedico" rows="3" value={data.historicoMedico || ""} onChange={handleChange}></textarea>
+
+      <h3 className={styles.formSectionTitle}>Testes de Força e Resistência</h3>
+      <div className={styles.formGroup}>
+        <label htmlFor="testeAbdominal">Abdominal (Repetições em 1 min)</label>
+        <input 
+          type="number" 
+          name="testeAbdominal" 
+          id="testeAbdominal" 
+          value={data.testeAbdominal || ""} 
+          onChange={handleChange} 
+        />
       </div>
-      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-        <label htmlFor="medicamentosEmUso">Você utiliza algum medicamento continuamente?</label>
-        <textarea name="medicamentosEmUso" id="medicamentosEmUso" rows="2" value={data.medicamentosEmUso || ""} onChange={handleChange}></textarea>
+      <div className={styles.formGroup}>
+        <label htmlFor="testePreensaoD">Preensão Manual - Direita (kgf)</label>
+        <input 
+          type="number" 
+          step="0.1"
+          name="testePreensaoD" 
+          id="testePreensaoD" 
+          value={data.testePreensaoD || ""} 
+          onChange={handleChange} 
+        />
       </div>
-       <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-        <label htmlFor="habitos">Descreva seus hábitos (Ex: fumante, bebe álcool, nível de estresse, qualidade do sono)</label>
-        <textarea name="habitos" id="habitos" rows="3" value={data.habitos || ""} onChange={handleChange}></textarea>
+      <div className={styles.formGroup}>
+        <label htmlFor="testePreensaoE">Preensão Manual - Esquerda (kgf)</label>
+        <input 
+          type="number" 
+          step="0.1"
+          name="testePreensaoE" 
+          id="testePreensaoE" 
+          value={data.testePreensaoE || ""} 
+          onChange={handleChange} 
+        />
       </div>
-      <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-        <label htmlFor="observacoes">Observações adicionais:</label>
-        <textarea name="observacoes" id="observacoes" rows="3" value={data.observacoes || ""} onChange={handleChange}></textarea>
-      </div>
+      {/* Adicione mais testes do seu referencial aqui se precisar */}
     </div>
-  );
-};
-
-// --- COMPONENTE Reutilizável: PAR-Q (Snapshot) ---
-// (Agora é um componente separado para ser usado na Aba 1)
-const ParQForm = ({ data, handleChange }) => {
-  const ParQQuestion = ({ name, question }) => (
-    <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-      <label>{question}</label>
-      <div className={styles.radioOptionsContainer}>
-        <div className={styles.radioOption}>
-          <input type="radio" id={`${name}_sim`} name={name} value="SIM" checked={data[name] === "SIM"} onChange={handleChange} />
-          <label htmlFor={`${name}_sim`}>Sim</label>
-        </div>
-        <div className={styles.radioOption}>
-          <input type="radio" id={`${name}_nao`} name={name} value="NAO" checked={data[name] === "NAO"} onChange={handleChange} />
-          <label htmlFor={`${name}_nao`}>Não</label>
-        </div>
-      </div>
-    </div>
-  );
-  
-  return (
-    <div className={`${styles.formGrid} ${styles.twoColumns}`}>
-      <h3 className={styles.formSectionTitle}>Questionário PAR-Q (Snapshot)</h3>
-      <ParQQuestion name="parq_q1" question="1. Seu médico já mencionou que você possui um problema do coração e que só fizesse atividade física sob supervisão médica?" />
-      <ParQQuestion name="parq_q2" question="2. Você sente dor no tórax quando realiza atividade física?" />
-      <ParQQuestion name="parq_q3" question="3. No último mês, você sentiu dor no tórax quando estava em repouso?" />
-      <ParQQuestion name="parq_q4" question="4. Você perde o equilíbrio devido à tontura ou alguma vez perdeu a consciência?" />
-      <ParQQuestion name="parq_q5" question="5. Você tem algum problema ósseo ou articular (Ex: costas, joelho ou quadril) que poderia ser agravado pela atividade física?" />
-      <ParQQuestion name="parq_q6" question="6. Seu médico está (atualmente) prescrevendo medicamentos para sua pressão arterial ou problema de coração?" />
-      <ParQQuestion name="parq_q7" question="7. Você conhece alguma outra razão pela qual você não deveria praticar atividade física?" />
-    </div>
-  );
-};
-
-
-// --- COMPONENTE ABA 1: Dados Pessoais & PAR-Q (NOVA) ---
-const TabDadosPessoaisEParQ = ({ avaliacao, handleChange }) => {
-  // O 'aluno' vem de dentro da 'avaliacao'
-  const aluno = avaliacao.aluno;
-  const idade = calcularIdade(aluno?.dataNasc);
-
-  return (
-    <>
-      {/* --- Seção de Dados Pessoais (Read-Only) --- */}
-      <div className={`${styles.formGrid} ${styles.twoColumns}`}>
-        <h3 className={styles.formSectionTitle}>Dados do Aluno</h3>
-        <div className={styles.formGroup}>
-          <label>Nome</label>
-          <input type="text" disabled value={aluno?.nome || "Carregando..."} />
-        </div>
-        <div className={styles.formGroup}>
-          <label>Idade</label>
-          <input type="text" disabled value={idade} />
-        </div>
-      </div>
-
-      {/* --- Divisor --- */}
-      <div style={{ height: '1px', background: '#333', margin: '2.5rem 0' }}></div>
-
-      {/* --- Seção do PAR-Q (Editável) --- */}
-      <ParQForm data={avaliacao} handleChange={handleChange} />
-    </>
   );
 };
 
@@ -204,16 +249,14 @@ const TabDadosPessoaisEParQ = ({ avaliacao, handleChange }) => {
 // --- PÁGINA PRINCIPAL ---
 export default function AvaliacaoPage() {
   const router = useRouter();
-  const params = useParams(); // Hook para pegar o [id] da URL
+  const params = useParams(); 
   const { id } = params;
 
   const { isAuthenticated, loading: authLoading } = useAuth();
 
-  const [avaliacao, setAvaliacao] = useState(null);
+  const [avaliacao, setAvaliacao] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  
-  // A aba padrão agora é 'dadosPessoais'
   const [activeTab, setActiveTab] = useState("dadosPessoais"); 
 
   // --- BUSCA DE DADOS ---
@@ -222,19 +265,14 @@ export default function AvaliacaoPage() {
     try {
       setLoading(true);
       const response = await api.get(`/avaliacoes/${id}`);
-      setAvaliacao(response.data);
+      setAvaliacao(response.data); 
     } catch (error) {
       console.error("Erro ao buscar avaliação:", error);
-      if (error.response?.status === 404) {
-        toast.error("Avaliação não encontrada.");
-        router.push("/avaliacoes");
-      } else {
-        toast.error("Não foi possível carregar os dados da avaliação.");
-      }
+      toast.error("Não foi possível carregar os dados da avaliação.");
     } finally {
       setLoading(false);
     }
-  }, [id, router]);
+  }, [id]);
 
   // --- EFEITOS ---
   useEffect(() => {
@@ -263,8 +301,6 @@ export default function AvaliacaoPage() {
     try {
       await api.put(`/avaliacoes/${id}`, avaliacao);
       toast.success("Avaliação salva com sucesso!");
-      // Opcional: Recarregar os dados após salvar
-      // fetchAvaliacao(); 
     } catch (error) {
       console.error("Erro ao salvar avaliação:", error);
       toast.error("Não foi possível salvar a avaliação.");
@@ -278,7 +314,6 @@ export default function AvaliacaoPage() {
     return <div style={{ color: "white", padding: "2rem" }}>Carregando dados da avaliação...</div>;
   }
 
-  // --- Renderização condicional das Abas ---
   const renderTabContent = () => {
     switch (activeTab) {
       case "dadosPessoais":
@@ -287,6 +322,8 @@ export default function AvaliacaoPage() {
         return <TabAnamnese data={avaliacao} handleChange={handleChange} />;
       case "antropometria":
         return <TabAntropometria data={avaliacao} handleChange={handleChange} />;
+      case "testes": // <-- NOVA ABA
+        return <TabTestesAptidao data={avaliacao} handleChange={handleChange} />;
       default:
         return null;
     }
@@ -335,6 +372,13 @@ export default function AvaliacaoPage() {
           onClick={() => setActiveTab('antropometria')}
         >
           Antropometria
+        </button>
+        {/* --- [NOVO!] Botão da Aba 4 --- */}
+        <button
+          className={`${styles.tabButton} ${activeTab === 'testes' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('testes')}
+        >
+          Testes de Aptidão
         </button>
       </nav>
 
