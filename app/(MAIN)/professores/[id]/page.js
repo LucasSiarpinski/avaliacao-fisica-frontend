@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import styles from '../professores.module.css';
-// import toast from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 export default function FormProfessorPage() {
     const router = useRouter();
@@ -97,7 +97,7 @@ export default function FormProfessorPage() {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Falha ao salvar os dados.');
             }
-            // toast.success('Salvo com sucesso!');
+            toast.success('Salvo com sucesso!');
             router.push('/professores');
             router.refresh(); 
         } catch (error) {

@@ -11,6 +11,7 @@ export default function ProfessoresPage() {
   const router = useRouter();
   const [professores, setProfessores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [professorSelecionadoId, setProfessorSelecionadoId] = useState(null);
 
   // --- 1. ESTADOS PARA O FILTRO ---
   const [termoBusca, setTermoBusca] = useState("");
@@ -72,15 +73,15 @@ export default function ProfessoresPage() {
         <h1 className={styles.title}>Gerenciamento de Professores</h1>
         <div className={styles.headerActions}>
           <button
-            onClick={() => { /* Lógica para novo professor */ }}
+            onClick={() => router.push('/professores/novo')}
             className={styles.newButton} 
           >
             + Novo Professor
           </button>
           <button
-            onClick={() => { /* Lógica para editar */ }}
+            onClick={() => router.push(`/professores/${professorSelecionadoId || 'novo'}`)}
             className={`${styles.actionButton} ${styles.editButton}`}
-            disabled={true} // Lógica de seleção aqui
+            disabled={!professorSelecionadoId}
           >
             Editar Selecionado
           </button>
@@ -141,9 +142,8 @@ export default function ProfessoresPage() {
               professoresFiltrados.map((prof) => (
                 <tr
                   key={prof.id}
-                  // Adicione a lógica de seleção aqui (como na de Alunos)
-                  // className={prof.id === selecionadoId ? styles.selectedRow : ""}
-                  // onClick={() => setSelecionadoId(prof.id)}
+                  className={prof.id === professorSelecionadoId ? styles.selectedRow : ""}
+                  onClick={() => setProfessorSelecionadoId(prof.id)}
                 >
                   <td>
                     {/* Lógica do CheckIcon aqui */}
