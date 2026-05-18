@@ -71,7 +71,7 @@ export default function AlunosPage() {
       <header className={styles.header}>
         <h1 className={styles.title}>Gerenciamento de Alunos</h1>
         <div className={styles.headerActions}>
-          <button onClick={() => router.push('/alunos/novo')} className={styles.newStudentButton}>
+          <button onClick={() => router.push('/alunos/cadastro')} className={styles.newStudentButton}>
             + Novo Aluno
           </button>
 
@@ -157,7 +157,7 @@ export default function AlunosPage() {
                   <td>{aluno.matricula}</td>
                   <td>{aluno.nome}</td>
                   <td>{aluno.cpf || 'N/A'}</td>
-                  <td>{aluno.anamneseStatus}</td>
+                  <td>{aluno.anamneses?.[0]?.status || 'PENDING'}</td>
                 </tr>
               ))
             )}

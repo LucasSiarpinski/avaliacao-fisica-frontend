@@ -14,11 +14,11 @@
 /* --- ADICIONADO PARA RESPONSIVIDADE --- */
 @media (max-width: 768px) {
   .mainWrapper {
-    flex-direction: column; /* Muda a direção de horizontal para vertical */
-    height: auto; /* Altura automática, não mais 100vh */
+    flex-direction: row; /* Mantém a sidebar na esquerda e o conteúdo na direita */
+    height: 100vh;
   }
 
   .contentWrapper {
-    padding: 1rem; /* Menor preenchimento em telas pequenas */
+    padding: 1rem; /* Padding padrão sem espaço extra pro footer */
   }
 }

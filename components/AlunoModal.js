@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import styles from './AlunoModal.module.css'; // Crie um CSS para o modal se não tiver
 
 // O modal agora aceita uma nova propriedade: 'errorMessage'
-export default function AlunoModal({ onClose, onSubmit, errorMessage }) {
+export default function AlunoModal({ onClose, onSubmit, errorMessage, onError }) {
   // Estado para controlar TODOS os campos do formulário
   const [formData, setFormData] = useState({
     nome: '',

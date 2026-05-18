@@ -127,12 +127,14 @@
     background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 8px;
-    overflow: hidden; 
+    overflow-x: auto; /* Permite scroll horizontal no celular! */
+    -webkit-overflow-scrolling: touch;
 }
 
 .table {
     width: 100%;
     border-collapse: collapse; 
+    min-width: 600px; /* Garante que a tabela não esprema as colunas */
 }
 
 .table th, .table td {
@@ -174,4 +176,29 @@
 /* Esconder a bolinha original do radio button (opcional) */
 .table input[type="radio"] {
   display: none; 
+}
+
+/* --- RESPONSIVIDADE ESPECÍFICA DA TELA DE ALUNOS --- */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .headerActions {
+    width: 100%;
+    flex-wrap: wrap; /* Permite que os botões quebrem de linha se não couberem */
+  }
+
+  .newStudentButton, .actionButton {
+    flex: 1; /* Faz os botões ocuparem todo o espaço na tela pequena */
+    text-align: center;
+    padding: 0.6rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .searchContainer {
+    flex-direction: column;
+  }
 }

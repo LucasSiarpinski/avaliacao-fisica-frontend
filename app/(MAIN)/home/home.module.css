@@ -1,90 +1,204 @@
-/* app/(main)/home/home.module.css */
-
-/* Container principal da página */
 .container {
   display: flex;
   flex-direction: column;
-  gap: 2rem; /* Espaço entre os elementos */
+  gap: 2.5rem;
+  max-width: 1400px;
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
 }
 
-/* Estilos para o cabeçalho de boas-vindas */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- HEADER --- */
 .header {
-  padding: 1rem;
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .title {
   margin: 0;
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.025em;
 }
 
 .subtitle {
   margin: 0;
-  color: #aaa;
-  font-size: 1rem;
+  color: #a1a1aa; /* text-zinc-400 */
+  font-size: 1.05rem;
 }
 
-/* Grid para os cards de estatísticas */
+.highlight {
+  color: #e4e4e7;
+  font-weight: 500;
+}
+
+/* --- STATS GRID --- */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Layout responsivo */
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
 
-/* Estilo individual de cada card */
 .statCard {
-  background-color: #1e1e1e;
+  background-color: #09090b; /* bg-zinc-950 */
+  border: 1px solid rgba(39, 39, 42, 0.6); /* border-zinc-800 */
+  border-radius: 12px;
   padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid #333;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .statCard:hover {
-  transform: translateY(-5px);
-  border-color: #bb86fc; /* Cor de destaque roxa */
+  border-color: rgba(63, 63, 70, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
-/* Número grande no card */
+.statHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #a1a1aa;
+  margin: 0;
+}
+
+.statIconWrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statIconWrapper svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+/* Colors for specific icons */
+.iconBlue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; stroke: currentColor; }
+.iconGreen { background: rgba(34, 197, 94, 0.1); color: #22c55e; stroke: currentColor; }
+.iconPurple { background: rgba(168, 85, 247, 0.1); color: #a855f7; stroke: currentColor; }
+.iconRed { background: rgba(239, 68, 68, 0.1); color: #ef4444; stroke: currentColor; }
+.iconOrange { background: rgba(249, 115, 22, 0.1); color: #f97316; stroke: currentColor; }
+.iconTeal { background: rgba(20, 184, 166, 0.1); color: #14b8a6; stroke: currentColor; }
+
 .statValue {
-  font-size: 2.5rem;
-  font-weight: bold;
+  font-size: 2.25rem;
+  font-weight: 700;
   color: #fff;
   margin: 0;
+  letter-spacing: -0.05em;
 }
 
-/* Rótulo/descrição no card */
-.statLabel {
-  font-size: 1rem;
-  color: #aaa;
+.statTrend {
+  font-size: 0.8rem;
+  color: #71717a; /* zinc-500 */
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* --- QUICK ACTIONS --- */
+.actionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.actionsHeader {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e4e4e7;
   margin: 0;
 }
 
-/* Container para botões de ação rápida */
 .actionsContainer {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .actionButton {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    color: #fff;
-    background-color: #bb86fc;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
 }
 
-.actionButton:hover {
-    background-color: #a269f0;
+.actionButton svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.btnPrimary {
+  background-color: #dc2626; /* brand red */
+  color: #fff;
+}
+
+.btnPrimary:hover {
+  background-color: #b91c1c;
+}
+
+.btnSecondary {
+  background-color: #18181b;
+  color: #e4e4e7;
+  border-color: #27272a;
+}
+
+.btnSecondary:hover {
+  background-color: #27272a;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    gap: 2rem;
+  }
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .actionsContainer {
+    flex-direction: column;
+  }
+  .actionButton {
+    width: 100%;
+    justify-content: center;
+  }
 }

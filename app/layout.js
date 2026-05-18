@@ -4,8 +4,16 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { Toaster } from 'react-hot-toast'; // <-- 1. IMPORTE O TOASTER
 import './globals.css';
 
-// ... (seu metadata) ...
+export const metadata = {
+  title: 'UNOESC Avaliação Física',
+  description: 'Sistema TCC de Avaliação Física',
+};
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-br">
