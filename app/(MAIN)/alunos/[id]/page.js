@@ -2,12 +2,70 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import api from "../../../../services/api";
 import styles from "./alunoDetalhe.module.css";
 import { calculateAge } from "../../../../utils/date"; // Ajuste o caminho se necessário
+import { maskCPF, maskPhone, validateCPF, validatePhone, unmask } from "../../../../utils/masks";
+import { calcularIMC, calcularRCQ } from "../../../../utils/calculosFisicos";
+import { 
+  FaFilePdf, 
+  FaFileWord, 
+  FaFileImage, 
+  FaCloudUploadAlt, 
+  FaTrash, 
+  FaExternalLinkAlt, 
+  FaInfoCircle,
+  FaHeartbeat,
+  FaPrint,
+  FaArrowUp,
+  FaArrowDown,
+  FaMinus,
+  FaPlus,
+  FaChartLine,
+  FaCalendarAlt,
+  FaUserCheck
+} from "react-icons/fa";
+
+const parqQuestions = [
+  {
+    id: "parq_q1",
+    num: "01",
+    text: "Seu médico já mencionou alguma vez que você possui um problema do coração e lhe recomendou que só fizesse atividade física sob supervisão médica?",
+  },
+  {
+    id: "parq_q2",
+    num: "02",
+    text: "Você sente dor no tórax quando realiza atividade física?",
+  },
+  {
+    id: "parq_q3",
+    num: "03",
+    text: "Você sentiu dor no tórax quando estava realizando atividade física no último mês?",
+  },
+  {
+    id: "parq_q4",
+    num: "04",
+    text: "Você já perdeu o equilíbrio por causa de tontura ou alguma vez perdeu a consciência?",
+  },
+  {
+    id: "parq_q5",
+    num: "05",
+    text: "Você tem algum problema ósseo ou articular que poderia ser agravado com a prática de atividade física?",
+  },
+  {
+    id: "parq_q6",
+    num: "06",
+    text: "Seu médico está prescrevendo uso de medicamentos para a sua pressão arterial ou coração?",
+  },
+  {
+    id: "parq_q7",
+    num: "07",
+    text: "Você conhece alguma outra razão pela qual você não deveria praticar atividade física?",
+  },
+];
 
 export default function AlunoDetalhePage() {
   const router = useRouter();
@@ -44,17 +102,158 @@ export default function AlunoDetalhePage() {
   const [activeTab, setActiveTab] = useState("dadosPessoais");
   const [loading, setLoading] = useState(!isCreating);
   const [isSaving, setIsSaving] = useState(false);
+  const [isStartingAvaliacao, setIsStartingAvaliacao] = useState(false);
+
+  const handleIniciarNovaAvaliacao = async () => {
+    if (isCreating || !id) return;
+    if (aluno.status !== "ATIVO") {
+      const confirmar = window.confirm(
+        "Atenção: Este aluno está marcado como INATIVO. Deseja iniciar a avaliação física mesmo assim?"
+      );
+      if (!confirmar) return;
+    }
+
+    setIsStartingAvaliacao(true);
+    try {
+      const response = await api.post("/api/avaliacoes", {
+        alunoId: parseInt(id),
+      });
+      toast.success("Avaliação iniciada! Redirecionando...");
+      router.push(`/avaliacoes/${response.data.id}`);
+    } catch (error) {
+      console.error("Erro ao iniciar avaliação:", error);
+      toast.error(error.response?.data?.error || "Não foi possível iniciar a avaliação.");
+      setIsStartingAvaliacao(false);
+    }
+  };
+
+  // Estados para gerenciamento de documentos / arquivos
+  const [documentos, setDocumentos] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const fetchDocumentos = useCallback(async () => {
+    if (!id || isCreating) return;
+    try {
+      setLoadingDocs(true);
+      const res = await api.get(`/api/alunos/${id}/documentos`);
+      setDocumentos(res.data);
+    } catch (err) {
+      console.error("Erro ao buscar documentos:", err);
+    } finally {
+      setLoadingDocs(false);
+    }
+  }, [id, isCreating]);
+
+  useEffect(() => {
+    if (activeTab === "arquivos" && !isCreating) {
+      fetchDocumentos();
+    }
+  }, [activeTab, isCreating, fetchDocumentos]);
+
+  const handleUploadFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowed = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!allowed.includes(ext)) {
+      toast.error("Formato inválido! Envie apenas PDF, Word (.doc, .docx), PNG ou JPEG.");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error("O arquivo excede o limite máximo de 25MB.");
+      e.target.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("arquivo", file);
+
+    setUploading(true);
+    try {
+      await api.post(`/api/alunos/${id}/documentos`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Arquivo enviado com sucesso!");
+      fetchDocumentos();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.error || "Erro ao enviar o arquivo.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleDeleteDoc = async (docId) => {
+    const confirmar = window.confirm("Tem certeza que deseja remover este documento?");
+    if (!confirmar) return;
+
+    try {
+      await api.delete(`/api/documentos/${docId}`);
+      toast.success("Documento excluído com sucesso!");
+      setDocumentos((prev) => prev.filter((d) => d.id !== docId));
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível excluir o documento.");
+    }
+  };
+
+  // Estados e funções para gerenciamento do histórico de avaliações físicas
+  const [avaliacoesAluno, setAvaliacoesAluno] = useState([]);
+  const [loadingAvaliacoes, setLoadingAvaliacoes] = useState(false);
+
+  const fetchAvaliacoesAluno = useCallback(async () => {
+    if (!id || isCreating) return;
+    try {
+      setLoadingAvaliacoes(true);
+      const res = await api.get(`/api/alunos/${id}/avaliacoes`);
+      setAvaliacoesAluno(res.data || []);
+    } catch (err) {
+      console.error("Erro ao buscar histórico de avaliações do aluno:", err);
+    } finally {
+      setLoadingAvaliacoes(false);
+    }
+  }, [id, isCreating]);
+
+  useEffect(() => {
+    if (!isCreating && id) {
+      fetchAvaliacoesAluno();
+    }
+  }, [id, isCreating, fetchAvaliacoesAluno]);
+
+  const handleDeleteAvaliacao = async (avaId) => {
+    const confirmar = window.confirm("Tem certeza que deseja excluir esta avaliação física? Esta ação é irreversível.");
+    if (!confirmar) return;
+
+    try {
+      await api.delete(`/api/avaliacoes/${avaId}`);
+      toast.success("Avaliação excluída com sucesso!");
+      setAvaliacoesAluno((prev) => prev.filter((a) => a.id !== avaId));
+    } catch (err) {
+      console.error("Erro ao excluir avaliação:", err);
+      toast.error("Não foi possível excluir a avaliação.");
+    }
+  };
 
   useEffect(() => {
     if (!isCreating && id) {
       const fetchAluno = async () => {
         try {
           setLoading(true);
-          const response = await api.get(`/alunos/${id}`);
+          const response = await api.get(`/api/alunos/${id}`);
           const dataFormatada = response.data.dataNasc
             ? response.data.dataNasc.split("T")[0]
             : "";
-          setAluno({ ...response.data, dataNasc: dataFormatada });
+          setAluno({
+            ...response.data,
+            dataNasc: dataFormatada,
+            cpf: maskCPF(response.data.cpf || ""),
+            telefone: maskPhone(response.data.telefone || ""),
+          });
         } catch (error) {
           toast.error("Não foi possível carregar os dados do aluno.");
           router.push("/alunos");
@@ -68,18 +267,46 @@ export default function AlunoDetalhePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setAluno((prev) => ({ ...prev, [name]: value }));
+    let formattedValue = value;
+
+    if (name === "cpf") {
+      formattedValue = maskCPF(value);
+    } else if (name === "telefone") {
+      formattedValue = maskPhone(value);
+    }
+
+    setAluno((prev) => ({ ...prev, [name]: formattedValue }));
   };
 
   const handleSave = async () => {
+    // Validação de CPF
+    if (aluno.cpf && unmask(aluno.cpf).length > 0) {
+      if (unmask(aluno.cpf).length !== 11) {
+        toast.error("O CPF deve conter 11 dígitos.");
+        return;
+      }
+      if (!validateCPF(aluno.cpf)) {
+        toast.error("CPF inválido. Verifique os números digitados.");
+        return;
+      }
+    }
+
+    // Validação de Telefone
+    if (aluno.telefone && unmask(aluno.telefone).length > 0) {
+      if (!validatePhone(aluno.telefone)) {
+        toast.error("Telefone inválido. Informe o DDD e o número completo.");
+        return;
+      }
+    }
+
     setIsSaving(true);
     try {
       if (isCreating) {
-        const response = await api.post("/alunos", aluno);
+        const response = await api.post("/api/alunos", aluno);
         toast.success("Aluno criado com sucesso!");
         router.push(`/alunos/${response.data.id}`);
       } else {
-        await api.put(`/alunos/${id}`, aluno);
+        await api.put(`/api/alunos/${id}`, aluno);
         toast.success("Dados do aluno atualizados com sucesso!");
       }
     } catch (error) {
@@ -101,7 +328,7 @@ export default function AlunoDetalhePage() {
 
     try {
       // Chama a nova rota PATCH que criamos no backend
-      const response = await api.patch(`/alunos/${id}/status`, {
+      const response = await api.patch(`/api/alunos/${id}/status`, {
         status: novoStatus,
       });
       // ATUALIZA O ESTADO LOCAL com a resposta da API, para que a tela mude instantaneamente
@@ -126,17 +353,28 @@ export default function AlunoDetalhePage() {
           {isCreating ? "Cadastrar Novo Aluno" : `Editando: ${aluno.nome}`}
         </h1>
         <div className={styles.actions}>
+          {!isCreating && (
+            <button
+              type="button"
+              onClick={handleIniciarNovaAvaliacao}
+              className={styles.iniciarAvaliacaoButton}
+              disabled={isStartingAvaliacao || isSaving}
+              title="Iniciar uma nova avaliação física para este aluno"
+            >
+              <FaHeartbeat /> {isStartingAvaliacao ? "Iniciando..." : "Nova Avaliação Física"}
+            </button>
+          )}
           <button
             onClick={() => router.push("/alunos")}
             className={styles.backButton}
-            disabled={isSaving}
+            disabled={isSaving || isStartingAvaliacao}
           >
             Voltar para Lista
           </button>
           <button
             onClick={handleSave}
             className={styles.saveButton}
-            disabled={isSaving}
+            disabled={isSaving || isStartingAvaliacao}
           >
             {isSaving ? "Salvando..." : "Salvar"}
           </button>
@@ -149,6 +387,13 @@ export default function AlunoDetalhePage() {
           className={activeTab === "dadosPessoais" ? styles.activeTab : ""}
         >
           Dados Pessoais
+        </button>
+        <button
+          onClick={() => setActiveTab("avaliacoesFisicas")}
+          disabled={isCreating}
+          className={activeTab === "avaliacoesFisicas" ? styles.activeTab : ""}
+        >
+          <FaHeartbeat style={{ marginRight: 6 }} /> Avaliações Físicas {avaliacoesAluno.length > 0 && `(${avaliacoesAluno.length})`}
         </button>
         <button
           onClick={() => setActiveTab("avaliacoes")}
@@ -169,43 +414,45 @@ export default function AlunoDetalhePage() {
           disabled={isCreating}
           className={activeTab === "arquivos" ? styles.activeTab : ""}
         >
-          Arquivos
+          Arquivos & Exames {documentos.length > 0 && `(${documentos.length})`}
         </button>
       </div>
 
       <main className={styles.content}>
         {activeTab === "dadosPessoais" && (
           <div className={styles.formGrid}>
-            {/* --- SEÇÃO DE STATUS (MOVIDA PARA DENTRO DA GRID) --- */}
+            {/* --- SEÇÃO DE STATUS MODERNA --- */}
             {!isCreating && (
-              <div className={`${styles.statusSection} ${styles.fullWidth}`}>
-                <h3 className={styles.formSectionTitle}>Status</h3>
-                <div className={styles.formGroupRadio}>
-                  <label>Ativo:</label>
-                  <div className={styles.radioOptionsContainer}>
-                    <div className={styles.radioOption}>
-                      <input
-                        type="radio"
-                        id="statusAtivo"
-                        name="status"
-                        value="ATIVO"
-                        checked={aluno.status === "ATIVO"}
-                        onChange={handleChange}
-                      />
-                      <label htmlFor="statusAtivo">Sim</label>
-                    </div>
-                    <div className={styles.radioOption}>
-                      <input
-                        type="radio"
-                        id="statusInativo"
-                        name="status"
-                        value="INATIVO"
-                        checked={aluno.status === "INATIVO"}
-                        onChange={handleChange}
-                      />
-                      <label htmlFor="statusInativo">Não</label>
-                    </div>
-                  </div>
+              <div className={styles.statusCard}>
+                <div className={styles.statusInfo}>
+                  <span className={styles.statusLabelTitle}>Status da Matrícula</span>
+                  <p className={styles.statusSubtitle}>
+                    {aluno.status === "ATIVO"
+                      ? "O aluno está ativo no sistema e apto para novas avaliações físicas."
+                      : "O aluno está inativo no sistema e desabilitado para novas avaliações."}
+                  </p>
+                </div>
+                <div className={styles.statusToggleGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.statusBtn} ${aluno.status === "ATIVO" ? styles.statusBtnActiveActive : ""}`}
+                    onClick={() => {
+                      if (aluno.status !== "ATIVO") handleToggleStatus();
+                    }}
+                  >
+                    <span className={styles.statusDotGreen}></span>
+                    Ativo
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.statusBtn} ${aluno.status === "INATIVO" ? styles.statusBtnActiveInactive : ""}`}
+                    onClick={() => {
+                      if (aluno.status !== "INATIVO") handleToggleStatus();
+                    }}
+                  >
+                    <span className={styles.statusDotRed}></span>
+                    Inativo
+                  </button>
                 </div>
               </div>
             )}
@@ -278,6 +525,9 @@ export default function AlunoDetalhePage() {
                 name="cpf"
                 value={aluno.cpf || ""}
                 onChange={handleChange}
+                placeholder="000.000.000-00"
+                maxLength={14}
+                inputMode="numeric"
               />
             </div>
             <div className={styles.formGroup}>
@@ -287,6 +537,9 @@ export default function AlunoDetalhePage() {
                 name="telefone"
                 value={aluno.telefone || ""}
                 onChange={handleChange}
+                placeholder="(00) 00000-0000"
+                maxLength={15}
+                inputMode="numeric"
               />
             </div>
             <div className={styles.formGroup}>
@@ -324,6 +577,266 @@ export default function AlunoDetalhePage() {
 
             {/* --- SEÇÃO DE ANAMNESE (REMOVIDA DESTA ABA) --- */}
             
+          </div>
+        )}
+
+        {activeTab === "avaliacoesFisicas" && (
+          <div className={styles.avaliacoesContainer}>
+            <div className={styles.avaliacoesHeaderRow}>
+              <div>
+                <h3>
+                  <FaHeartbeat color="#a4d864" /> Avaliações Físicas Registradas
+                </h3>
+                <p className={styles.avaliacoesSubtitle}>
+                  Histórico completo de testes físicos, cálculos de composição corporal e evolução.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleIniciarNovaAvaliacao}
+                className={styles.iniciarAvaliacaoButton}
+                disabled={isStartingAvaliacao}
+              >
+                <FaPlus /> {isStartingAvaliacao ? "Iniciando..." : "Nova Avaliação Física"}
+              </button>
+            </div>
+
+            {loadingAvaliacoes ? (
+              <div style={{ textAlign: "center", padding: "3rem", color: "#aaa" }}>
+                Carregando histórico de avaliações...
+              </div>
+            ) : avaliacoesAluno.length === 0 ? (
+              <div className={styles.emptyAvaliacoesBox}>
+                <FaHeartbeat className={styles.emptyAvaliacoesIcon} />
+                <h4>Nenhuma avaliação física registrada ainda</h4>
+                <p>
+                  Este aluno ainda não possui avaliações físicas salvas. Inicie a primeira avaliação para mensurar dobras cutâneas (Pollock 7), perimetrias e índice de massa corporal.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleIniciarNovaAvaliacao}
+                  className={styles.iniciarAvaliacaoButton}
+                  disabled={isStartingAvaliacao}
+                  style={{ marginTop: "0.5rem" }}
+                >
+                  <FaHeartbeat /> Iniciar Primeira Avaliação
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Banner de Evolução Comparativa (quando há 2 ou mais avaliações CONCLUÍDAS) */}
+                {(() => {
+                  const completedAvaliacoes = avaliacoesAluno.filter(
+                    (a) => a.peso && a.altura
+                  );
+                  if (completedAvaliacoes.length < 2) return null;
+
+                  const latest = completedAvaliacoes[0];
+                  const previous = completedAvaliacoes[1];
+
+                  const diffPeso = latest.peso && previous.peso 
+                    ? (latest.peso - previous.peso).toFixed(1) 
+                    : null;
+                  
+                  const fatLatest = latest.resultados?.composicao?.percGordura;
+                  const fatPrev = previous.resultados?.composicao?.percGordura;
+                  const diffGordura = fatLatest && fatPrev 
+                    ? (fatLatest - fatPrev).toFixed(1) 
+                    : null;
+
+                  const leanLatest = latest.resultados?.composicao?.massaMagra;
+                  const leanPrev = previous.resultados?.composicao?.massaMagra;
+                  const diffMassaMagra = leanLatest && leanPrev 
+                    ? (leanLatest - leanPrev).toFixed(1) 
+                    : null;
+
+                  return (
+                    <div className={styles.evolutionBanner}>
+                      <div className={styles.evolutionHeader}>
+                        <div className={styles.evolutionTitle}>
+                          <FaChartLine /> Evolução do Aluno (Última vs Penúltima Concluída)
+                        </div>
+                        <span className={styles.evolutionSub}>
+                          Comparativo entre {new Date(previous.dataAvaliacao).toLocaleDateString('pt-BR')} e {new Date(latest.dataAvaliacao).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+
+                      <div className={styles.evolutionGrid}>
+                        <div className={styles.evolutionMetricCard}>
+                          <span className={styles.evolutionMetricLabel}>Peso Atual</span>
+                          <span className={styles.evolutionMetricCurrent}>
+                            {latest.peso ? `${latest.peso} kg` : "--"}
+                          </span>
+                          {diffPeso !== null && (
+                            <span className={`${styles.evolutionMetricDiff} ${parseFloat(diffPeso) <= 0 ? styles.diffGood : styles.diffNeutral}`}>
+                              {parseFloat(diffPeso) > 0 ? `+${diffPeso} kg` : `${diffPeso} kg`}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className={styles.evolutionMetricCard}>
+                          <span className={styles.evolutionMetricLabel}>% Gordura Corporal</span>
+                          <span className={styles.evolutionMetricCurrent}>
+                            {fatLatest ? `${fatLatest}%` : "--"}
+                          </span>
+                          {diffGordura !== null && (
+                            <span className={`${styles.evolutionMetricDiff} ${parseFloat(diffGordura) < 0 ? styles.diffGood : styles.diffWarn}`}>
+                              {parseFloat(diffGordura) > 0 ? `+${diffGordura}%` : `${diffGordura}%`}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className={styles.evolutionMetricCard}>
+                          <span className={styles.evolutionMetricLabel}>Massa Magra</span>
+                          <span className={styles.evolutionMetricCurrent}>
+                            {leanLatest ? `${leanLatest} kg` : "--"}
+                          </span>
+                          {diffMassaMagra !== null && (
+                            <span className={`${styles.evolutionMetricDiff} ${parseFloat(diffMassaMagra) >= 0 ? styles.diffGood : styles.diffWarn}`}>
+                              {parseFloat(diffMassaMagra) > 0 ? `+${diffMassaMagra} kg` : `${diffMassaMagra} kg`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Lista de Avaliações */}
+                <div className={styles.avaliacoesList}>
+                  {avaliacoesAluno.map((ava, index) => {
+                    const isLatest = index === 0;
+                    const isConcluida = Boolean(ava.peso && ava.altura);
+                    
+                    const imc = ava.resultados?.imc || (ava.peso && ava.altura ? calcularIMC(ava.peso, ava.altura) : null);
+                    const rcq = ava.resultados?.rcq || (ava.circCintura && ava.circQuadril ? calcularRCQ(ava.circCintura, ava.circQuadril, aluno.genero || "M") : null);
+                    const composicao = ava.resultados?.composicao;
+
+                    const dataFormatada = new Date(ava.dataAvaliacao).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+
+                    return (
+                      <div key={ava.id} className={styles.avaliacaoCard}>
+                        <div className={styles.avaliacaoCardHeader}>
+                          <div className={styles.avaliacaoDateInfo}>
+                            <FaCalendarAlt color="#8da088" />
+                            <span className={styles.avaliacaoDate}>{dataFormatada}</span>
+                            {isLatest && (
+                              <span className={styles.avaliacaoBadgeLatest}>
+                                Mais Recente
+                              </span>
+                            )}
+                            {isConcluida ? (
+                              <span className={styles.statusBadgeConcluida}>
+                                ✓ Concluída
+                              </span>
+                            ) : (
+                              <span className={styles.statusBadgeAndamento}>
+                                ⏳ Em Andamento
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={styles.avaliacaoAvaliador}>
+                            <FaUserCheck style={{ marginRight: 6 }} />
+                            Avaliador: <strong>{ava.avaliador?.name || "Professor"}</strong>
+                          </div>
+                        </div>
+
+                        <div className={styles.avaliacaoGridMetrics}>
+                          <div className={styles.metricPill}>
+                            <span className={styles.metricPillLabel}>Estatura / Peso</span>
+                            <span className={styles.metricPillValue}>
+                              {ava.peso ? `${ava.peso} kg` : "--"}
+                            </span>
+                            <span className={styles.metricPillSub} style={{ color: "#8da088" }}>
+                              {ava.altura ? `${ava.altura} cm` : "-- cm"}
+                            </span>
+                          </div>
+
+                          <div className={styles.metricPill}>
+                            <span className={styles.metricPillLabel}>Índice IMC</span>
+                            <span className={styles.metricPillValue}>
+                              {imc ? imc.valor : "--"}
+                            </span>
+                            <span className={styles.metricPillSub} style={{ color: imc?.cor || "#aaa" }}>
+                              {imc?.classificacao || "Pendente"}
+                            </span>
+                          </div>
+
+                          <div className={styles.metricPill}>
+                            <span className={styles.metricPillLabel}>% Gordura (Pollock)</span>
+                            <span className={styles.metricPillValue}>
+                              {composicao?.percGordura ? `${composicao.percGordura}%` : "--"}
+                            </span>
+                            <span className={styles.metricPillSub} style={{ color: composicao?.completo ? "#4ade80" : "#fbbf24" }}>
+                              {composicao?.completo 
+                                ? composicao.classificacaoGordura 
+                                : ava.dcTriceps ? "Dobras parciais" : "Antropometria"}
+                            </span>
+                          </div>
+
+                          <div className={styles.metricPill}>
+                            <span className={styles.metricPillLabel}>Relação Cintura-Quadril</span>
+                            <span className={styles.metricPillValue}>
+                              {rcq ? rcq.valor : "--"}
+                            </span>
+                            <span className={styles.metricPillSub} style={{ color: rcq?.cor || "#aaa" }}>
+                              {rcq?.risco || "Não aferido"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={styles.avaliacaoCardFooter}>
+                          <div className={styles.avaliacaoObservationsBrief} title={ava.observacoes || ""}>
+                            {ava.observacoes 
+                              ? `Obs: ${ava.observacoes}` 
+                              : "Sem observações adicionais gravadas."}
+                          </div>
+
+                          <div className={styles.avaliacaoCardBtns}>
+                            <button
+                              type="button"
+                              onClick={() => router.push(`/avaliacoes/${ava.id}`)}
+                              className={styles.btnOpenAva}
+                              title={isConcluida ? "Visualizar ou editar avaliação" : "Continuar preenchimento da avaliação"}
+                            >
+                              <FaHeartbeat /> {isConcluida ? "Acessar Avaliação" : "Continuar Preenchimento"}
+                            </button>
+
+                            {isConcluida && (
+                              <button
+                                type="button"
+                                onClick={() => router.push(`/avaliacoes/${ava.id}?print=true`)}
+                                className={styles.btnPrintAva}
+                                title="Emitir o Laudo Clínico oficial e imprimir"
+                              >
+                                <FaPrint /> Emitir Laudo
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAvaliacao(ava.id)}
+                              className={styles.btnDeleteAva}
+                              title="Excluir esta avaliação"
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -386,137 +899,127 @@ export default function AlunoDetalhePage() {
         
         {activeTab === "documentos" && (
           <div className={styles.formGrid}>
-            <h3 className={styles.formSectionTitle}>Questionário PAR-Q</h3>
-            <p className={`${styles.formDescription} ${styles.fullWidth}`}>
-              Este questionário visa identificar riscos à saúde. Se o aluno responder "SIM" a qualquer pergunta, recomende uma avaliação médica antes de iniciar os testes físicos de esforço.
-            </p>
-
-            {/* Pergunta 1 */}
-            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-              <label>1. Seu médico já mencionou alguma vez que você possui um problema do coração e lhe recomendou que só fizesse atividade física sob supervisão médica?</label>
-              <div className={styles.radioOptionsContainer}>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq1_sim" name="parq_q1" value="SIM" 
-                         checked={aluno.parq_q1 === "SIM"} onChange={handleChange} />
-                  <label htmlFor="parq1_sim">Sim</label>
-                </div>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq1_nao" name="parq_q1" value="NAO" 
-                         checked={aluno.parq_q1 === "NAO"} onChange={handleChange} />
-                  <label htmlFor="parq1_nao">Não</label>
-                </div>
-              </div>
+            <div className={styles.parqHeaderBanner}>
+              <h4>
+                <FaInfoCircle /> Questionário de Prontidão para Atividade Física (PAR-Q)
+              </h4>
+              <p>
+                O PAR-Q identifica fatores de risco cardiovasculares e osteomusculares. Se o aluno assinalar <strong>"SIM"</strong> para qualquer pergunta, é indispensável recomendar uma avaliação médica prévia antes de submetê-lo a testes de esforço físico.
+              </p>
             </div>
 
-            {/* Pergunta 2 */}
-            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-              <label>2. Você sente dor no tórax quando realiza atividade física?</label>
-              <div className={styles.radioOptionsContainer}>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq2_sim" name="parq_q2" value="SIM" 
-                         checked={aluno.parq_q2 === "SIM"} onChange={handleChange} />
-                  <label htmlFor="parq2_sim">Sim</label>
+            {parqQuestions.map((q) => (
+              <div key={q.id} className={styles.parqQuestionCard}>
+                <div className={styles.parqQuestionContent}>
+                  <span className={styles.parqQuestionNumber}>{q.num}</span>
+                  <p className={styles.parqQuestionText}>{q.text}</p>
                 </div>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq2_nao" name="parq_q2" value="NAO" 
-                         checked={aluno.parq_q2 === "NAO"} onChange={handleChange} />
-                  <label htmlFor="parq2_nao">Não</label>
-                </div>
-              </div>
-            </div>
-
-            {/* Pergunta 3 */}
-            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-              <label>3. Você sentiu dor no tórax quando estava realizando atividade física no último mês?</label>
-              <div className={styles.radioOptionsContainer}>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq3_sim" name="parq_q3" value="SIM" 
-                         checked={aluno.parq_q3 === "SIM"} onChange={handleChange} />
-                  <label htmlFor="parq3_sim">Sim</label>
-                </div>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq3_nao" name="parq_q3" value="NAO" 
-                         checked={aluno.parq_q3 === "NAO"} onChange={handleChange} />
-                  <label htmlFor="parq3_nao">Não</label>
+                <div className={styles.parqOptions}>
+                  <button
+                    type="button"
+                    className={`${styles.parqBtn} ${aluno[q.id] === "SIM" ? styles.parqBtnSimActive : ""}`}
+                    onClick={() => setAluno((prev) => ({ ...prev, [q.id]: "SIM" }))}
+                  >
+                    SIM
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.parqBtn} ${aluno[q.id] === "NAO" ? styles.parqBtnNaoActive : ""}`}
+                    onClick={() => setAluno((prev) => ({ ...prev, [q.id]: "NAO" }))}
+                  >
+                    NÃO
+                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* Pergunta 4 */}
-            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-              <label>4. Você já perdeu o equilíbrio por causa de tontura ou alguma vez perdeu a consciência?</label>
-              <div className={styles.radioOptionsContainer}>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq4_sim" name="parq_q4" value="SIM" 
-                         checked={aluno.parq_q4 === "SIM"} onChange={handleChange} />
-                  <label htmlFor="parq4_sim">Sim</label>
-                </div>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq4_nao" name="parq_q4" value="NAO" 
-                         checked={aluno.parq_q4 === "NAO"} onChange={handleChange} />
-                  <label htmlFor="parq4_nao">Não</label>
-                </div>
-              </div>
-            </div>
-
-            {/* Pergunta 5 */}
-            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-              <label>5. Você tem algum problema ósseo ou articular que poderia ser agravado com a prática de atividade física?</label>
-              <div className={styles.radioOptionsContainer}>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq5_sim" name="parq_q5" value="SIM" 
-                         checked={aluno.parq_q5 === "SIM"} onChange={handleChange} />
-                  <label htmlFor="parq5_sim">Sim</label>
-                </div>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq5_nao" name="parq_q5" value="NAO" 
-                         checked={aluno.parq_q5 === "NAO"} onChange={handleChange} />
-                  <label htmlFor="parq5_nao">Não</label>
-                </div>
-              </div>
-            </div>
-
-             {/* Pergunta 6 */}
-            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-              <label>6. Seu médico está prescrevendo uso de medicamentos para a sua pressão arterial ou coração?</label>
-              <div className={styles.radioOptionsContainer}>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq6_sim" name="parq_q6" value="SIM" 
-                         checked={aluno.parq_q6 === "SIM"} onChange={handleChange} />
-                  <label htmlFor="parq6_sim">Sim</label>
-                </div>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq6_nao" name="parq_q6" value="NAO" 
-                         checked={aluno.parq_q6 === "NAO"} onChange={handleChange} />
-                  <label htmlFor="parq6_nao">Não</label>
-                </div>
-              </div>
-            </div>
-
-             {/* Pergunta 7 */}
-            <div className={`${styles.parqQuestion} ${styles.fullWidth}`}>
-              <label>7. Você conhece alguma outra razão pela qual você não deveria praticar atividade física?</label>
-              <div className={styles.radioOptionsContainer}>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq7_sim" name="parq_q7" value="SIM" 
-                         checked={aluno.parq_q7 === "SIM"} onChange={handleChange} />
-                  <label htmlFor="parq7_sim">Sim</label>
-                </div>
-                <div className={styles.radioOption}>
-                  <input type="radio" id="parq7_nao" name="parq_q7" value="NAO" 
-                         checked={aluno.parq_q7 === "NAO"} onChange={handleChange} />
-                  <label htmlFor="parq7_nao">Não</label>
-                </div>
-              </div>
-            </div>
-
+            ))}
           </div>
         )}
 
         {activeTab === "arquivos" && (
-          <div>
-            <h2>Aba para inserir e visualizar arquivos</h2>
-            <p>Em breve</p>
+          <div className={styles.arquivosContainer}>
+            <div className={styles.uploadDropzone}>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg"
+                onChange={handleUploadFile}
+                disabled={uploading}
+              />
+              <FaCloudUploadAlt className={styles.uploadIcon} />
+              <div className={styles.uploadTitle}>
+                {uploading ? "Enviando arquivo..." : "Clique ou arraste um arquivo para fazer upload"}
+              </div>
+              <p className={styles.uploadSubtitle}>
+                Formatos aceitos: PDF, Word (.doc, .docx), PNG e JPEG (máx. 25MB)
+              </p>
+            </div>
+
+            {loadingDocs ? (
+              <div style={{ color: "#aaa", textAlign: "center", padding: "2rem" }}>
+                Carregando arquivos do aluno...
+              </div>
+            ) : documentos.length === 0 ? (
+              <div className={styles.noFilesNotice}>
+                <p>Nenhum documento anexado a este aluno ainda.</p>
+                <small>Faça upload de exames, atestados médicos, laudos ou fotos de avaliação.</small>
+              </div>
+            ) : (
+              <div className={styles.fileGrid}>
+                {documentos.map((doc) => {
+                  const ext = (doc.nome || "").split(".").pop().toLowerCase();
+                  const isPdf = ext === "pdf" || doc.tipo?.includes("pdf");
+                  const isWord = ["doc", "docx"].includes(ext) || doc.tipo?.includes("word");
+                  const isImg = ["png", "jpg", "jpeg"].includes(ext) || doc.tipo?.startsWith("image/");
+                  const backendBase = api.defaults.baseURL || "http://localhost:3333";
+                  const fileUrl = `${backendBase}${doc.url}`;
+
+                  return (
+                    <div key={doc.id} className={styles.fileCard}>
+                      <div className={styles.fileHeader}>
+                        {isPdf && <FaFilePdf className={`${styles.fileTypeIcon} ${styles.fileIconPdf}`} />}
+                        {isWord && <FaFileWord className={`${styles.fileTypeIcon} ${styles.fileIconWord}`} />}
+                        {isImg && <FaFileImage className={`${styles.fileTypeIcon} ${styles.fileIconImage}`} />}
+                        {!isPdf && !isWord && !isImg && (
+                          <FaFilePdf className={`${styles.fileTypeIcon} ${styles.fileIconPdf}`} />
+                        )}
+                        <div className={styles.fileDetails}>
+                          <p className={styles.fileName} title={doc.nome}>
+                            {doc.nome}
+                          </p>
+                          <p className={styles.fileDate}>
+                            {new Date(doc.uploadAt).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className={styles.fileActions}>
+                        <a
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.fileViewBtn}
+                        >
+                          <FaExternalLinkAlt size={12} /> Abrir
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDoc(doc.id)}
+                          className={styles.fileDeleteBtn}
+                          title="Excluir arquivo"
+                        >
+                          <FaTrash size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </main>

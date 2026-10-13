@@ -34,7 +34,7 @@ export default function ProfessoresPage() {
   const fetchProfessores = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/professores"); // Esta rota já busca os usuários
+      const response = await api.get("/api/professores"); // Esta rota já busca os usuários
       setProfessores(response.data);
     } catch (error) {
       console.error("Erro ao buscar professores:", error);

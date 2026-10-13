@@ -1,10 +1,27 @@
 import axios from 'axios';
 
 // Cria a instância da API apontando para o seu Back-end
+const defaultHost = typeof window !== 'undefined'
+  ? `${window.location.protocol}//${window.location.hostname}:3333`
+  : 'http://localhost:3333';
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', // Ajuste a porta se o seu backend for outra
-  withCredentials: true, // Muito importante para enviar os Cookies (onde o token fica)
+  baseURL: process.env.NEXT_PUBLIC_API_URL || defaultHost,
 });
+
+// Interceptor de REQUISIÇÕES: adiciona o token no header Authorization
+api.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('@TCCAuth:token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Interceptor de RESPOSTAS
 api.interceptors.response.use(

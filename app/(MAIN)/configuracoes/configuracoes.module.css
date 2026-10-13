@@ -1,0 +1,182 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  min-height: calc(100vh - 40px);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #333;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
+.cardsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: #222222;
+  border: 1px solid #333333;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #2e2e2e;
+}
+
+.cardHeader svg {
+  color: #5d812e;
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fieldLabel {
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.fieldValue {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: 500;
+  background-color: #1a1a1a;
+  padding: 0.65rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+/* Modo de Visualização */
+.viewModeOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.viewModeCard {
+  background-color: #1a1a1a;
+  border: 2px solid #333333;
+  border-radius: 10px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  position: relative;
+}
+
+.viewModeCard:hover {
+  border-color: #5d812e;
+  transform: translateY(-2px);
+}
+
+.viewModeCardSelected {
+  border-color: #5d812e;
+  background-color: rgba(93, 129, 46, 0.08);
+}
+
+.viewModeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.viewModeTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.viewModeBadge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  background-color: #5d812e33;
+  color: #88c23f;
+  font-weight: 600;
+}
+
+.viewModeDesc {
+  font-size: 0.88rem;
+  color: #aaa;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.saveButton {
+  align-self: flex-start;
+  padding: 0.85rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: #5d812e;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.saveButton:hover {
+  background-color: #6e9837;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(93, 129, 46, 0.35);
+}

@@ -27,14 +27,14 @@ export const AuthProvider = ({ children }) => {
 
 async function signIn(email, password) {
   try {
-    const response = await api.post('/auth/login', { email, password });
-    const { user: userData } = response.data;
+    const response = await api.post('/api/auth/login', { email, password });
+    const { user: userData, token } = response.data;
     localStorage.setItem('@TCCAuth:user', JSON.stringify(userData));
+    localStorage.setItem('@TCCAuth:token', token);
     setUser(userData);
 
-    // 4. Forçar um recarregamento completo para a página home
-    //    Isso garante que o cookie de autenticação seja enviado na próxima requisição.
-    window.location.href = '/home'; // <--- A SOLUÇÃO
+    // Redirecionar para a página home
+    window.location.href = '/home';
     
   } catch (error) {
     console.error('Falha no login:', error.response?.data?.error);
@@ -43,16 +43,16 @@ async function signIn(email, password) {
 }
 
   async function signOut() {
-    // 1. Limpamos o usuário do localStorage e do estado.
+    // 1. Limpamos o usuário e o token do localStorage.
     localStorage.removeItem('@TCCAuth:user');
+    localStorage.removeItem('@TCCAuth:token');
     setUser(null);
 
     try {
-      // 2. [NOVO] Chamamos a rota de logout no backend.
-      //    Isso vai instruir o servidor a limpar o cookie HttpOnly.
-      await api.post('/auth/logout');
+      // 2. Chamamos a rota de logout no backend (opcional).
+      await api.post('/api/auth/logout');
     } catch (error) {
-      // Mesmo que a chamada falhe, continuamos o processo de logout no frontend.
+      // Mesmo que a chamada falhe, continuamos o processo de logout.
       console.error("Erro ao fazer logout no backend:", error);
     }
     

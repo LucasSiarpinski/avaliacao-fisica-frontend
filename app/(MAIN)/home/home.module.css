@@ -86,17 +86,23 @@
   background-color: #5d812e; /* Roxo principal */
   color: #fff;
   border: none;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   border-radius: 8px;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
   text-align: center;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
 }
 
 .actionButton:hover {
-  background-color: #5d812e; /* Roxo mais escuro */
+  background-color: #6e9837;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(93, 129, 46, 0.35);
 }
 
 /* --- Tabela de Atividade Recente (Reutilizando estilos) --- */
@@ -130,6 +136,15 @@
   border-bottom: none; 
 }
 
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.clickableRow:hover {
+  background-color: #272727;
+}
+
 .statusAtivo {
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
@@ -146,4 +161,60 @@
   font-weight: bold;
   background-color: #ffc10733; 
   color: #ffc107; 
+}
+
+.statusConcluida {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: #5d812e33; 
+  color: #88c23f; 
+}
+
+.statusInativo {
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: #dc354533; 
+  color: #dc3545; 
+}
+
+.statDetail {
+  font-size: 0.8rem;
+  color: #777;
+  margin: 0.35rem 0 0 0;
+}
+
+.emptyState {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  gap: 1rem;
+  color: #aaa;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #5d812e;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

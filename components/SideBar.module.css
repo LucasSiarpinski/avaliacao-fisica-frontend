@@ -116,17 +116,33 @@
     margin-top: 20px;
 }
 
+.userSection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
 .userInfo {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding: 0 5px;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+}
+
+.userMeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .avatar {
     width: 35px;
     height: 35px;
+    min-width: 35px;
     border-radius: 50%;
     background-color: #4CAF50; /* Verde */
     color: black;
@@ -138,13 +154,41 @@
 }
 
 .userName {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: white;
     font-weight: 500;
-    /* Evita que nomes longos quebrem o layout */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.userRole {
+    font-size: 0.72rem;
+    color: #888;
+    text-transform: capitalize;
+}
+
+.settingsIconButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background-color: transparent;
+    color: #aaa;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    text-decoration: none;
+    font-size: 1.15rem;
+}
+
+.settingsIconButton:hover {
+    background-color: #333333;
+    color: #4CAF50;
+    transform: rotate(30deg);
 }
 
 .logoutButton {
@@ -197,5 +241,11 @@
     /* Mostra o botão de fechar "X" no mobile */
     .mobileCloseButton {
         display: block;
+    }
+}
+
+@media print {
+    .sidebar {
+        display: none !important;
     }
 }

@@ -26,6 +26,38 @@
 .actions {
   display: flex;
   gap: 1rem;
+  align-items: center;
+}
+
+.iniciarAvaliacaoButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.iniciarAvaliacaoButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
+}
+
+.iniciarAvaliacaoButton:disabled {
+  background: #374151;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
 }
 
 .backButton, .saveButton {
@@ -119,25 +151,67 @@
   color: #aaa;
 }
 
-.formGroup input, .formGroup textarea {
+.formGroup input, 
+.formGroup textarea,
+.formGroup select {
   width: 100%;
-  padding: 0.8rem;
-  background-color: #333;
-  border: 1px solid #555;
-  border-radius: 5px;
-  color: white;
-  font-size: 1rem;
-  box-sizing: border-box; /* Garante que padding não estoure */
+  padding: 0.75rem 1rem;
+  background-color: #262626;
+  border: 1px solid #404040;
+  border-radius: 8px;
+  color: #f3f3f3;
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.formGroup input:focus, .formGroup textarea:focus {
-    outline: none;
-    border-color: #bb86fc;
+.formGroup input:hover:not(:disabled), 
+.formGroup textarea:hover:not(:disabled) {
+  border-color: #555;
+  background-color: #292929;
+}
+
+.formGroup input:focus, 
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: #5d812e;
+  box-shadow: 0 0 0 3px rgba(93, 129, 46, 0.25);
+  background-color: #2d2d2d;
+}
+
+/* Estilização moderna para campos de data */
+.formGroup input[type="date"] {
+  color-scheme: dark;
+  position: relative;
+  cursor: pointer;
+  min-height: 44px;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+}
+
+.formGroup input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.85);
+  opacity: 0.8;
+  padding: 4px;
+  margin-right: -2px;
+  border-radius: 6px;
+  transition: opacity 0.2s ease, transform 0.15s ease, background-color 0.2s ease;
+}
+
+.formGroup input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: rgba(93, 129, 46, 0.3);
+  transform: scale(1.1);
 }
 
 .formGroup input:disabled {
-  background-color: #2a2a2a;
-  color: #888;
+  background-color: #1a1a1a;
+  border-color: #333;
+  color: #777;
   cursor: not-allowed;
 }
 
@@ -159,66 +233,751 @@
   margin-top: 0;
 }
 
-/* Container principal do grupo de rádio */
-.formGroupRadio {
-  display: flex;
-  align-items: center; 
-  gap: 15px; 
-  margin-bottom: 20px; 
-}
-
-/* Container que agrupa os botões "Sim" e "Não" */
-.radioOptionsContainer {
+/* --- SEÇÃO DE STATUS MODERNA --- */
+.statusCard {
+  grid-column: 1 / -1;
+  background: linear-gradient(145deg, #1f251d 0%, #171c15 100%);
+  border: 1px solid #324326;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: 25px; 
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
-/* Container para cada par de (botão + label) */
-.radioOption {
+.statusInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statusLabelTitle {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8da96d;
+  font-weight: 700;
+}
+
+.statusSubtitle {
+  font-size: 0.95rem;
+  color: #d1d5db;
+  margin: 0;
+}
+
+.statusToggleGroup {
+  display: flex;
+  background-color: #121411;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #2a3324;
+  gap: 4px;
+}
+
+.statusBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.statusBtn:hover:not(.statusBtnActiveActive):not(.statusBtnActiveInactive) {
+  color: #ccc;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.statusBtnActiveActive {
+  background-color: #5d812e;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(93, 129, 46, 0.4);
+}
+
+.statusBtnActiveInactive {
+  background-color: #c53030;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(197, 48, 48, 0.4);
+}
+
+.statusDotGreen {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #68d391;
+  display: inline-block;
+}
+
+.statusDotRed {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #fc8181;
+  display: inline-block;
+}
+
+/* --- QUESTIONÁRIO PAR-Q MODERNO & LEGÍVEL --- */
+.parqHeaderBanner {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(93, 129, 46, 0.15) 0%, rgba(26, 32, 22, 0.4) 100%);
+  border: 1px solid rgba(93, 129, 46, 0.35);
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.parqHeaderBanner h4 {
+  margin: 0 0 0.5rem 0;
+  color: #a4d864;
+  font-size: 1.15rem;
   display: flex;
   align-items: center;
-  gap: 8px; 
+  gap: 0.5rem;
 }
 
-.radioOption label {
-  cursor: pointer; 
-  font-weight: normal; 
+.parqHeaderBanner p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #d6ded2;
 }
 
-.radioOption input[type="radio"] {
+.parqQuestionCard {
+  grid-column: 1 / -1;
+  background: #212520;
+  border: 1px solid #333d30;
+  border-radius: 12px;
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.parqQuestionCard:hover {
+  border-color: #4b5a45;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.parqQuestionContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  flex: 1;
+}
+
+.parqQuestionNumber {
+  background-color: #2e3b29;
+  color: #a4d864;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1px solid #43593b;
+  letter-spacing: 0.05em;
+}
+
+.parqQuestionText {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.65;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.parqOptions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.parqBtn {
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  border: 1px solid #3e4c39;
+  background-color: #1a1e19;
+  color: #a5b3a0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+  text-align: center;
+}
+
+.parqBtn:hover {
+  background-color: #262c24;
+  color: #fff;
+  border-color: #55664e;
+}
+
+.parqBtnSimActive {
+  background-color: #e53e3e !important;
+  color: #fff !important;
+  border-color: #fc8181 !important;
+  box-shadow: 0 0 12px rgba(229, 62, 62, 0.45);
+}
+
+.parqBtnNaoActive {
+  background-color: #5d812e !important;
+  color: #fff !important;
+  border-color: #7ba83d !important;
+  box-shadow: 0 0 12px rgba(93, 129, 46, 0.45);
+}
+
+/* --- ABA DE ARQUIVOS (PDF, WORD, PNG, JPEG) --- */
+.arquivosContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.uploadDropzone {
+  border: 2px dashed #44543b;
+  background: rgba(93, 129, 46, 0.06);
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.uploadDropzone:hover {
+  border-color: #5d812e;
+  background: rgba(93, 129, 46, 0.12);
+}
+
+.uploadDropzone input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   cursor: pointer;
 }
 
-/* Seleciona o h3 que está DENTRO da seção de status */
-.statusSection .formSectionTitle {
-  border-bottom: none;     
-  margin-bottom: 0;        
-  padding-bottom: 10px;    
+.uploadIcon {
+  font-size: 3rem;
+  color: #85b842;
+  margin-bottom: 0.8rem;
 }
 
-.formDescription {
-  color: #a0a0a0; 
+.uploadTitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.uploadSubtitle {
   font-size: 0.9rem;
-  margin-bottom: 20px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.fileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.fileCard {
+  background: #212620;
+  border: 1px solid #333d30;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: transform 0.15s, border-color 0.2s;
+}
+
+.fileCard:hover {
+  transform: translateY(-2px);
+  border-color: #4f6345;
+}
+
+.fileHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.fileTypeIcon {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+}
+
+.fileIconPdf {
+  color: #f56565;
+}
+
+.fileIconWord {
+  color: #4299e1;
+}
+
+.fileIconImage {
+  color: #48bb78;
+}
+
+.fileDetails {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.fileName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.fileDate {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0;
+}
+
+.fileActions {
+  display: flex;
+  gap: 0.75rem;
+  border-top: 1px solid #2e352b;
+  padding-top: 0.75rem;
+}
+
+.fileViewBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #2f3b2a;
+  color: #b4db84;
+  border: 1px solid #44563a;
+  border-radius: 6px;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.fileViewBtn:hover {
+  background-color: #3e4e37;
+  color: #fff;
+}
+
+.fileDeleteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.85rem;
+  background: rgba(229, 62, 62, 0.15);
+  color: #fc8181;
+  border: 1px solid rgba(229, 62, 62, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fileDeleteBtn:hover {
+  background: #e53e3e;
+  color: #fff;
+}
+
+.noFilesNotice {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #1e221d;
+  border-radius: 10px;
+  border: 1px solid #2d3529;
+  color: #8da088;
+}
+
+/* ==========================================
+ * ABA: HISTÓRICO DE AVALIAÇÕES FÍSICAS
+ * ========================================== */
+.avaliacoesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.avaliacoesHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.avaliacoesHeaderRow h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avaliacoesSubtitle {
+  margin: 0.3rem 0 0 0;
+  color: #8da088;
+  font-size: 0.9rem;
+}
+
+.emptyAvaliacoesBox {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: #1a2018;
+  border: 2px dashed #2e3e26;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emptyAvaliacoesIcon {
+  font-size: 3.2rem;
+  color: #5d812e;
+  animation: pulseIcon 2s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.emptyAvaliacoesBox h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+.emptyAvaliacoesBox p {
+  margin: 0;
+  color: #94a3b8;
+  max-width: 460px;
+  font-size: 0.95rem;
   line-height: 1.5;
 }
 
-/* Container de cada pergunta do PAR-Q */
-.parqQuestion {
-  padding: 16px;
-  background-color: #2a2a2a; 
-  border-radius: 8px;
-  border-left: 4px solid #4CAF50; 
-  margin-bottom: 12px;
+/* Banner de Evolução */
+.evolutionBanner {
+  background: linear-gradient(135deg, #1d2719 0%, #151d13 100%);
+  border: 1px solid #364a2c;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.parqQuestion label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 10px;
-  color: #e0e0e0; /* Garante que o texto da pergunta seja claro */
+.evolutionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
+
+.evolutionTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #a4d864;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evolutionSub {
+  font-size: 0.82rem;
+  color: #8da088;
+}
+
+.evolutionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+.evolutionMetricCard {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid #2d3e24;
+  border-radius: 8px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.evolutionMetricLabel {
+  font-size: 0.75rem;
+  color: #8da088;
+  text-transform: uppercase;
+}
+
+.evolutionMetricCurrent {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.evolutionMetricDiff {
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.diffGood {
+  color: #4ade80;
+}
+
+.diffWarn {
+  color: #f87171;
+}
+
+.diffNeutral {
+  color: #94a3b8;
+}
+
+/* Lista de Cards de Avaliação */
+.avaliacoesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.avaliacaoCard {
+  background: #1a2117;
+  border: 1px solid #31422b;
+  border-radius: 12px;
+  padding: 1.4rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.avaliacaoCard:hover {
+  border-color: #5d812e;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+.avaliacaoCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #283723;
+}
+
+.avaliacaoDateInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avaliacaoDate {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.avaliacaoBadgeLatest {
+  background: #5d812e;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusBadgeConcluida {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusBadgeAndamento {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.avaliacaoAvaliador {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.avaliacaoGridMetrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.85rem;
+}
+
+.metricPill {
+  background: #141a12;
+  border: 1px solid #293822;
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metricPillLabel {
+  font-size: 0.72rem;
+  color: #8da088;
+  text-transform: uppercase;
+}
+
+.metricPillValue {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.metricPillSub {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.avaliacaoCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #283723;
+}
+
+.avaliacaoObservationsBrief {
+  font-size: 0.85rem;
+  color: #8da088;
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.avaliacaoCardBtns {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.btnOpenAva {
+  background: #2b3924;
+  color: #a4d864;
+  border: 1px solid #455e37;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btnOpenAva:hover {
+  background: #394b30;
+  color: #ffffff;
+}
+
+.btnPrintAva {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btnPrintAva:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+  transform: translateY(-1px);
+}
+
+.btnDeleteAva {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.55rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btnDeleteAva:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
 
 
 /* * ==========================================

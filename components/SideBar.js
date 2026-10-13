@@ -5,46 +5,41 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './SideBar.module.css';
 
-// 1. IMPORTANDO ÍCONES (Incluindo ícones de Admin e Fechar)
+// 1. IMPORTANDO ÍCONES
 import { 
     LuLayoutDashboard, 
     LuUsers, 
     LuSettings, 
-    LuFileText, 
     LuLogOut, 
     LuUserCog, // Ícone para Professores (Admin)
+    LuHeartPulse, // Ícone temático para Avaliação Física
     LuX // Ícone para fechar no mobile
 } from "react-icons/lu";
 
-// 2. O COMPONENTE AGORA ACEITA 'closeMenu' no lugar de 'toggleMenu'
-export default function SideBar({ isOpen, closeMenu }) { // <-- MUDANÇA 1
+export default function SideBar({ isOpen, closeMenu }) {
     const pathname = usePathname();
     const { user, signOut } = useAuth();
 
-    // 3. LÓGICA DE PERMISSÕES (PERFEITA, SEM MUDANÇAS)
+    // 2. ITENS PRINCIPAIS DE NAVEGAÇÃO
     const allNavItems = [
         { href: '/home', label: 'Dashboard', icon: <LuLayoutDashboard />, role: 'ALL' },
         { href: '/alunos', label: 'Alunos', icon: <LuUsers />, role: 'ALL' },
-        { href: '/relatorios', label: 'Relatórios', icon: <LuFileText />, role: 'ALL' },
-        // Itens que exigem permissão de ADMIN
+        { href: '/avaliacoes', label: 'Avaliação Física', icon: <LuHeartPulse />, role: 'ALL' },
+        // Item exclusivo para ADMIN
         { href: '/professores', label: 'Professores', icon: <LuUserCog />, role: 'ADMIN' },
-        { href: '/configuracoes', label: 'Configurações', icon: <LuSettings />, role: 'ADMIN' },
-        { href: '/avaliacoes', label: 'Avaliacao Fisica', icon: <LuSettings />, role: 'ALL' },
     ];
 
     const navItems = allNavItems.filter(item => {
-        if (item.role === 'ALL') return true; // Mostra para todos
-        return item.role === user?.role; // Mostra apenas se a role bater
+        if (item.role === 'ALL') return true;
+        return item.role === user?.role;
     });
 
     return (
-        // 4. APLICA A CLASSE 'mobileOpen' (SEM MUDANÇAS)
         <aside className={`${styles.sidebar} ${isOpen ? styles.mobileOpen : ''}`}>
             
             <div className={styles.header}>
                 <div className={styles.logo}>UNOESC Portal</div>
-                {/* 5. BOTÃO DE FECHAR (AGORA CHAMA 'closeMenu') */}
-                <button onClick={closeMenu} className={styles.mobileCloseButton}> {/* <-- MUDANÇA 2 */}
+                <button onClick={closeMenu} className={styles.mobileCloseButton} aria-label="Fechar menu">
                     <LuX />
                 </button>
             </div>
@@ -55,8 +50,7 @@ export default function SideBar({ isOpen, closeMenu }) { // <-- MUDANÇA 1
                         <li key={item.href}>
                             <Link 
                                 href={item.href} 
-                                // Fecha o menu ao clicar em um link (AGORA CHAMA 'closeMenu')
-                                onClick={closeMenu} // <-- MUDANÇA 3
+                                onClick={closeMenu}
                                 className={pathname.startsWith(item.href) ? `${styles.navItem} ${styles.active}` : styles.navItem}
                             >
                                 <span className={styles.icon}>{item.icon}</span>
@@ -68,9 +62,22 @@ export default function SideBar({ isOpen, closeMenu }) { // <-- MUDANÇA 1
             </nav>
 
             <div className={styles.footer}>
-                <div className={styles.userInfo}>
-                    <div className={styles.avatar}>{user?.name?.charAt(0).toUpperCase()}</div>
-                    <span className={styles.userName}>{user?.name}</span>
+                <div className={styles.userSection}>
+                    <div className={styles.userInfo}>
+                        <div className={styles.avatar}>{user?.name?.charAt(0).toUpperCase()}</div>
+                        <div className={styles.userMeta}>
+                            <span className={styles.userName}>{user?.name}</span>
+                            <span className={styles.userRole}>{user?.role === 'ADMIN' ? 'Administrador' : 'Professor'}</span>
+                        </div>
+                    </div>
+                    <Link 
+                        href="/configuracoes" 
+                        className={styles.settingsIconButton}
+                        title="Configurações e Preferências"
+                        onClick={closeMenu}
+                    >
+                        <LuSettings />
+                    </Link>
                 </div>
 
                 <button onClick={signOut} className={styles.logoutButton}>
@@ -79,7 +86,7 @@ export default function SideBar({ isOpen, closeMenu }) { // <-- MUDANÇA 1
                 </button>
                 
                 <div className={styles.copyright}>
-                    <p>Minhas Disciplinas</p>
+                    <p>Avaliação Física</p>
                     <p>© 2025 UNOESC</p>
                 </div>
             </div>

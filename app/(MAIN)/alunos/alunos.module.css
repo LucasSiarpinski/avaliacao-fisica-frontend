@@ -38,169 +38,349 @@
 
 /* --- ESTILOS DOS BOTÕES --- */
 .newStudentButton {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.4rem;
+    font-size: 0.95rem;
     color: #fff;
-    background-color: #5d812e; /* Roxo */
+    background: linear-gradient(135deg, #5d812e 0%, #729e37 100%);
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    font-weight: 600;
+    transition: all 0.2s ease;
     white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(93, 129, 46, 0.3);
 }
 
 .newStudentButton:hover {
-    background-color: #5d812e; 
+    background: linear-gradient(135deg, #689033 0%, #7eb03c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(93, 129, 46, 0.45);
 }
 
 /* Base para os botões de ação Editar/Excluir */
 .actionButton {
-    padding: 0.8rem 1.5rem; 
-    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.25rem; 
+    border: 1px solid transparent;
     border-radius: 8px; 
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 0.95rem;
     color: #fff;
-    transition: background-color 0.2s, opacity 0.2s;
+    transition: all 0.2s ease;
     white-space: nowrap;
 }
 
 .editButton {
-    background-color: #007bff; /* Azul */
+    background-color: #1e293b;
+    border-color: #3b82f6;
+    color: #93c5fd;
 }
 .editButton:hover:not(:disabled) {
-    background-color: #0056b3;
+    background-color: #2563eb;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.avaliarButton {
+    background-color: #064e3b;
+    border-color: #10b981;
+    color: #a7f3d0;
+}
+.avaliarButton:hover:not(:disabled) {
+    background-color: #059669;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .deleteButton {
-    background-color: #dc3545; /* Vermelho */
+    background-color: #2b1d1d;
+    border-color: #ef4444;
+    color: #fca5a5;
 }
 .deleteButton:hover:not(:disabled) {
-    background-color: #c82333;
+    background-color: #dc2626;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
 }
 
 /* Estilo para botões desabilitados */
-.actionButton:disabled,
-.editButton:disabled,
-.deleteButton:disabled {
-  background-color: #555;
-  color: #888;
+.actionButton:disabled {
+  background-color: #1c1c1c;
+  border-color: #333;
+  color: #666;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.5;
+  box-shadow: none;
 }
 
-/* --- ESTILOS DA BUSCA --- */
-.searchContainer {
+/* --- ESTILOS DA BUSCA E FILTROS MODERNOS --- */
+.searchWrapper {
   display: flex;
-  gap: 0.5rem;
-  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #1b1f1a;
+  border: 1px solid #2e3b29;
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  flex-wrap: wrap;
+}
+
+.searchInputsGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 280px;
+}
+
+.filterSelectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #242b22;
+  border: 1px solid #3d4a37;
+  border-radius: 8px;
+  padding: 0.2rem 0.6rem 0.2rem 0.8rem;
+  color: #a4c979;
+}
+
+.filterIcon {
+  font-size: 0.85rem;
+  color: #8da96d;
 }
 
 .searchCategory {
-  padding: 0.8rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background-color: #2a2a2a;
+  background: transparent;
+  border: none;
   color: #e0e0e0;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
+  padding: 0.5rem 0.2rem;
+  outline: none;
 }
 
-.searchCategory:focus {
-  outline: none;
+.searchCategory option {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+.searchBarWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #242b22;
+  border: 1px solid #3d4a37;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  flex: 1;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.searchBarWrapper:focus-within {
   border-color: #5d812e;
+  box-shadow: 0 0 0 3px rgba(93, 129, 46, 0.25);
+  background-color: #273024;
+}
+
+.searchIcon {
+  color: #8da96d;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .searchBar {
-  padding: 0.8rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background-color: #2a2a2a;
-  color: #e0e0e0;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
   width: 100%;
-  flex-grow: 1;
-  box-sizing: border-box; 
+  outline: none;
 }
 
-.searchBar:focus {
-    outline: none;
-    border-color: #5d812e;
+.searchBar::placeholder {
+  color: #7d8e78;
+}
+
+.clearSearchBtn {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.clearSearchBtn:hover {
+  color: #fff;
+}
+
+.countBadge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #8da96d;
+  background-color: #263321;
+  border: 1px solid #384a30;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
 /* --- ESTILOS DA TABELA --- */
 .tableContainer {
-    background-color: #1e1e1e;
-    border: 1px solid #333;
-    border-radius: 8px;
-    overflow-x: auto; /* Alterado de 'hidden' para 'auto' para permitir scroll horizontal em mobile */
+    background-color: #1a1e19;
+    border: 1px solid #2e382b;
+    border-radius: 12px;
+    overflow-x: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .table {
     width: 100%;
     border-collapse: collapse; 
-    min-width: 600px; /* Adicionado min-width para garantir scroll */
+    min-width: 650px;
 }
 
 .table th, .table td {
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     text-align: left;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #283124;
     white-space: nowrap; 
 }
 
 .table th {
-    background-color: #252525;
-    font-weight: bold;
-    color: #fff; 
+    background-color: #222920;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8; 
 }
 
 .table tbody tr:last-child td {
     border-bottom: none; 
 }
 
+.table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
 .table tbody tr:hover {
-  background-color: #2a2a2a; 
+  background-color: #232c20; 
   cursor: pointer;
 }
 
 .selectedRow {
-  background-color: #2a3a4a !important; /* Manteve o azul de seleção */
-  border-left: 3px solid #007bff; 
+  background-color: #293822 !important;
+  border-left: 4px solid #7cb342; 
 }
 
-.checkIcon {
-  color: #007bff; /* Azul para combinar com a seleção */
-  font-weight: bold;
-  margin-right: 0.5rem; 
+.checkIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #55694c;
+  background-color: transparent;
+  transition: all 0.2s ease;
+}
+
+.checkIndicatorActive {
+  background-color: #7cb342;
+  border-color: #7cb342;
+  color: #1a1e19;
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 .noResults {
     text-align: center !important;
-    padding: 2rem !important;
-    color: #888;
+    padding: 3rem 1rem !important;
+    color: #7d8e78;
     font-style: italic;
 }
 
-/* --- ESTILOS PARA O STATUS (Pílulas) --- */
-.statusAtivo, .statusInativo {
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px; 
-  font-size: 0.8rem;
-  font-weight: bold;
+/* --- ESTILOS PARA OS STATUS (Pílulas Modernas) --- */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px; 
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  display: inline-block; /* Garante alinhamento */
 }
 
 .statusAtivo {
-  background-color: #28a74533; 
-  color: #28a745; 
+  background-color: rgba(72, 187, 120, 0.15);
+  color: #48bb78; 
+  border: 1px solid rgba(72, 187, 120, 0.3);
 }
 
 .statusInativo {
-  background-color: #dc354533; 
-  color: #dc3545; 
+  background-color: rgba(245, 101, 101, 0.15);
+  color: #f56565; 
+  border: 1px solid rgba(245, 101, 101, 0.3);
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.badgeDotGreen {
+  background-color: #48bb78;
+  box-shadow: 0 0 6px rgba(72, 187, 120, 0.6);
+}
+
+.badgeDotRed {
+  background-color: #f56565;
+  box-shadow: 0 0 6px rgba(245, 101, 101, 0.6);
+}
+
+/* Anamnese Status */
+.anamneseBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.anamneseCompleted {
+  background-color: rgba(93, 129, 46, 0.2);
+  color: #9ecc5e;
+  border: 1px solid rgba(93, 129, 46, 0.4);
+}
+
+.anamnesePending {
+  background-color: rgba(237, 137, 54, 0.15);
+  color: #f6ad55;
+  border: 1px solid rgba(237, 137, 54, 0.3);
+}
+
+.anamneseSent {
+  background-color: rgba(66, 153, 225, 0.15);
+  color: #63b3ed;
+  border: 1px solid rgba(66, 153, 225, 0.3);
 }
 
 
