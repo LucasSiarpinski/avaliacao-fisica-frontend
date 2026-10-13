@@ -1,0 +1,115 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: #171d15;
+  border: 1px solid #2b3827;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.container:focus-within {
+  border-color: #5d812e;
+  box-shadow: 0 0 0 2px rgba(93, 129, 46, 0.25);
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.unitBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #242e20;
+  color: #a4c979;
+  border: 1px solid #384932;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stepperWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stepBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 48px;
+  width: 48px;
+  height: 48px;
+  background-color: #222c1e;
+  color: #a4c979;
+  border: 1px solid #384932;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stepBtn:hover:not(:disabled) {
+  background-color: #2f3e29;
+  color: #ffffff;
+  border-color: #5d812e;
+}
+
+.stepBtn:active:not(:disabled) {
+  transform: scale(0.94);
+  background-color: #5d812e;
+  color: #ffffff;
+}
+
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.inputWrapper {
+  flex: 1;
+  display: flex;
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  min-height: 48px;
+  height: 48px;
+  padding: 0 0.75rem;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  background-color: #121611;
+  color: #ffffff;
+  border: 1px solid #303d2b;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  -webkit-appearance: none;
+}
+
+.input:focus {
+  border-color: #5d812e;
+  background-color: #161c14;
+}
+
+.input::placeholder {
+  color: #52634d;
+  font-weight: 500;
+  font-size: 0.95rem;
+}

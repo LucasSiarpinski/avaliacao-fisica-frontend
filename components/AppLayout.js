@@ -24,7 +24,7 @@ export default function AppLayout({ children }) {
 
             <SideBar 
                 isOpen={isMobileMenuOpen} 
-                toggleMenu={toggleMenu} // Você pode renomear para 'onClose' se preferir
+                closeMenu={toggleMenu} 
             />
 
             <main className={styles.mainContent}>

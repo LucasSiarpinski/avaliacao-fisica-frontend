@@ -1,11 +1,11 @@
 .container {
   padding: 2rem;
-  background-color: #1a1a1a; /* Fundo do card */
-  color: #e0e0e0;
+  background-color: #141813;
+  color: #e2e8f0;
   min-height: calc(100vh - 40px);
-  border-radius: 12px;
-  border: 1px solid #333;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 14px;
+  border: 1px solid #2a3526;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* --- CABEÇALHO --- */
@@ -14,8 +14,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #333;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #2e3b2b;
   flex-wrap: wrap; 
   gap: 1.5rem; 
 }
@@ -23,93 +23,268 @@
 .header h1 {
   color: #fff;
   margin: 0; 
-  font-size: 1.8rem;
+  font-size: 1.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .alunoName {
-  color: #5d812e; /* Roxo */
+  color: #8da96d;
+  font-weight: 800;
+}
+
+.alunoMetaBadge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #242e20;
+  color: #a4c979;
+  border: 1px solid #384932;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  margin-left: 0.5rem;
+}
+
+.statusBadgeConcluida {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  margin-left: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.statusBadgeAndamento {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  margin-left: 0.5rem;
+  letter-spacing: 0.02em;
 }
 
 .actions {
   display: flex;
   gap: 1rem;
+  align-items: center;
 }
 
-.backButton, .saveButton {
-  padding: 0.8rem 1.5rem;
+.backButton, .saveButton, .finishButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.4rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s, opacity 0.2s;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap; 
 }
 
 .backButton {
-  background-color: #4a4a4a;
-  color: white;
+  background-color: #262c23;
+  color: #cbd5e1;
+  border: 1px solid #3c4938;
 }
 .backButton:hover {
-  background-color: #5a5a5a;
+  background-color: #313a2d;
+  color: #fff;
 }
 
 .saveButton {
-  background-color: #5d812e; /* Roxo */
+  background: linear-gradient(135deg, #4d6d24 0%, #5d812e 100%);
   color: white;
+  box-shadow: 0 4px 12px rgba(93, 129, 46, 0.3);
 }
 .saveButton:hover:not(:disabled) {
-  background-color: #5d812e;
+  background: linear-gradient(135deg, #597d2b 0%, #6e9837 100%);
+  transform: translateY(-1px);
 }
-.saveButton:disabled {
-  background-color: #555;
+
+.finishButton {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+.finishButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+}
+
+.printHeaderButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.3rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+.printHeaderButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+  transform: translateY(-1px);
+}
+
+.saveButton:disabled, .finishButton:disabled, .printHeaderButton:disabled {
+  background: #2b3329;
+  color: #667562;
   cursor: not-allowed;
   opacity: 0.6;
+  box-shadow: none;
 }
 
-/* --- ABAS DE NAVEGAÇÃO --- */
-.tabContainer {
+/* --- STEPPER MODERNO DO WIZARD --- */
+.stepperContainer {
   margin-bottom: 2rem;
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 1px solid #333;
-  overflow-x: auto; 
-  padding-bottom: 0.5rem; 
+  background-color: #1c2219;
+  border: 1px solid #2e3a2a;
+  border-radius: 12px;
+  padding: 0.75rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 
-.tabButton {
-  padding: 0.8rem 1.5rem;
-  background-color: transparent;
-  color: #aaa;
-  border: none;
-  border-bottom: 4px solid transparent;
+.stepperNav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.stepButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.stepButton:hover {
+  background-color: rgba(93, 129, 46, 0.08);
+}
+
+.stepButton.stepActive {
+  background-color: #273322;
+  border-color: #4a613b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.stepNumber {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  background-color: #262e22;
+  color: #8da96d;
+  border: 2px solid #3c4937;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.stepActive .stepNumber {
+  background-color: #5d812e;
+  border-color: #7cb342;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(93, 129, 46, 0.5);
+}
+
+.stepCompleted .stepNumber {
+  background-color: #10b981;
+  border-color: #34d399;
+  color: #ffffff;
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stepTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #e2e8f0;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stepActive .stepTitle {
+  color: #a4d864;
+}
+
+.stepSubtitle {
+  font-size: 0.75rem;
+  color: #889984;
+}
+
+.stepStatusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-left: auto;
   flex-shrink: 0;
 }
 
-.tabButton.activeTab {
-  color: #5d812e; 
-  border-bottom: 4px solid #5d812e;
+.statusDotGreen {
+  background-color: #10b981;
+  box-shadow: 0 0 6px #10b981;
 }
 
-/* --- CONTEÚDO PRINCIPAL E FORMULÁRIO --- */
+.statusDotYellow {
+  background-color: #f59e0b;
+}
+
+.statusDotGray {
+  background-color: #4b5563;
+}
+
+/* --- CONTEÚDO PRINCIPAL DO PASSO --- */
 .content {
-  background-color: #1e1e1e;
+  background-color: #191f16;
   padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #333;
+  border-radius: 12px;
+  border: 1px solid #2d3829;
 }
 
+/* Layouts de Formulário */
 .formGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 COLUNAS */
-  gap: 1.5rem 2rem; 
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem 1.75rem;
 }
 
-.formGrid.twoColumns {
-  grid-template-columns: repeat(2, 1fr); /* 2 COLUNAS */
+.twoColumns {
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .formGroup {
@@ -119,119 +294,731 @@
 }
 
 .formGroup label {
-  font-size: 0.9rem;
-  color: #aaa;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #cbd5e1;
 }
 
 .formGroup input, 
-.formGroup textarea,
+.formGroup textarea, 
 .formGroup select {
   width: 100%;
-  padding: 0.8rem;
-  background-color: #333;
-  border: 1px solid #555;
-  border-radius: 5px;
-  color: white;
-  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: #242c20;
+  border: 1px solid #3c4936;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-family: inherit;
   box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .formGroup input:focus, 
-.formGroup textarea:focus,
+.formGroup textarea:focus, 
 .formGroup select:focus {
-    outline: none;
-    border-color: #5d812e;
+  outline: none;
+  border-color: #5d812e;
+  box-shadow: 0 0 0 3px rgba(93, 129, 46, 0.25);
+  background-color: #293325;
+}
+
+.formGroup input:disabled,
+.formGroup textarea:disabled {
+  background-color: #1c221a;
+  border-color: #2f3a2c;
+  color: #7b8c77;
+  cursor: not-allowed;
 }
 
 .fullWidth {
-  grid-column: 1 / -1; /* Ocupa todas as colunas */
+  grid-column: 1 / -1;
 }
 
 .formSectionTitle {
   grid-column: 1 / -1;
-  color: #5d812e;
-  font-size: 1.2rem;
+  color: #9ecc5e;
+  font-size: 1.15rem;
+  font-weight: 700;
   margin-top: 1.5rem;
-  margin-bottom: -0.5rem;
+  margin-bottom: -0.25rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid #344230;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .formSectionTitle:first-of-type {
   margin-top: 0;
 }
 
-/* Container de cada pergunta do PAR-Q */
-.parqQuestion {
+/* --- CARDS DE CÁLCULO EM TEMPO REAL --- */
+.calcSummaryCard {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #1f271c 0%, #171d15 100%);
+  border: 1px solid #3b4c34;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  flex-wrap: wrap;
+}
+
+.calcCardItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.calcCardLabel {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #8da96d;
+  font-weight: 700;
+}
+
+.calcCardValue {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calcBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* --- BANNER DE ALERTA E CHECKLIST DA ETAPA 4 --- */
+.readinessContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.readinessBanner {
+  background: #1f251c;
+  border: 1px solid #384931;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.readinessHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #2e3b29;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.readinessHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checklistGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.checkItem {
+  background: #242c20;
+  border: 1px solid #354230;
+  border-radius: 10px;
   padding: 1rem;
-  background-color: #2a2a2a; 
-  border-radius: 8px;
-  border-left: 4px solid #5d812e; /* Destaque roxo */
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.parqQuestion label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 10px;
-  color: #e0e0e0;
-}
-
-/* Container que agrupa os botões "Sim" e "Não" */
-.radioOptionsContainer {
+.checkItemHeader {
   display: flex;
   align-items: center;
-  gap: 25px; 
+  justify-content: space-between;
 }
 
-/* Container para cada par de (botão + label) */
-.radioOption {
-  display: flex;
-  align-items: center;
-  gap: 8px; 
+.checkItemTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e2e8f0;
 }
-.radioOption label {
-  cursor: pointer; 
-  font-weight: normal; 
-  color: #e0e0e0;
+
+.checkItemStatus {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
 }
-.radioOption input[type="radio"] {
+
+.checkSuccess {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.checkWarning {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.checkDanger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.checkItemDesc {
+  font-size: 0.82rem;
+  color: #8da088;
+  margin: 0;
+}
+
+.fixButton {
+  margin-top: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  background: #33422d;
+  color: #bbf7d0;
+  border: 1px solid #4a6140;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.2s ease;
 }
 
-/* --- Responsividade --- */
-@media (max-width: 768px) {
+.fixButton:hover {
+  background: #415439;
+  color: #fff;
+}
+
+/* Painel de Resultados Finais */
+.resultsDashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.resultCard {
+  background: #1f271c;
+  border: 1px solid #36462f;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resultCardTitle {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #8da96d;
+  font-weight: 700;
+  margin: 0;
+}
+
+.resultCardNumber {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.resultCardSub {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Navegação Inferior (Próximo / Voltar) */
+.wizardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #2e3a2a;
+}
+
+.wizardFooterActions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .stepperNav {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .checklistGrid {
+    grid-template-columns: 1fr;
+  }
+  .resultsDashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
   .container {
     padding: 1rem;
-    border-radius: 0;
   }
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .actions {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .content {
-    padding: 1rem;
-  }
-  /* Formulário vira coluna única */
-  .formGrid, .formGrid.twoColumns {
+  .stepperNav {
     grid-template-columns: 1fr;
-    gap: 1rem; 
   }
-  .parqQuestion {
-    padding: 1rem;
+  .formGrid, .twoColumns {
+    grid-template-columns: 1fr;
+  }
+  .resultsDashboard {
+    grid-template-columns: 1fr;
   }
 }
 
-/* --- ADICIONE ESTES ESTILOS --- */
-.formGroup input:disabled,
-.formGroup textarea:disabled {
-  background-color: #2a2a2a; /* Fundo um pouco mais escuro */
-  color: #888; /* Texto cinza */
-  cursor: not-allowed;
-  opacity: 0.7;
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem 0.5rem;
+    border-radius: 8px;
+  }
+  .calcSummaryCard {
+    grid-template-columns: 1fr;
+    padding: 0.9rem;
+  }
+  .actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.6rem;
+  }
+  .actions button,
+  .actions .backButton,
+  .actions .saveButton,
+  .actions .finishButton,
+  .actions .printHeaderButton,
+  .actions .viewModeToggle {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .viewModeToggle {
+    display: flex;
+    width: 100%;
+    padding: 3px;
+  }
+  .viewModeBtn {
+    flex: 1;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0.5rem;
+  }
+}
+
+/* --- SELETOR DE MODO DE VISUALIZAÇÃO (ETAPAS VS PÁGINA ÚNICA) --- */
+.viewModeToggle {
+  display: inline-flex;
+  align-items: center;
+  background-color: #171d15;
+  border: 1px solid #3c4938;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.viewModeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.viewModeBtn:hover {
+  color: #fff;
+  background-color: rgba(93, 129, 46, 0.15);
+}
+
+.viewModeBtnActive {
+  background-color: #5d812e;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.singlePageNav {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background-color: #1c2219;
+  border: 1px solid #2e3a2a;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.singlePageNavLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #8da96d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.singlePageNavLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 0.45rem 0.8rem;
+  border-radius: 6px;
+  background-color: #242c21;
+  border: 1px solid #364431;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.singlePageNavLink:hover {
+  background-color: #313d2c;
+  color: #fff;
+  border-color: #5d812e;
+}
+
+.singleSectionCard {
+  margin-bottom: 2.5rem;
+  background-color: #1a1f18;
+  border: 1px solid #2b3527;
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.singleSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #33402e;
+}
+
+.singleSectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.singleSectionTitle svg {
+  color: #5d812e;
+}
+
+.singlePageFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #2e3a2a;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ========================================================
+   ESTILOS DE IMPRESSÃO / LAUDO CLÍNICO OFICIAL (@media print)
+   ======================================================== */
+.printableDocument {
+  display: none;
+}
+
+@media print {
+  .container {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+  }
+
+  /* Oculta toda a interface interativa do Wizard */
+  .header,
+  .stepperNav,
+  .stepContent,
+  .wizardFooter {
+    display: none !important;
+  }
+
+  /* Exibe exclusivamente o laudo estruturado e limpo */
+  .printableDocument {
+    display: block !important;
+    color: #0f172a !important;
+    background: #ffffff !important;
+    width: 100% !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .printHeader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 2.5px solid #2e7d32 !important;
+    padding-bottom: 8pt !important;
+    margin-bottom: 8pt !important;
+  }
+
+  .printBrand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10pt !important;
+  }
+
+  .printLogoBadge {
+    background: #2e7d32 !important;
+    color: #ffffff !important;
+    font-weight: 900 !important;
+    font-size: 13pt !important;
+    padding: 5pt 10pt !important;
+    border-radius: 4pt !important;
+    letter-spacing: 1px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printInstitutionName {
+    font-size: 11pt !important;
+    font-weight: 800 !important;
+    color: #1b5e20 !important;
+    margin: 0 !important;
+  }
+
+  .printInstitutionDept {
+    font-size: 8pt !important;
+    color: #475569 !important;
+    margin: 2pt 0 0 0 !important;
+  }
+
+  .printDocInfo {
+    text-align: right !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2pt !important;
+  }
+
+  .printDocId {
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+    color: #2e7d32 !important;
+  }
+
+  .printDocDate {
+    font-size: 7.8pt !important;
+    color: #64748b !important;
+  }
+
+  .printDocTitleBanner {
+    text-align: center !important;
+    margin-bottom: 10pt !important;
+  }
+
+  .printDocTitleBanner h1 {
+    font-size: 11.5pt !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    padding-bottom: 5pt !important;
+  }
+
+  .printSection {
+    margin-bottom: 9pt !important;
+    page-break-inside: avoid !important;
+  }
+
+  .printSectionTitle {
+    font-size: 9pt !important;
+    font-weight: 800 !important;
+    color: #1b5e20 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    border-left: 3.5pt solid #2e7d32 !important;
+    padding-left: 6pt !important;
+    margin: 0 0 5pt 0 !important;
+  }
+
+  .printTable {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 6pt !important;
+    font-size: 8.5pt !important;
+  }
+
+  .printTable th {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    padding: 3.5pt 6pt !important;
+    border: 1px solid #cbd5e1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printTable td {
+    padding: 3.5pt 6pt !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+  }
+
+  .printKpiGrid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6pt !important;
+    margin-bottom: 8pt !important;
+  }
+
+  .printKpiCard {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4pt !important;
+    padding: 5pt 6pt !important;
+    background: #f8fafc !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printKpiTitle {
+    font-size: 6.8pt !important;
+    text-transform: uppercase !important;
+    color: #64748b !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+  }
+
+  .printKpiValue {
+    font-size: 11pt !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+  }
+
+  .printKpiSub {
+    font-size: 7.2pt !important;
+    font-weight: 600 !important;
+    color: #2e7d32 !important;
+    margin: 0 !important;
+  }
+
+  .printTwoCols {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10pt !important;
+    margin-bottom: 8pt !important;
+    page-break-inside: avoid !important;
+  }
+
+  .printCol {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .printNoticePartial {
+    background: #fefce8 !important;
+    border: 1px dashed #ca8a04 !important;
+    border-radius: 4pt !important;
+    padding: 7pt !important;
+    font-size: 7.8pt !important;
+    color: #854d0e !important;
+    line-height: 1.4 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printNotesBox {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4pt !important;
+    padding: 6pt 8pt !important;
+    background: #f8fafc !important;
+    font-size: 8.5pt !important;
+    line-height: 1.35 !important;
+    color: #1e293b !important;
+    min-height: 28pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printSignatures {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-top: 22pt !important;
+    page-break-inside: avoid !important;
+  }
+
+  .printSignBlock {
+    width: 44% !important;
+    text-align: center !important;
+  }
+
+  .printSignLine {
+    border-top: 1px solid #334155 !important;
+    margin-bottom: 3pt !important;
+  }
+
+  .printSignName {
+    font-size: 8.5pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+  }
+
+  .printSignRole {
+    font-size: 7.2pt !important;
+    color: #64748b !important;
+    margin: 1pt 0 0 0 !important;
+  }
 }

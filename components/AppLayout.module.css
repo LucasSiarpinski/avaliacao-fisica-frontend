@@ -115,3 +115,30 @@
       padding: 1.5rem;
     }
 }
+
+@media (max-width: 480px) {
+    .pageContent {
+      padding: 0.6rem;
+    }
+}
+
+@media print {
+    .layoutWrapper {
+        display: block !important;
+        background-color: #ffffff !important;
+        min-height: auto !important;
+    }
+    .mainContent {
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+    .pageContent {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+    .mobileHeader,
+    .mobileOverlay {
+        display: none !important;
+    }
+}

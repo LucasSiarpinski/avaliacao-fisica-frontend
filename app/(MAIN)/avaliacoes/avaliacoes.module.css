@@ -1,145 +1,575 @@
-/* Copiado de alunos.module.css para manter a consistência */
+/* app/(MAIN)/avaliacoes/avaliacoes.module.css */
 
 .container {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Ajustado */
+    gap: 1.5rem;
     padding: 2rem;
-    background-color: #1a1a1a; /* Cor do "card" */
-    color: #e0e0e0; 
-    min-height: calc(100vh - 40px); /* Ajuste de altura */
-    border-radius: 12px; 
-    border: 1px solid #333; 
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    background-color: #121212;
+    color: #e0e0e0;
+    min-height: calc(100vh - 40px);
+    border-radius: 12px;
 }
 
-/* --- AJUSTES NO CABEÇALHO --- */
+/* --- CABEÇALHO --- */
 .header {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    border-bottom: 1px solid #333; 
-    padding-bottom: 1rem; 
-    margin-bottom: 1rem; 
-    flex-wrap: wrap; /* Para responsividade */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2e3a29;
+    padding-bottom: 1.25rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
     gap: 1.5rem;
 }
 
 .title {
     margin: 0;
-    color: #fff; 
-    font-size: 1.8rem;
-}
-
-/* --- CLASSE PARA AGRUPAR OS BOTÕES --- */
-.headerActions {
-    display: flex; 
-    gap: 1rem; 
-}
-
-/* --- ESTILOS DOS BOTÕES --- */
-/* Botão Roxo (Reutilizado de 'newStudentButton') */
-.newStudentButton {
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
     color: #fff;
-    background-color: #5d812e; /* Roxo */
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.headerActions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* --- BOTÕES DO CABEÇALHO --- */
+.newStudentButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.4rem;
+    font-size: 0.95rem;
+    color: #fff;
+    background: linear-gradient(135deg, #5d812e 0%, #729e37 100%);
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    font-weight: 600;
+    transition: all 0.2s ease;
     white-space: nowrap;
-}
-.newStudentButton:hover {
-    background-color: #5d812e; 
+    box-shadow: 0 4px 12px rgba(93, 129, 46, 0.3);
 }
 
-/* Botões Cinza (Editar/Excluir) */
+.newStudentButton:hover {
+    background: linear-gradient(135deg, #689033 0%, #7eb03c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(93, 129, 46, 0.45);
+}
+
 .actionButton {
-    padding: 0.8rem 1.5rem; 
-    border: none;
-    border-radius: 8px; 
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 0.95rem;
     color: #fff;
-    transition: background-color 0.2s, opacity 0.2s;
+    transition: all 0.2s ease;
     white-space: nowrap;
 }
-/* Estilo "Editar" (Azul) */
+
 .editButton {
-    background-color: #007bff; 
+    background-color: #1e293b;
+    border-color: #3b82f6;
+    color: #93c5fd;
 }
 .editButton:hover:not(:disabled) {
-    background-color: #0056b3;
-}
-/* Estilo para botões desabilitados */
-.actionButton:disabled,
-.editButton:disabled {
-  background-color: #555;
-  color: #888;
-  cursor: not-allowed;
-  opacity: 0.6;
+    background-color: #2563eb;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
-/* --- ESTILOS DA TABELA --- */
-.tableContainer {
-    background-color: #1e1e1e;
-    border: 1px solid #333;
+.printButton {
+    background: #0c4a6e;
+    border-color: #0284c7;
+    color: #bae6fd;
+}
+.printButton:hover:not(:disabled) {
+    background: #0284c7;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.deleteButton {
+    background-color: #3b1818;
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+.deleteButton:hover:not(:disabled) {
+    background-color: #dc2626;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+}
+
+.actionButton:disabled {
+    background-color: #1e241c;
+    border-color: #2c3629;
+    color: #556250;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+/* --- BUSCA E FILTROS --- */
+.searchWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: #1b1f1a;
+    border: 1px solid #2e3b29;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+}
+
+.searchInputsGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 280px;
+}
+
+.filterSelectWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #242b22;
+    border: 1px solid #3d4a37;
     border-radius: 8px;
-    overflow-x: auto; /* Permite scroll horizontal em mobile */
+    padding: 0.2rem 0.6rem 0.2rem 0.8rem;
+    color: #a4c979;
+}
+
+.filterIcon {
+    font-size: 0.85rem;
+    color: #8da96d;
+}
+
+.searchCategory {
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem 0.2rem;
+    outline: none;
+}
+
+.searchCategory option {
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+.searchBarWrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    background-color: #161a15;
+    border: 1px solid #2c3629;
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.searchBarWrapper:focus-within {
+    border-color: #5d812e;
+    box-shadow: 0 0 0 2px rgba(93, 129, 46, 0.25);
+    background-color: #1b211a;
+}
+
+.searchIcon {
+    color: #687961;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.searchInput::placeholder {
+    color: #687961;
+}
+
+.clearSearchBtn {
+    background: transparent;
+    border: none;
+    color: #8da96d;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: 50%;
+}
+.clearSearchBtn:hover {
+    color: #fff;
+}
+
+.resultsCount {
+    font-size: 0.85rem;
+    color: #8da96d;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 0 0.5rem;
+}
+
+/* --- TABELA --- */
+.tableContainer {
+    background-color: #171b16;
+    border: 1px solid #283324;
+    border-radius: 12px;
+    overflow-x: auto;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .table {
     width: 100%;
-    border-collapse: collapse; 
-    min-width: 600px; /* Garante que a tabela tenha um tamanho mínimo */
-}
-
-.table th, .table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #333;
-    white-space: nowrap; 
+    border-collapse: collapse;
+    min-width: 700px;
 }
 
 .table th {
-    background-color: #252525;
-    font-weight: bold;
-    color: #fff; 
+    background-color: #1e241c;
+    color: #a4c979;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-weight: 700;
+    padding: 1.1rem 1.25rem;
+    text-align: left;
+    border-bottom: 2px solid #2d3a28;
+    white-space: nowrap;
 }
 
-.table tbody tr:last-child td {
-    border-bottom: none; 
+.table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #232a20;
+    color: #e2e8f0;
+    font-size: 0.92rem;
+    vertical-align: middle;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease;
+    cursor: pointer;
 }
 
 .table tbody tr:hover {
-  background-color: #2a2a2a; 
-  cursor: pointer;
+    background-color: #21291f;
 }
 
 .selectedRow {
-  background-color: #2a3a4a !important; /* Azul escuro para seleção */
-  border-left: 3px solid #007bff; 
+    background-color: #283823 !important;
+    border-left: 4px solid #5d812e;
 }
 
 .checkIcon {
-  color: #007bff;
-  font-weight: bold;
+    color: #729e37;
+    font-weight: 900;
+    font-size: 1.1rem;
+    display: inline-block;
+    text-align: center;
 }
 
 .noResults {
     text-align: center !important;
-    padding: 2rem !important;
-    color: #888;
+    padding: 3rem !important;
+    color: #8da96d;
     font-style: italic;
 }
 
-/* --- Responsividade (Copiada de Alunos) --- */
+/* Badges e Células */
+.metricTag {
+    display: inline-block;
+    background: #1f271c;
+    border: 1px solid #36462f;
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a4d864;
+}
+
+.tableRowActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quickRowBtn {
+    background: #20271d;
+    border: 1px solid #36462f;
+    color: #cbd5e1;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.quickRowBtn:hover {
+    background: #2e3a29;
+    color: #fff;
+    border-color: #5d812e;
+}
+
+/* Badges de Status da Avaliação */
+.statusBadgeConcluida {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background-color: rgba(46, 125, 50, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.35);
+    white-space: nowrap;
+}
+
+.statusBadgeAndamento {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background-color: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(250, 204, 21, 0.35);
+    white-space: nowrap;
+}
+
+.metricWaiting {
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #777;
+}
+
+.filterStatusTabs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+.filterStatusBtn {
+    background-color: #1f271c;
+    border: 1px solid #36462f;
+    color: #aaa;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filterStatusBtn:hover {
+    color: #fff;
+    border-color: #5d812e;
+}
+
+.filterStatusBtnActive {
+    background-color: #5d812e;
+    color: #fff;
+    border-color: #5d812e;
+}
+
+/* --- LISTA DE CARDS PARA MOBILE --- */
+.mobileCardsList {
+    display: none;
+}
+
+.mobileCard {
+    background-color: #171b16;
+    border: 1px solid #283324;
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobileCard:hover {
+    border-color: #5d812e;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.mobileCard:active {
+    transform: scale(0.985);
+    background-color: #1c221a;
+}
+
+.mobileCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #252e22;
+}
+
+.mobileCardStudentName {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.mobileCardMatricula {
+    font-size: 0.8rem;
+    color: #8da96d;
+    font-weight: 500;
+    margin-top: 0.2rem;
+    display: block;
+}
+
+.mobileCardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.mobileCardMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.mobileCardMetaLabel {
+    color: #888888;
+}
+
+.mobileCardMetaVal {
+    color: #d1d5db;
+    font-weight: 500;
+}
+
+.mobileCardMetrics {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.4rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed #283324;
+}
+
+.mobileCardFooter {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid #252e22;
+}
+
+.mobileOpenBtn {
+    flex: 1;
+    min-height: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #4d6d24 0%, #5d812e 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(93, 129, 46, 0.3);
+    transition: all 0.15s ease;
+}
+
+.mobileOpenBtn:hover {
+    background: linear-gradient(135deg, #597d2b 0%, #6e9837 100%);
+}
+
+.mobileOpenBtn:active {
+    transform: scale(0.97);
+}
+
+.mobilePrintBtn {
+    min-height: 46px;
+    height: 46px;
+    padding: 0 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background-color: #1e261b;
+    color: #a4c979;
+    border: 1px solid #36462f;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mobileDeleteBtn {
+    min-height: 46px;
+    min-width: 46px;
+    height: 46px;
+    width: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #231b1b;
+    color: #f87171;
+    border: 1px solid #4a2828;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.noResultsCard {
+    background-color: #171b16;
+    border: 1px solid #283324;
+    border-radius: 12px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: #8da96d;
+    font-size: 0.95rem;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
-        border-radius: 0; 
+        border-radius: 0;
     }
     .header {
         flex-direction: column;
@@ -147,20 +577,18 @@
     }
     .headerActions {
         width: 100%;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
     }
     .newStudentButton, .actionButton {
-        flex-shrink: 0;
+        flex: 1;
+        justify-content: center;
     }
     .tableContainer {
-        border-radius: 6px;
+        display: none;
     }
-    .table {
-        min-width: 500px;
-    }
-    .table th, .table td {
-        padding: 0.7rem;
-        font-size: 0.85rem;
+    .mobileCardsList {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1.25rem;
     }
 }
