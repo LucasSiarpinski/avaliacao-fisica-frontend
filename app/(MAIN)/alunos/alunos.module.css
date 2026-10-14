@@ -3,10 +3,12 @@
     flex-direction: column;
     gap: 2rem;
     padding: 2rem; 
-    background-color: #121212; 
+    background-color: #1a1a1a; 
     color: #e0e0e0; 
-    min-height: calc(100vh - 60px); 
-    border-radius: 12px; /* Adicionado para consistência */
+    min-height: calc(100vh - 40px); 
+    border-radius: 12px;
+    border: 1px solid #333;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* --- AJUSTES NO CABEÇALHO --- */
@@ -125,11 +127,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: #1b1f1a;
-  border: 1px solid #2e3b29;
-  border-radius: 12px;
-  padding: 0.6rem 1rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   flex-wrap: wrap;
 }
 
@@ -146,16 +148,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #242b22;
-  border: 1px solid #3d4a37;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
   border-radius: 8px;
   padding: 0.2rem 0.6rem 0.2rem 0.8rem;
-  color: #a4c979;
+  color: #e0e0e0;
 }
 
 .filterIcon {
   font-size: 0.85rem;
-  color: #8da96d;
+  color: #888;
 }
 
 .searchCategory {
@@ -178,8 +180,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: #242b22;
-  border: 1px solid #3d4a37;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
   border-radius: 8px;
   padding: 0.4rem 0.9rem;
   flex: 1;
@@ -188,12 +190,12 @@
 
 .searchBarWrapper:focus-within {
   border-color: #5d812e;
-  box-shadow: 0 0 0 3px rgba(93, 129, 46, 0.25);
-  background-color: #273024;
+  box-shadow: 0 0 0 2px rgba(93, 129, 46, 0.25);
+  background-color: #2a2a2a;
 }
 
 .searchIcon {
-  color: #8da96d;
+  color: #888;
   font-size: 1rem;
   flex-shrink: 0;
 }
@@ -208,7 +210,7 @@
 }
 
 .searchBar::placeholder {
-  color: #7d8e78;
+  color: #777;
 }
 
 .clearSearchBtn {
@@ -229,9 +231,9 @@
 .countBadge {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #8da96d;
-  background-color: #263321;
-  border: 1px solid #384a30;
+  color: #aaa;
+  background-color: #2a2a2a;
+  border: 1px solid #3a3a3a;
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   white-space: nowrap;
@@ -239,11 +241,11 @@
 
 /* --- ESTILOS DA TABELA --- */
 .tableContainer {
-    background-color: #1a1e19;
-    border: 1px solid #2e382b;
-    border-radius: 12px;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 10px;
     overflow-x: auto;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .table {
@@ -255,17 +257,17 @@
 .table th, .table td {
     padding: 1rem 1.25rem;
     text-align: left;
-    border-bottom: 1px solid #283124;
+    border-bottom: 1px solid #2a2a2a;
     white-space: nowrap; 
 }
 
 .table th {
-    background-color: #222920;
-    font-size: 0.8rem;
+    background-color: #252525;
+    font-size: 0.85rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #94a3b8; 
+    color: #fff; 
+    border-bottom: 1px solid #333;
 }
 
 .table tbody tr:last-child td {
@@ -277,13 +279,13 @@
 }
 
 .table tbody tr:hover {
-  background-color: #232c20; 
+  background-color: #2a2a2a; 
   cursor: pointer;
 }
 
 .selectedRow {
-  background-color: #293822 !important;
-  border-left: 4px solid #7cb342; 
+  background-color: rgba(93, 129, 46, 0.18) !important;
+  border-left: 4px solid #5d812e; 
 }
 
 .checkIndicator {
@@ -293,15 +295,15 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid #55694c;
+  border: 2px solid #555;
   background-color: transparent;
   transition: all 0.2s ease;
 }
 
 .checkIndicatorActive {
-  background-color: #7cb342;
-  border-color: #7cb342;
-  color: #1a1e19;
+  background-color: #5d812e;
+  border-color: #5d812e;
+  color: #fff;
   font-size: 0.75rem;
   font-weight: 800;
 }
@@ -309,7 +311,7 @@
 .noResults {
     text-align: center !important;
     padding: 3rem 1rem !important;
-    color: #7d8e78;
+    color: #888;
     font-style: italic;
 }
 

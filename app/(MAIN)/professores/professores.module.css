@@ -9,6 +9,7 @@
     color: #e0e0e0; 
     min-height: calc(100vh - 40px); /* Ajusta altura para não sobrepor o footer/header se houver */
     border-radius: 12px; /* Borda arredondada para o container principal */
+    border: 1px solid #333;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -54,8 +55,9 @@
     white-space: nowrap; 
 }
 .newButton:hover {
-    background-color: #5d812e; 
+    background-color: #6e9837; 
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(93, 129, 46, 0.35);
 }
 .newButton:disabled {
   background-color: #555;
@@ -126,8 +128,8 @@
 
 .searchBar:focus {
     outline: none;
-    border-color: #5d812e; /* Borda roxa no foco */
-    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
+    border-color: #5d812e;
+    box-shadow: 0 0 0 2px rgba(93, 129, 46, 0.25);
 }
 
 /* --- [BLOCO ADICIONADO] --- */
@@ -157,7 +159,8 @@
 
 .searchCategory:focus {
   outline: none;
-  border-color: #5d812e; /* Borda roxa no foco (do seu tema) */
+  border-color: #5d812e;
+  box-shadow: 0 0 0 2px rgba(93, 129, 46, 0.25);
 }
 /* --- [FIM DO BLOCO ADICIONADO] --- */
 
@@ -206,8 +209,8 @@
 }
 
 .selectedRow {
-  background-color: #312b40 !important; 
-  border-left: 3px solid #8a2be2; 
+  background-color: rgba(93, 129, 46, 0.18) !important; 
+  border-left: 4px solid #5d812e; 
 }
 
 .noResults {
@@ -315,7 +318,7 @@
 .formInput:focus, .formSelect:focus {
     outline: none;
     border-color: #5d812e; 
-    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
+    box-shadow: 0 0 0 2px rgba(93, 129, 46, 0.25);
 }
 
 .errorMessage {
@@ -349,7 +352,7 @@
     color: #fff;
 }
 .saveButton:hover:not(:disabled) {
-    background-color: #5d812e;
+    background-color: #6e9837;
 }
 .saveButton:disabled {
     background-color: #555;

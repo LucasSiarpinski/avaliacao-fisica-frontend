@@ -109,27 +109,32 @@
 .tableContainer {
   background-color: #1e1e1e;
   border: 1px solid #333;
-  border-radius: 8px;
-  overflow: hidden; 
+  border-radius: 10px;
+  overflow-x: auto; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   margin-top: 1.5rem;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse; 
+  min-width: 600px;
 }
 
 .table th, .table td {
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   text-align: left;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #2a2a2a;
   white-space: nowrap; 
 }
 
 .table th {
   background-color: #252525;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
   color: #fff; 
+  border-bottom: 1px solid #333;
 }
 
 .table tbody tr:last-child td {
@@ -142,7 +147,7 @@
 }
 
 .clickableRow:hover {
-  background-color: #272727;
+  background-color: #2a2a2a;
 }
 
 .statusAtivo {
