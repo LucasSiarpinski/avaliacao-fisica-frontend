@@ -20,6 +20,7 @@ export default function FormProfessorPage() {
         email: '',
         password: '',
         role: 'PROFESSOR',
+        status: 'ACTIVE',
         campusId: '',
     });
     const [campus, setCampus] = useState([]);
@@ -68,6 +69,7 @@ export default function FormProfessorPage() {
                         name: professor.name || '',
                         email: professor.email || '',
                         role: professor.role || 'PROFESSOR',
+                        status: professor.status || 'ACTIVE',
                         campusId: professor.campusId ? String(professor.campusId) : '',
                         password: '',
                     });
@@ -177,6 +179,12 @@ export default function FormProfessorPage() {
                 <select name="role" value={formData.role} onChange={handleChange} className={styles.formSelect}>
                     <option value="PROFESSOR">PROFESSOR</option>
                     <option value="ADMIN">ADMIN</option>
+                </select>
+
+                <label className={styles.formLabel}>Status da Conta (Acesso):</label>
+                <select name="status" value={formData.status} onChange={handleChange} className={styles.formSelect}>
+                    <option value="ACTIVE">Ativo (Acesso Liberado)</option>
+                    <option value="INACTIVE">Inativo (Acesso Bloqueado)</option>
                 </select>
 
                 <label className={styles.formLabel}>Campus:</label>

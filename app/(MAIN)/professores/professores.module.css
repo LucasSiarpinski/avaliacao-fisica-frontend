@@ -95,6 +95,28 @@
     transform: translateY(-2px);
 }
 
+.deactivateButton {
+    background-color: #7f1d1d;
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+}
+.deactivateButton:hover:not(:disabled) {
+    background-color: #dc2626;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.activateButton {
+    background-color: #064e3b;
+    border: 1px solid #10b981;
+    color: #a7f3d0;
+}
+.activateButton:hover:not(:disabled) {
+    background-color: #059669;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
 /* Estilo para botões desabilitados */
 .actionButton:disabled {
   background-color: #333;

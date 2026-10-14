@@ -12,6 +12,8 @@ export default function ProfessoresPage() {
   const [professores, setProfessores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [professorSelecionadoId, setProfessorSelecionadoId] = useState(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   // --- 1. ESTADOS PARA O FILTRO ---
   const [termoBusca, setTermoBusca] = useState("");
@@ -41,6 +43,31 @@ export default function ProfessoresPage() {
       toast.error("Não foi possível carregar a lista de professores.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const professorSelecionado = professores.find((p) => p.id === professorSelecionadoId);
+
+  const handleToggleStatusProfessor = async () => {
+    if (!professorSelecionado) return;
+    const novoStatus = professorSelecionado.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    setStatusLoading(true);
+    try {
+      await api.patch(`/api/professores/${professorSelecionado.id}/status`, {
+        status: novoStatus,
+      });
+      toast.success(
+        novoStatus === "ACTIVE"
+          ? "Professor ativado com sucesso! Acesso liberado."
+          : "Professor desativado! Acesso ao sistema restrito."
+      );
+      setIsStatusModalOpen(false);
+      await fetchProfessores();
+    } catch (error) {
+      console.error("Erro ao alterar status do professor:", error);
+      toast.error("Não foi possível alterar o status do professor.");
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -85,7 +112,17 @@ export default function ProfessoresPage() {
           >
             Editar Selecionado
           </button>
-          {/* Adicione o botão Excluir se precisar */}
+          <button
+            onClick={() => setIsStatusModalOpen(true)}
+            className={`${styles.actionButton} ${
+              professorSelecionado?.status === "ACTIVE"
+                ? styles.deactivateButton
+                : styles.activateButton
+            }`}
+            disabled={!professorSelecionadoId || statusLoading}
+          >
+            {professorSelecionado?.status === "ACTIVE" ? "Desativar" : "Ativar"}
+          </button>
         </div>
       </header>
 
@@ -185,6 +222,54 @@ export default function ProfessoresPage() {
           </tbody>
         </table>
       </div>
+
+      {/* --- MODAL DE CONFIRMAÇÃO DE STATUS (ATIVAR/DESATIVAR) --- */}
+      {isStatusModalOpen && professorSelecionado && (
+        <div className={styles.modalOverlay} onClick={() => !statusLoading && setIsStatusModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>
+              {professorSelecionado.status === "ACTIVE" ? "Confirmar Desativação" : "Confirmar Ativação"}
+            </h2>
+            <p style={{ color: "#d1d5db", fontSize: "0.95rem", lineHeight: 1.5, margin: "1rem 0" }}>
+              {professorSelecionado.status === "ACTIVE"
+                ? `Ao desativar o professor "${professorSelecionado.name}", o acesso deste usuário ao sistema será restrito e ele não conseguirá mais realizar login até ser reativado. Deseja prosseguir com a desativação?`
+                : `Deseja reativar o acesso do professor "${professorSelecionado.name}"? O usuário poderá voltar a realizar login normalmente no sistema.`}
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => setIsStatusModalOpen(false)}
+                disabled={statusLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={
+                  professorSelecionado.status === "ACTIVE"
+                    ? styles.deactivateButton
+                    : styles.activateButton
+                }
+                style={{
+                  padding: "0.55rem 1.25rem",
+                  borderRadius: "6px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
+                onClick={handleToggleStatusProfessor}
+                disabled={statusLoading}
+              >
+                {statusLoading
+                  ? "Salvando..."
+                  : professorSelecionado.status === "ACTIVE"
+                  ? "Sim, Desativar"
+                  : "Sim, Ativar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

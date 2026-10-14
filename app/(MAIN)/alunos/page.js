@@ -16,6 +16,8 @@ import {
   FaFilter, 
   FaTimes, 
   FaCheck,
+  FaCheckCircle,
+  FaBan,
   FaHeartbeat 
 } from "react-icons/fa";
 
@@ -24,6 +26,8 @@ export default function AlunosPage() {
   const [alunos, setAlunos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isStartingAvaliacao, setIsStartingAvaliacao] = useState(false);
+  const [statusModalAluno, setStatusModalAluno] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   // --- 1. LÓGICA DE SELEÇÃO (QUE VOCÊ GOSTOU) ---
   const [alunoSelecionadoId, setAlunoSelecionadoId] = useState(null);
@@ -167,6 +171,36 @@ export default function AlunosPage() {
     }
   };
 
+  const alunoSelecionado = alunos.find((a) => a.id === alunoSelecionadoId);
+
+  const handleAbrirModalStatus = (aluno) => {
+    if (!aluno) return;
+    setStatusModalAluno(aluno);
+  };
+
+  const handleConfirmarAlteracaoStatus = async () => {
+    if (!statusModalAluno) return;
+    const novoStatus = statusModalAluno.status === "ATIVO" ? "INATIVO" : "ATIVO";
+    setStatusLoading(true);
+    try {
+      await api.patch(`/api/alunos/${statusModalAluno.id}/status`, {
+        status: novoStatus,
+      });
+      toast.success(
+        novoStatus === "ATIVO"
+          ? "Aluno ativado com sucesso!"
+          : "Aluno inativado com sucesso!"
+      );
+      setStatusModalAluno(null);
+      await fetchAlunos();
+    } catch (error) {
+      console.error("Erro ao alterar status do aluno:", error);
+      toast.error("Não foi possível alterar o status do aluno.");
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   // --- 3. TELA DE CARREGAMENTO ROBUSTA ---
   if (authLoading || loading) {
     return <div>Carregando...</div>;
@@ -198,6 +232,26 @@ export default function AlunosPage() {
             disabled={!alunoSelecionadoId || isStartingAvaliacao}
           >
             <FaEdit /> Editar
+          </button>
+          <button
+            onClick={() => handleAbrirModalStatus(alunoSelecionado)}
+            className={`${styles.actionButton} ${
+              alunoSelecionado?.status === "ATIVO"
+                ? styles.inativarButton
+                : styles.ativarButton
+            }`}
+            disabled={!alunoSelecionadoId || isStartingAvaliacao}
+            title={alunoSelecionado ? (alunoSelecionado.status === "ATIVO" ? "Inativar matrícula do aluno" : "Ativar matrícula do aluno") : "Selecione um aluno na tabela"}
+          >
+            {alunoSelecionado?.status === "ATIVO" ? (
+              <>
+                <FaBan /> Inativar
+              </>
+            ) : (
+              <>
+                <FaCheckCircle /> Ativar
+              </>
+            )}
           </button>
           <button
             onClick={handleExcluirAluno}
@@ -423,6 +477,17 @@ export default function AlunosPage() {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
+                      handleAbrirModalStatus(aluno);
+                    }}
+                    className={isAtivo ? styles.mobileInativarBtn : styles.mobileAtivarBtn}
+                    title={isAtivo ? "Inativar Aluno" : "Ativar Aluno"}
+                  >
+                    {isAtivo ? <FaBan size={12} /> : <FaCheckCircle size={12} />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
                       handleExcluirAlunoDireto(aluno.id);
                     }}
                     className={styles.mobileDeleteBtn}
@@ -436,6 +501,60 @@ export default function AlunosPage() {
           })
         )}
       </div>
+
+      {/* --- MODAL DE CONFIRMAÇÃO DE STATUS DO ALUNO --- */}
+      {statusModalAluno && (
+        <div className={styles.modalOverlay} onClick={() => !statusLoading && setStatusModalAluno(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>
+              {statusModalAluno.status === "ATIVO"
+                ? "Confirmar Inativação do Aluno"
+                : "Confirmar Reativação do Aluno"}
+            </h2>
+            <p style={{ color: "#cbd5e1", fontSize: "0.95rem", lineHeight: 1.5, margin: "1rem 0" }}>
+              {statusModalAluno.status === "ATIVO"
+                ? `Ao inativar o aluno "${statusModalAluno.nome}", ele ficará desabilitado para novas avaliações físicas, mas todo o histórico de avaliações, questionários e exames será preservado com segurança. Deseja realmente inativar este aluno?`
+                : `Deseja reativar o aluno "${statusModalAluno.nome}"? A matrícula voltará a ficar ativa para a realização de novas avaliações físicas no sistema.`}
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => setStatusModalAluno(null)}
+                disabled={statusLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={
+                  statusModalAluno.status === "ATIVO"
+                    ? styles.deleteButton
+                    : styles.newStudentButton
+                }
+                style={{
+                  height: "40px",
+                  minHeight: "40px",
+                  padding: "0.45rem 1.25rem",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+                onClick={handleConfirmarAlteracaoStatus}
+                disabled={statusLoading}
+              >
+                {statusLoading
+                  ? "Salvando..."
+                  : statusModalAluno.status === "ATIVO"
+                  ? "Sim, Inativar Aluno"
+                  : "Sim, Ativar Aluno"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

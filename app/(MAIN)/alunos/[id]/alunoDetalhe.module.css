@@ -354,23 +354,27 @@
   background: linear-gradient(135deg, rgba(93, 129, 46, 0.15) 0%, rgba(26, 32, 22, 0.4) 100%);
   border: 1px solid rgba(93, 129, 46, 0.35);
   border-radius: 10px;
-  padding: 1.2rem 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .parqHeaderBanner h4 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.4rem 0;
   color: #a4d864;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  word-break: break-word;
 }
 
 .parqHeaderBanner p {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.88rem;
+  line-height: 1.5;
   color: #d6ded2;
 }
 
@@ -378,13 +382,17 @@
   grid-column: 1 / -1;
   background: #212520;
   border: 1px solid #333d30;
-  border-radius: 12px;
-  padding: 1.35rem 1.5rem;
-  margin-bottom: 1rem;
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 0.85rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -396,17 +404,18 @@
 .parqQuestionContent {
   display: flex;
   align-items: flex-start;
-  gap: 1.2rem;
+  gap: 1rem;
   flex: 1;
+  min-width: 0;
 }
 
 .parqQuestionNumber {
   background-color: #2e3b29;
   color: #a4d864;
   font-weight: 700;
-  font-size: 0.85rem;
-  padding: 0.4rem 0.7rem;
-  border-radius: 8px;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
   flex-shrink: 0;
   border: 1px solid #43593b;
   letter-spacing: 0.05em;
@@ -414,11 +423,12 @@
 
 .parqQuestionText {
   color: #ffffff;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  line-height: 1.65;
+  line-height: 1.5;
   margin: 0;
-  letter-spacing: 0.01em;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .parqOptions {
@@ -428,17 +438,20 @@
 }
 
 .parqBtn {
-  padding: 0.65rem 1.4rem;
-  border-radius: 8px;
+  padding: 0.45rem 1.1rem;
+  height: 38px;
+  max-height: 40px;
+  border-radius: 6px;
   border: 1px solid #3e4c39;
   background-color: #1a1e19;
   color: #a5b3a0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 80px;
+  min-width: 70px;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .parqBtn:hover {
@@ -451,14 +464,14 @@
   background-color: #e53e3e !important;
   color: #fff !important;
   border-color: #fc8181 !important;
-  box-shadow: 0 0 12px rgba(229, 62, 62, 0.45);
+  box-shadow: 0 0 10px rgba(229, 62, 62, 0.45);
 }
 
 .parqBtnNaoActive {
   background-color: #5d812e !important;
   color: #fff !important;
   border-color: #7ba83d !important;
-  box-shadow: 0 0 12px rgba(93, 129, 46, 0.45);
+  box-shadow: 0 0 10px rgba(93, 129, 46, 0.45);
 }
 
 /* --- ABA DE ARQUIVOS (PDF, WORD, PNG, JPEG) --- */
@@ -668,23 +681,58 @@
 .avaliacoesSubtitle {
   margin: 0.3rem 0 0 0;
   color: #8da088;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+}
+
+.btnNovaAvaliacaoTab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.45rem 0.95rem;
+  height: 40px;
+  min-height: 40px;
+  max-height: 42px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.btnNovaAvaliacaoTab:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+}
+
+.btnNovaAvaliacaoTab:disabled {
+  background: #374151;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
 }
 
 .emptyAvaliacoesBox {
   text-align: center;
-  padding: 3.5rem 1.5rem;
+  padding: 2.25rem 1.25rem;
   background: #1a2018;
   border: 2px dashed #2e3e26;
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .emptyAvaliacoesIcon {
-  font-size: 3.2rem;
+  font-size: 2.5rem;
   color: #5d812e;
   animation: pulseIcon 2s infinite ease-in-out;
 }
@@ -697,14 +745,14 @@
 
 .emptyAvaliacoesBox h4 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: #ffffff;
 }
 
 .emptyAvaliacoesBox p {
   margin: 0;
   color: #94a3b8;
-  max-width: 460px;
+  max-width: 440px;
   font-size: 0.95rem;
   line-height: 1.5;
 }
@@ -946,15 +994,19 @@
   background: #2b3924;
   color: #a4d864;
   border: 1px solid #455e37;
-  padding: 0.55rem 1rem;
+  padding: 0.45rem 0.85rem;
+  height: 38px;
+  min-height: 38px;
+  max-height: 40px;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .btnOpenAva:hover {
@@ -966,15 +1018,19 @@
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
   border: none;
-  padding: 0.55rem 1rem;
+  padding: 0.45rem 0.85rem;
+  height: 38px;
+  min-height: 38px;
+  max-height: 40px;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .btnPrintAva:hover {
@@ -986,13 +1042,17 @@
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 0.55rem 0.8rem;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0;
   border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .btnDeleteAva:hover {
@@ -1000,7 +1060,102 @@
   color: #fff;
 }
 
+/* --- MODAL DE CONFIRMAÇÃO --- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
 
+.modalContent {
+  background-color: #1e1e1e;
+  padding: 1.75rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  border: 1px solid #333;
+  animation: fadeIn 0.25s ease-out;
+  box-sizing: border-box;
+}
+
+.modalTitle {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #333;
+}
+
+.modalDescription {
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.modalCancelBtn {
+  background: #2a2a2a;
+  border: 1px solid #3e3e3e;
+  color: #cbd5e1;
+  padding: 0.55rem 1.15rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modalCancelBtn:hover:not(:disabled) {
+  background: #383838;
+  color: #fff;
+}
+
+.modalConfirmInactiveBtn {
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+  color: #fca5a5;
+  padding: 0.55rem 1.15rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modalConfirmInactiveBtn:hover:not(:disabled) {
+  background: #dc2626;
+  color: #fff;
+}
+
+.modalConfirmActiveBtn {
+  background: #064e3b;
+  border: 1px solid #10b981;
+  color: #a7f3d0;
+  padding: 0.55rem 1.15rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modalConfirmActiveBtn:hover:not(:disabled) {
+  background: #059669;
+  color: #fff;
+}
 
 /* * ==========================================
  * NOVOS ESTILOS: RESPONSIVIDADE
@@ -1096,11 +1251,122 @@
         gap: 1.5rem;
     }
 
-    .parqQuestion {
-        padding: 0.85rem;
+    /* Responsividade PAR-Q Mobile: Empilha texto e botões para não estourar */
+    .parqHeaderBanner {
+      padding: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+    .parqHeaderBanner h4 {
+      font-size: 0.95rem;
+    }
+    .parqHeaderBanner p {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+    .parqQuestionCard {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+      padding: 0.85rem;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+    }
+    .parqQuestionContent {
+      gap: 0.65rem;
+      width: 100%;
+      min-width: 0;
+    }
+    .parqQuestionNumber {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+    .parqQuestionText {
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .parqOptions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      width: 100%;
+    }
+    .parqBtn {
+      width: 100%;
+      min-width: 0;
+      height: 38px;
+      padding: 0.45rem;
+      font-size: 0.85rem;
     }
 
-    .parqQuestion label {
-        font-size: 0.85rem;
+    /* Responsividade da Aba de Avaliações Físicas */
+    .avaliacoesHeaderRow {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+    }
+    .avaliacoesHeaderRow h3 {
+      font-size: 1.15rem;
+    }
+    .avaliacoesSubtitle {
+      font-size: 0.8rem;
+    }
+    .btnNovaAvaliacaoTab {
+      width: 100%;
+      height: 40px;
+    }
+    .avaliacaoCard {
+      padding: 1rem 0.85rem;
+      gap: 0.85rem;
+    }
+    .avaliacaoCardHeader {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .avaliacaoCardFooter {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.65rem;
+    }
+    .avaliacaoObservationsBrief {
+      max-width: 100%;
+      font-size: 0.78rem;
+      white-space: normal;
+    }
+    .avaliacaoCardBtns {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.4rem;
+    }
+    .btnOpenAva, .btnPrintAva {
+      width: 100%;
+      height: 38px;
+      font-size: 0.8rem;
+      padding: 0 0.5rem;
+      justify-content: center;
+    }
+    .btnDeleteAva {
+      width: 38px;
+      height: 38px;
+    }
+    .emptyAvaliacoesBox {
+      padding: 1.5rem 1rem;
+    }
+
+    /* Modal no Mobile */
+    .modalContent {
+      padding: 1.25rem;
+      width: 95%;
+    }
+    .modalActions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .modalCancelBtn, .modalConfirmInactiveBtn, .modalConfirmActiveBtn {
+      width: 100%;
+      height: 40px;
+      justify-content: center;
     }
 }

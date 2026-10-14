@@ -103,6 +103,8 @@ export default function AlunoDetalhePage() {
   const [loading, setLoading] = useState(!isCreating);
   const [isSaving, setIsSaving] = useState(false);
   const [isStartingAvaliacao, setIsStartingAvaliacao] = useState(false);
+  const [confirmStatusAction, setConfirmStatusAction] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const handleIniciarNovaAvaliacao = async () => {
     if (isCreating || !id) return;
@@ -316,26 +318,29 @@ export default function AlunoDetalhePage() {
     }
   };
 
-  // --- 1. A NOVA FUNÇÃO PARA ALTERAR O STATUS ---
-  const handleToggleStatus = async () => {
-    // Determina qual será o novo status, o oposto do atual
-    const novoStatus = aluno.status === "ATIVO" ? "INATIVO" : "ATIVO";
-    // Pede confirmação ao usuário para uma ação importante
-    const confirmar = window.confirm(
-      `Tem certeza que deseja ${novoStatus.toLowerCase()} este aluno?`
-    );
-    if (!confirmar) return;
+  // --- 1. FUNÇÃO PARA CONFIRMAR E ALTERAR O STATUS ---
+  const handleConfirmToggleStatus = async () => {
+    if (!confirmStatusAction) return;
+    setStatusLoading(true);
 
     try {
-      // Chama a nova rota PATCH que criamos no backend
+      // Chama a rota PATCH no backend
       const response = await api.patch(`/api/alunos/${id}/status`, {
-        status: novoStatus,
+        status: confirmStatusAction,
       });
-      // ATUALIZA O ESTADO LOCAL com a resposta da API, para que a tela mude instantaneamente
+      // Atualiza o estado local para refletir na interface
       setAluno(response.data);
-      toast.success(`Aluno ${novoStatus.toLowerCase()} com sucesso!`);
+      toast.success(
+        confirmStatusAction === "ATIVO"
+          ? "Aluno ativado com sucesso! Habilitado para avaliações."
+          : "Aluno inativado com sucesso!"
+      );
+      setConfirmStatusAction(null);
     } catch (error) {
+      console.error("Erro ao alterar status do aluno:", error);
       toast.error("Não foi possível alterar o status do aluno.");
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -437,7 +442,7 @@ export default function AlunoDetalhePage() {
                     type="button"
                     className={`${styles.statusBtn} ${aluno.status === "ATIVO" ? styles.statusBtnActiveActive : ""}`}
                     onClick={() => {
-                      if (aluno.status !== "ATIVO") handleToggleStatus();
+                      if (aluno.status !== "ATIVO") setConfirmStatusAction("ATIVO");
                     }}
                   >
                     <span className={styles.statusDotGreen}></span>
@@ -447,7 +452,7 @@ export default function AlunoDetalhePage() {
                     type="button"
                     className={`${styles.statusBtn} ${aluno.status === "INATIVO" ? styles.statusBtnActiveInactive : ""}`}
                     onClick={() => {
-                      if (aluno.status !== "INATIVO") handleToggleStatus();
+                      if (aluno.status !== "INATIVO") setConfirmStatusAction("INATIVO");
                     }}
                   >
                     <span className={styles.statusDotRed}></span>
@@ -595,7 +600,7 @@ export default function AlunoDetalhePage() {
               <button
                 type="button"
                 onClick={handleIniciarNovaAvaliacao}
-                className={styles.iniciarAvaliacaoButton}
+                className={styles.btnNovaAvaliacaoTab}
                 disabled={isStartingAvaliacao}
               >
                 <FaPlus /> {isStartingAvaliacao ? "Iniciando..." : "Nova Avaliação Física"}
@@ -616,7 +621,7 @@ export default function AlunoDetalhePage() {
                 <button
                   type="button"
                   onClick={handleIniciarNovaAvaliacao}
-                  className={styles.iniciarAvaliacaoButton}
+                  className={styles.btnNovaAvaliacaoTab}
                   disabled={isStartingAvaliacao}
                   style={{ marginTop: "0.5rem" }}
                 >
@@ -1023,6 +1028,48 @@ export default function AlunoDetalhePage() {
           </div>
         )}
       </main>
+
+      {/* --- MODAL DE CONFIRMAÇÃO DE INATIVAÇÃO / ATIVAÇÃO --- */}
+      {confirmStatusAction && (
+        <div className={styles.modalOverlay} onClick={() => !statusLoading && setConfirmStatusAction(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>
+              {confirmStatusAction === "INATIVO" ? "Confirmar Inativação do Aluno" : "Confirmar Ativação do Aluno"}
+            </h2>
+            <p className={styles.modalDescription}>
+              {confirmStatusAction === "INATIVO"
+                ? `Ao inativar o aluno "${aluno.nome}", a matrícula ficará desabilitada para novas avaliações físicas, mas todo o histórico de avaliações, questionários (PAR-Q e Anamnese) e arquivos continuará preservado com total segurança. Deseja prosseguir com a inativação?`
+                : `Deseja reativar a matrícula de "${aluno.nome}"? O aluno voltará a ficar imediatamente disponível para novas avaliações físicas no sistema.`}
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalCancelBtn}
+                onClick={() => setConfirmStatusAction(null)}
+                disabled={statusLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={
+                  confirmStatusAction === "INATIVO"
+                    ? styles.modalConfirmInactiveBtn
+                    : styles.modalConfirmActiveBtn
+                }
+                onClick={handleConfirmToggleStatus}
+                disabled={statusLoading}
+              >
+                {statusLoading
+                  ? "Salvando..."
+                  : confirmStatusAction === "INATIVO"
+                  ? "Sim, Inativar Aluno"
+                  : "Sim, Ativar Aluno"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
