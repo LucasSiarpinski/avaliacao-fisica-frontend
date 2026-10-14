@@ -195,79 +195,82 @@ export default function AvaliacoesPage() {
 
       {/* --- BARRA DE BUSCA E FILTROS --- */}
       <div className={styles.searchWrapper}>
-        <div className={styles.searchInputsGroup}>
-          <div className={styles.filterSelectWrapper}>
-            <FaFilter className={styles.filterIcon} />
-            <select
-              value={searchCategory}
-              onChange={(e) => setSearchCategory(e.target.value)}
-              className={styles.searchCategory}
-            >
-              <option value="todos">Todos os campos</option>
-              <option value="aluno">Nome do Aluno</option>
-              <option value="matricula">Matrícula</option>
-              <option value="avaliador">Avaliador</option>
-            </select>
+        <div className={styles.searchTopRow}>
+          <div className={styles.searchInputsGroup}>
+            <div className={styles.filterSelectWrapper}>
+              <FaFilter className={styles.filterIcon} />
+              <select
+                value={searchCategory}
+                onChange={(e) => setSearchCategory(e.target.value)}
+                className={styles.searchCategory}
+              >
+                <option value="todos">Todos os campos</option>
+                <option value="aluno">Nome do Aluno</option>
+                <option value="matricula">Matrícula</option>
+                <option value="avaliador">Avaliador</option>
+              </select>
+            </div>
+
+            <div className={styles.searchBarWrapper}>
+              <FaSearch className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder={
+                  searchCategory === "aluno"
+                    ? "Filtrar por nome do aluno..."
+                    : searchCategory === "matricula"
+                    ? "Filtrar por matrícula..."
+                    : searchCategory === "avaliador"
+                    ? "Filtrar por avaliador..."
+                    : "Buscar por aluno, matrícula ou avaliador..."
+                }
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={styles.searchInput}
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className={styles.clearSearchBtn}
+                  title="Limpar pesquisa"
+                >
+                  <FaTimes />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className={styles.searchBarWrapper}>
-            <FaSearch className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder={
-                searchCategory === "aluno"
-                  ? "Filtrar por nome do aluno..."
-                  : searchCategory === "matricula"
-                  ? "Filtrar por matrícula..."
-                  : searchCategory === "avaliador"
-                  ? "Filtrar por avaliador..."
-                  : "Buscar por aluno, matrícula ou avaliador..."
-              }
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className={styles.clearSearchBtn}
-                title="Limpar pesquisa"
-              >
-                <FaTimes />
-              </button>
-            )}
-          </div>
-          {/* Abas de Filtro de Status */}
-          <div className={styles.filterStatusTabs}>
-            <button
-              type="button"
-              className={`${styles.filterStatusBtn} ${statusFilter === "todos" ? styles.filterStatusBtnActive : ""}`}
-              onClick={() => setStatusFilter("todos")}
-            >
-              Todas ({avaliacoes.length})
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterStatusBtn} ${statusFilter === "concluidas" ? styles.filterStatusBtnActive : ""}`}
-              onClick={() => setStatusFilter("concluidas")}
-            >
-              <FaCheckCircle style={{ marginRight: 4 }} /> Concluídas ({avaliacoes.filter(isCompleted).length})
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterStatusBtn} ${statusFilter === "andamento" ? styles.filterStatusBtnActive : ""}`}
-              onClick={() => setStatusFilter("andamento")}
-            >
-              <FaClock style={{ marginRight: 4 }} /> Em Andamento ({avaliacoes.filter(a => !isCompleted(a)).length})
-            </button>
+          <div className={styles.resultsCount}>
+            {avaliacoesFiltradas.length}{" "}
+            {avaliacoesFiltradas.length === 1 ? "avaliação" : "avaliações"}{" "}
+            encontrada(s)
           </div>
         </div>
 
-        <div className={styles.resultsCount}>
-          {avaliacoesFiltradas.length}{" "}
-          {avaliacoesFiltradas.length === 1 ? "avaliação" : "avaliações"}{" "}
-          encontrada(s)
+        {/* Abas de Filtro de Status com scroll horizontal sem estourar a página */}
+        <div className={styles.filterStatusTabs}>
+          <button
+            type="button"
+            className={`${styles.filterStatusBtn} ${statusFilter === "todos" ? styles.filterStatusBtnActive : ""}`}
+            onClick={() => setStatusFilter("todos")}
+          >
+            Todas ({avaliacoes.length})
+          </button>
+          <button
+            type="button"
+            className={`${styles.filterStatusBtn} ${statusFilter === "concluidas" ? styles.filterStatusBtnActive : ""}`}
+            onClick={() => setStatusFilter("concluidas")}
+          >
+            <FaCheckCircle style={{ marginRight: 4 }} /> Concluídas ({avaliacoes.filter(isCompleted).length})
+          </button>
+          <button
+            type="button"
+            className={`${styles.filterStatusBtn} ${statusFilter === "andamento" ? styles.filterStatusBtnActive : ""}`}
+            onClick={() => setStatusFilter("andamento")}
+          >
+            <FaClock style={{ marginRight: 4 }} /> Em Andamento ({avaliacoes.filter(a => !isCompleted(a)).length})
+          </button>
         </div>
       </div>
 

@@ -1,108 +1,148 @@
 .container {
   padding: 2rem;
-  background-color: #141813;
+  background-color: #1a1a1a;
   color: #e2e8f0;
   min-height: calc(100vh - 40px);
-  border-radius: 14px;
-  border: 1px solid #2a3526;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  border: 1px solid #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* --- CABEÇALHO --- */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid #2e3b2b;
+  border-bottom: 1px solid #333;
   flex-wrap: wrap; 
-  gap: 1.5rem; 
+  gap: 1.25rem; 
+  max-width: 100%;
 }
 
-.header h1 {
+.headerTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.title {
   color: #fff;
   margin: 0; 
-  font-size: 1.7rem;
+  font-size: clamp(1.15rem, 3.5vw, 1.45rem);
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.titleIcon {
+  color: #5d812e;
+  flex-shrink: 0;
+}
+
+.titlePrefix {
+  white-space: nowrap;
 }
 
 .alunoName {
   color: #8da96d;
   font-weight: 800;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.alunoMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
 }
 
 .alunoMetaBadge {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  background-color: #242e20;
-  color: #a4c979;
-  border: 1px solid #384932;
-  padding: 0.3rem 0.75rem;
-  border-radius: 20px;
-  margin-left: 0.5rem;
+  background-color: #242424;
+  color: #cbd5e1;
+  border: 1px solid #3a3a3a;
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .statusBadgeConcluida {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.3rem 0.75rem;
-  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
   background-color: rgba(34, 197, 94, 0.15);
   color: #4ade80;
   border: 1px solid rgba(34, 197, 94, 0.35);
-  margin-left: 0.5rem;
+  margin: 0;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .statusBadgeAndamento {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.3rem 0.75rem;
-  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
   background-color: rgba(234, 179, 8, 0.15);
   color: #facc15;
   border: 1px solid rgba(234, 179, 8, 0.35);
-  margin-left: 0.5rem;
+  margin: 0;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.65rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-.backButton, .saveButton, .finishButton {
+.backButton, .saveButton, .finishButton, .printHeaderButton {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0.75rem 1.4rem;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.55rem 1.15rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap; 
 }
 
 .backButton {
-  background-color: #262c23;
+  background-color: #262626;
   color: #cbd5e1;
-  border: 1px solid #3c4938;
+  border: 1px solid #3a3a3a;
 }
 .backButton:hover {
-  background-color: #313a2d;
+  background-color: #333333;
   color: #fff;
 }
 
@@ -129,13 +169,13 @@
 .printHeaderButton {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0.75rem 1.3rem;
+  gap: 6px;
+  padding: 0.55rem 1.15rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
@@ -148,8 +188,8 @@
 }
 
 .saveButton:disabled, .finishButton:disabled, .printHeaderButton:disabled {
-  background: #2b3329;
-  color: #667562;
+  background: #2b2b2b;
+  color: #666;
   cursor: not-allowed;
   opacity: 0.6;
   box-shadow: none;
@@ -583,54 +623,124 @@
 
 @media (max-width: 640px) {
   .container {
-    padding: 1rem;
+    padding: 0.85rem;
+  }
+  .header {
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+  .alunoName {
+    max-width: 200px;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .actions .viewModeToggle {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 38px;
+    height: 38px;
+    box-sizing: border-box;
+  }
+  .actions button,
+  .actions .backButton,
+  .actions .saveButton,
+  .actions .finishButton,
+  .actions .printHeaderButton {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    max-height: 42px;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+  }
+  .wizardFooter {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  .wizardFooter > div:first-child {
+    width: 100%;
+  }
+  .wizardFooter > div:first-child button {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    max-height: 42px;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.65rem;
+    justify-content: center;
+  }
+  .wizardFooterActions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .wizardFooterActions button {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    max-height: 42px;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.65rem;
+    justify-content: center;
   }
   .stepperNav {
     grid-template-columns: 1fr;
   }
   .formGrid, .twoColumns {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   .resultsDashboard {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 0.75rem 0.5rem;
+    padding: 0.6rem;
     border-radius: 8px;
+  }
+  .alunoName {
+    max-width: 160px;
   }
   .calcSummaryCard {
     grid-template-columns: 1fr;
-    padding: 0.9rem;
+    padding: 0.75rem;
+    gap: 0.75rem;
   }
-  .actions {
-    flex-direction: column;
-    width: 100%;
-    gap: 0.6rem;
+  .calcCardValue {
+    font-size: 1.15rem;
   }
-  .actions button,
-  .actions .backButton,
-  .actions .saveButton,
-  .actions .finishButton,
-  .actions .printHeaderButton,
-  .actions .viewModeToggle {
-    width: 100%;
-    min-height: 46px;
-    justify-content: center;
-    box-sizing: border-box;
+  .stepButton {
+    padding: 0.6rem 0.75rem;
+    gap: 8px;
   }
-  .viewModeToggle {
-    display: flex;
-    width: 100%;
-    padding: 3px;
+  .stepNumber {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
   }
-  .viewModeBtn {
-    flex: 1;
-    justify-content: center;
-    min-height: 40px;
+  .stepTitle {
+    font-size: 0.85rem;
+  }
+  .stepSubtitle {
+    font-size: 0.7rem;
+  }
+  .singlePageNav {
     padding: 0.5rem;
+    gap: 0.4rem;
+  }
+  .singlePageNavLink {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.6rem;
   }
 }
 
@@ -760,6 +870,141 @@
   border-top: 1px solid #2e3a2a;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+/* ========================================================
+   RESPONSIVIDADE MOBILE (< 768px e < 480px)
+   ======================================================== */
+@media (max-width: 768px) {
+  .container {
+    padding: 0.85rem;
+    border-radius: 8px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .headerTitleBlock {
+    width: 100%;
+  }
+
+  .title {
+    font-size: clamp(1.1rem, 3.8vw, 1.35rem);
+  }
+
+  .alunoName {
+    max-width: 180px;
+  }
+
+  .actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .backButton, .saveButton, .finishButton, .printHeaderButton {
+    width: 100%;
+    height: 40px;
+    max-height: 42px;
+    min-height: 40px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .stepperContainer {
+    padding: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .stepperNav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
+
+  .stepButton {
+    padding: 0.5rem 0.6rem;
+    gap: 8px;
+  }
+
+  .stepNumber {
+    width: 26px;
+    height: 26px;
+    font-size: 0.78rem;
+  }
+
+  .stepTitle {
+    font-size: 0.8rem;
+  }
+
+  .stepSubtitle {
+    display: none;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .calcSummaryCard {
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.85rem;
+  }
+
+  .resultsDashboard {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+  }
+
+  .wizardFooter, .singlePageFooter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+  }
+
+  .wizardFooter > div,
+  .wizardFooterActions,
+  .singlePageFooter > div {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .wizardFooter > div:first-child:not(:empty) {
+    display: block;
+  }
+
+  .wizardFooter > div:first-child .backButton,
+  .singlePageFooter .backButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .wizardFooterActions,
+  .singlePageFooter > div {
+    grid-template-columns: 1fr;
+  }
+
+  .resultsDashboard {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ========================================================

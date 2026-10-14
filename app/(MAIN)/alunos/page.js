@@ -124,6 +124,49 @@ export default function AlunosPage() {
     }
   });
 
+  const handleIniciarAvaliacaoDireto = async (aluno) => {
+    if (!aluno) return;
+    if (aluno.status !== "ATIVO") {
+      const confirmar = window.confirm(
+        "Atenção: Este aluno está marcado como INATIVO. Deseja iniciar a avaliação física mesmo assim?"
+      );
+      if (!confirmar) return;
+    }
+
+    setIsStartingAvaliacao(true);
+    try {
+      const response = await api.post("/api/avaliacoes", {
+        alunoId: parseInt(aluno.id),
+      });
+      toast.success("Avaliação iniciada! Redirecionando...");
+      router.push(`/avaliacoes/${response.data.id}`);
+    } catch (error) {
+      console.error("Erro ao iniciar avaliação:", error);
+      toast.error(error.response?.data?.error || "Não foi possível iniciar a avaliação.");
+      setIsStartingAvaliacao(false);
+    }
+  };
+
+  const handleExcluirAlunoDireto = async (alunoId) => {
+    if (!alunoId) return;
+    const confirmar = window.confirm(
+      "Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
+    );
+    if (!confirmar) return;
+
+    try {
+      await api.delete(`/api/alunos/${alunoId}`);
+      toast.success("Aluno excluído com sucesso!");
+      if (alunoSelecionadoId === alunoId) {
+        setAlunoSelecionadoId(null);
+      }
+      await fetchAlunos();
+    } catch (error) {
+      console.error("Erro ao excluir aluno:", error);
+      toast.error("Não foi possível excluir o aluno.");
+    }
+  };
+
   // --- 3. TELA DE CARREGAMENTO ROBUSTA ---
   if (authLoading || loading) {
     return <div>Carregando...</div>;
@@ -211,7 +254,7 @@ export default function AlunosPage() {
         </span>
       </div>
 
-      {/* --- TABELA ATUALIZADA --- */}
+      {/* --- TABELA (DESKTOP) --- */}
       <div className={styles.tableContainer}>
         <table className={styles.table}>
           <thead>
@@ -291,6 +334,107 @@ export default function AlunosPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* --- CARDS LIST PARA TELAS MOBILE (< 768px) --- */}
+      <div className={styles.mobileCardsList}>
+        {alunosFiltrados.length === 0 && !loading ? (
+          <div className={styles.noResultsCard}>
+            {termoBusca
+              ? "Nenhum aluno encontrado para os critérios de busca."
+              : "Nenhum aluno cadastrado no sistema."}
+          </div>
+        ) : (
+          alunosFiltrados.map((aluno) => {
+            const isSelected = aluno.id === alunoSelecionadoId;
+            const isAtivo = aluno.status === "ATIVO";
+
+            let anamneseLabel = "Pendente";
+            let anamneseClass = styles.anamnesePending;
+            if (aluno.anamneseStatus === "COMPLETED") {
+              anamneseLabel = "Concluída";
+              anamneseClass = styles.anamneseCompleted;
+            } else if (aluno.anamneseStatus === "SENT") {
+              anamneseLabel = "Enviada";
+              anamneseClass = styles.anamneseSent;
+            }
+
+            return (
+              <div
+                key={aluno.id}
+                className={`${styles.mobileCard} ${isSelected ? styles.mobileCardSelected : ""}`}
+                onClick={() => setAlunoSelecionadoId(aluno.id)}
+              >
+                <div className={styles.mobileCardHeader}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <h4 className={styles.mobileCardStudentName}>
+                      {aluno.nome}
+                    </h4>
+                    <span className={styles.mobileCardMatricula}>
+                      Matrícula: {aluno.matricula || "---"}
+                    </span>
+                  </div>
+                  <span
+                    className={`${styles.statusBadge} ${
+                      isAtivo ? styles.statusAtivo : styles.statusInativo
+                    }`}
+                  >
+                    <span
+                      className={`${styles.badgeDot} ${
+                        isAtivo ? styles.badgeDotGreen : styles.badgeDotRed
+                      }`}
+                    ></span>
+                    {aluno.status}
+                  </span>
+                </div>
+
+                <div className={styles.mobileCardMeta}>
+                  <span className={styles.mobileCardMetaLabel}>Anamnese:</span>
+                  <span className={`${styles.anamneseBadge} ${anamneseClass}`}>
+                    {anamneseLabel}
+                  </span>
+                </div>
+
+                <div className={styles.mobileCardFooter}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleIniciarAvaliacaoDireto(aluno);
+                    }}
+                    className={styles.mobileAvaliarBtn}
+                    disabled={isStartingAvaliacao}
+                    title="Iniciar Avaliação Física"
+                  >
+                    <FaHeartbeat /> Avaliar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/alunos/${aluno.id}`);
+                    }}
+                    className={styles.mobileEditBtn}
+                    title="Editar Aluno"
+                  >
+                    <FaEdit /> Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExcluirAlunoDireto(aluno.id);
+                    }}
+                    className={styles.mobileDeleteBtn}
+                    title="Excluir Aluno"
+                  >
+                    <FaTrash size={12} />
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

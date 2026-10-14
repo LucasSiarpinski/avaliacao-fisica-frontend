@@ -1,8 +1,13 @@
 .container {
   padding: 2rem;
-  background-color: #121212; 
+  background-color: #1a1a1a; 
   color: #e0e0e0;
-  min-height: 100vh;
+  min-height: calc(100vh - 40px);
+  border-radius: 12px;
+  border: 1px solid #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* --- CABEÇALHO --- */
@@ -25,20 +30,21 @@
 
 .actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.65rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .iniciarAvaliacaoButton {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0.8rem 1.4rem;
+  gap: 6px;
+  padding: 0.55rem 1.15rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #ffffff;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
@@ -61,32 +67,41 @@
 }
 
 .backButton, .saveButton {
-  padding: 0.8rem 1.5rem;
+  padding: 0.55rem 1.15rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s, opacity 0.2s;
-  white-space: nowrap; /* Impede quebra de texto */
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .backButton {
-  background-color: #333;
-  color: white;
+  background-color: #262626;
+  color: #cbd5e1;
+  border: 1px solid #3a3a3a;
 }
 .backButton:hover {
-  background-color: #444;
+  background-color: #333333;
+  color: #fff;
 }
 
 .saveButton {
-  background-color: #5d812e; /* Roxo */
+  background-color: #5d812e;
   color: white;
 }
 .saveButton:hover:not(:disabled) {
-  background-color: #5d812e;
+  background-color: #6e9837;
+  transform: translateY(-1px);
 }
 .saveButton:disabled {
-  background-color: #555;
+  background-color: #333;
+  color: #666;
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -99,7 +114,14 @@
   border-bottom: 1px solid #333;
   /* Adicionado para responsividade */
   overflow-x: auto; 
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding-bottom: 0.5rem; /* Espaço para scrollbar */
+}
+
+.tabContainer::-webkit-scrollbar {
+  display: none;
 }
 
 .tabContainer button {
@@ -986,67 +1008,99 @@
  */
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
-        border-radius: 0;
+        padding: 0.85rem;
+        border-radius: 8px;
     }
 
     /* Cabeçalho empilhado */
     .header {
         flex-direction: column;
-        align-items: flex-start; /* Alinha tudo à esquerda */
-        gap: 1.5rem;
+        align-items: flex-start;
+        gap: 1rem;
     }
 
     .header h1 {
-        font-size: 1.6rem;
+        font-size: clamp(1.15rem, 3.5vw, 1.45rem);
     }
 
-    /* Botões do cabeçalho ocupando 100% */
+    /* Botões do cabeçalho em grid com no máximo 42px */
     .actions {
         width: 100%;
         display: grid;
-        grid-template-columns: 1fr 1fr; /* Divide em 2 colunas iguais */
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .iniciarAvaliacaoButton {
+        grid-column: 1 / -1;
+        width: 100%;
+        height: 40px;
+        min-height: 40px;
+        max-height: 42px;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.85rem;
+        justify-content: center;
+        box-sizing: border-box;
     }
 
     .backButton, .saveButton {
-        padding: 0.8rem;
-        font-size: 0.9rem;
-        text-align: center; /* Centraliza o texto */
+        width: 100%;
+        height: 40px;
+        min-height: 40px;
+        max-height: 42px;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.85rem;
+        text-align: center;
+        justify-content: center;
+        box-sizing: border-box;
     }
 
     /* Abas com scroll horizontal */
     .tabContainer {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
+        gap: 0.35rem;
+    }
+
+    .tabContainer button {
+        padding: 0.5rem 0.85rem;
+        font-size: 0.85rem;
     }
 
     /* Conteúdo do formulário */
     .content {
-        padding: 1rem;
+        padding: 1rem 0.85rem;
     }
 
     /* Formulário vira coluna única */
     .formGrid {
         grid-template-columns: 1fr;
-        gap: 1rem; /* Reduz espaçamento */
+        gap: 0.85rem;
+    }
+
+    .formGroup input, 
+    .formGroup textarea,
+    .formGroup select {
+        padding: 0.55rem 0.75rem;
+        font-size: 0.88rem;
     }
 
     /* Ajusta os grupos de Rádio para empilhar */
     .formGroupRadio {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: 0.75rem;
         margin-bottom: 1rem;
     }
 
     .radioOptionsContainer {
-        gap: 2rem; /* Aumenta espaço entre Sim/Não */
+        gap: 1.5rem;
     }
 
     .parqQuestion {
-        padding: 1rem;
+        padding: 0.85rem;
     }
 
     .parqQuestion label {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 }

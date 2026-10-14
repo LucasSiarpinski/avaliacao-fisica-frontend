@@ -228,3 +228,76 @@
 .modalResultItem:hover {
     background-color: #3a3a3a;
 }
+
+/* --- Responsividade Mobile (< 768px e < 480px) --- */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem 0.85rem;
+        border-radius: 8px;
+        overflow-x: hidden;
+    }
+
+    .title {
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
+    }
+
+    .reportGenerator {
+        padding: 1.25rem 0.85rem;
+        margin-top: 1rem;
+        gap: 1.25rem;
+        border-radius: 8px;
+    }
+
+    .formGroup label {
+        font-size: 0.92rem;
+    }
+
+    .searchInputDisplay {
+        padding: 0.55rem 0.75rem;
+        font-size: 0.88rem;
+    }
+
+    .searchButton {
+        height: 40px;
+        padding: 0 1rem;
+        font-size: 0.85rem;
+    }
+
+    .selectInput {
+        padding: 0.55rem 0.75rem;
+        font-size: 0.88rem;
+    }
+
+    .actionButtons {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .actionButton {
+        height: 40px;
+        min-height: 40px;
+        max-height: 42px;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .modalContent {
+        padding: 1.25rem;
+        width: 95%;
+        border-radius: 8px;
+    }
+
+    .modalTitle {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .actionButtons {
+        grid-template-columns: 1fr;
+    }
+}

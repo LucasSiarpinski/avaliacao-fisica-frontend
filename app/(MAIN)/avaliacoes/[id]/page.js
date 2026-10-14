@@ -252,12 +252,23 @@ export default function AvaliacaoWizardPage() {
     <div className={styles.container}>
       {/* --- CABEÇALHO --- */}
       <header className={styles.header}>
-        <div>
-          <h1>
-            <FaHeartbeat /> Avaliação Física: <span className={styles.alunoName}>{aluno?.nome || "Aluno"}</span>
+        <div className={styles.headerTitleBlock}>
+          <h1 className={styles.title}>
+            <FaHeartbeat className={styles.titleIcon} />
+            <span className={styles.titlePrefix}>Avaliação Física:</span>
+            <span className={styles.alunoName} title={aluno?.nome || "Aluno"}>
+              {aluno?.nome || "Aluno"}
+            </span>
+          </h1>
+          <div className={styles.alunoMetaRow}>
             <span className={styles.alunoMetaBadge}>
               {idade} anos • {genero === "F" ? "Feminino" : "Masculino"}
             </span>
+            {aluno?.matricula && (
+              <span className={styles.alunoMetaBadge}>
+                Matrícula: {aluno.matricula}
+              </span>
+            )}
             {isAvaliacaoConcluida ? (
               <span className={styles.statusBadgeConcluida} title="Avaliação com medidas registradas">
                 ✓ Concluída
@@ -267,7 +278,7 @@ export default function AvaliacaoWizardPage() {
                 ⏳ Em Andamento
               </span>
             )}
-          </h1>
+          </div>
         </div>
 
         <div className={styles.actions}>

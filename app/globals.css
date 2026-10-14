@@ -10,12 +10,14 @@
 }
 
 /* ======= ESTILOS DO CORPO GERAL (Fundo e Cor Base) ======= */
-body {
+html, body {
     /* Define o fundo escuro para toda a aplicação */
     background-color: #18181b; 
     color: white; /* Cor do texto base para a Dashboard */
     min-height: 100vh;
-    overflow-x: hidden; /* Evita rolagem horizontal */
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden; /* Evita rolagem horizontal em toda a aplicação */
 }
 
 /* Estilos para o link (usado no login) que não estão no módulo */

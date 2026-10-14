@@ -229,12 +229,12 @@
 }
 
 .countBadge {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #aaa;
+  color: #94a3b8;
   background-color: #2a2a2a;
   border: 1px solid #3a3a3a;
-  padding: 0.4rem 0.8rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 20px;
   white-space: nowrap;
 }
@@ -459,10 +459,161 @@
  * NOVOS ESTILOS: RESPONSIVIDADE
  * ==========================================
  */
+/* --- CARDS LIST PARA TELAS MOBILE (< 768px) --- */
+.mobileCardsList {
+    display: none;
+}
+
+.mobileCard {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 1.15rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobileCard:hover {
+    border-color: #5d812e;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.mobileCardSelected {
+    border-color: #5d812e;
+    background-color: rgba(93, 129, 46, 0.12);
+}
+
+.mobileCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.mobileCardStudentName {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.mobileCardMatricula {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-top: 0.2rem;
+    display: block;
+}
+
+.mobileCardMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    padding: 0.4rem 0;
+    border-top: 1px dashed #333;
+}
+
+.mobileCardMetaLabel {
+    color: #888888;
+}
+
+.mobileCardFooter {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding-top: 0.65rem;
+    border-top: 1px solid #2a2a2a;
+}
+
+.mobileAvaliarBtn {
+    flex: 1;
+    height: 38px;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background-color: #064e3b;
+    border: 1px solid #10b981;
+    color: #a7f3d0;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.mobileAvaliarBtn:hover:not(:disabled) {
+    background-color: #059669;
+    color: #fff;
+}
+
+.mobileEditBtn {
+    flex: 1;
+    height: 38px;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background-color: #1e293b;
+    border: 1px solid #3b82f6;
+    color: #93c5fd;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.mobileEditBtn:hover {
+    background-color: #2563eb;
+    color: #fff;
+}
+
+.mobileDeleteBtn {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2b1d1d;
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.mobileDeleteBtn:hover {
+    background-color: #dc2626;
+    color: #fff;
+}
+
+.noResultsCard {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: #888;
+    font-size: 0.95rem;
+}
+
+/* * ==========================================
+ * RESPONSIVIDADE MOBILE (< 768px)
+ * ==========================================
+ */
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
-        border-radius: 0; 
+        padding: 0.85rem;
+        border-radius: 8px; 
+        overflow-x: hidden;
     }
     
     .header {
@@ -472,49 +623,79 @@
     }
 
     .title {
-        font-size: 1.6rem;
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
     }
 
     .headerActions {
         width: 100%;
-        justify-content: flex-start;
-        overflow-x: auto; /* Permite scroll horizontal nos botões */
-        padding-bottom: 0.5rem; /* Espaço para a barra de scroll */
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        overflow-x: visible;
+        padding-bottom: 0;
     }
 
-    .newStudentButton, .actionButton {
-        padding: 0.7rem 1rem;
-        font-size: 0.9rem;
-        flex-shrink: 0; /* Impede que os botões encolham */
+    .newStudentButton {
+        grid-column: 1 / -1;
+        width: 100%;
+        height: 40px;
+        min-height: 40px;
+        max-height: 42px;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.85rem;
+        justify-content: center;
+        box-sizing: border-box;
     }
 
-    .searchContainer {
+    .actionButton {
+        width: 100%;
+        height: 40px;
+        min-height: 40px;
+        max-height: 42px;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.85rem;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .searchWrapper {
         flex-direction: column;
-        gap: 0.8rem;
+        align-items: stretch;
+        gap: 0.6rem;
+        padding: 0.65rem 0.85rem;
     }
-    
-    .searchBar {
+
+    .searchInputsGroup {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .filterSelectWrapper {
+        width: 100%;
+    }
+
+    .searchCategory {
+        width: 100%;
+    }
+
+    .searchBarWrapper {
         width: 100%;
     }
 
     .tableContainer {
-        border-radius: 6px;
-    }
-    
-    .table {
-        min-width: 500px; /* Mantém scroll horizontal */
-    }
-    
-    .table th, .table td {
-        padding: 0.7rem;
-        font-size: 0.85rem;
+        display: none;
     }
 
-    .checkIcon {
-        margin-right: 0.2rem;
+    .mobileCardsList {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        margin-top: 1rem;
     }
 
-    /* Ajustes do Modal em mobile */
     .modalContent {
         padding: 1.5rem;
         border-radius: 8px;
@@ -525,9 +706,9 @@
         gap: 0.8rem;
     }
 
-    /* Botões do modal ocupam 100% da largura */
     .cancelButton, 
     .deleteButton {
         width: 100%;
+        height: 40px;
     }
 }

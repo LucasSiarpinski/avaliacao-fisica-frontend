@@ -17,6 +17,8 @@
     /* Configura o scroll INTERNO apenas para o conteúdo */
     height: 100vh;
     overflow-y: auto; /* Adiciona scroll SÓ AQUI */
+    overflow-x: hidden;
+    max-width: 100%;
     
     /* Permite que o header e o pageContent se empilhem */
     display: flex;
@@ -27,6 +29,8 @@
 .pageContent {
     padding: 30px 40px;
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 
@@ -112,13 +116,13 @@
 
     /* Ajusta o padding da página no mobile */
     .pageContent {
-      padding: 1.5rem;
+      padding: 0.85rem;
     }
 }
 
 @media (max-width: 480px) {
     .pageContent {
-      padding: 0.6rem;
+      padding: 0.5rem;
     }
 }
 
