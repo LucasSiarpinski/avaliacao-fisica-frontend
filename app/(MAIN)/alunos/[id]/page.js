@@ -26,7 +26,10 @@ import {
   FaPlus,
   FaChartLine,
   FaCalendarAlt,
-  FaUserCheck
+  FaUserCheck,
+  FaArrowLeft,
+  FaArrowRight,
+  FaCheck
 } from "react-icons/fa";
 
 const parqQuestions = [
@@ -281,14 +284,41 @@ export default function AlunoDetalhePage() {
   };
 
   const handleSave = async () => {
+    // Validação dos campos obrigatórios da aba Dados Pessoais
+    if (!aluno.nome || !aluno.nome.trim()) {
+      toast.error("Por favor, preencha o Nome Completo na aba Dados Pessoais.");
+      setActiveTab("dadosPessoais");
+      return;
+    }
+
+    if (!aluno.email || !aluno.email.trim()) {
+      toast.error("Por favor, preencha o E-mail na aba Dados Pessoais.");
+      setActiveTab("dadosPessoais");
+      return;
+    }
+
+    if (!aluno.dataNasc) {
+      toast.error("Por favor, preencha a Data de Nascimento na aba Dados Pessoais.");
+      setActiveTab("dadosPessoais");
+      return;
+    }
+
+    if (!aluno.matricula || !aluno.matricula.trim()) {
+      toast.error("Por favor, preencha a Matrícula na aba Dados Pessoais.");
+      setActiveTab("dadosPessoais");
+      return;
+    }
+
     // Validação de CPF
     if (aluno.cpf && unmask(aluno.cpf).length > 0) {
       if (unmask(aluno.cpf).length !== 11) {
         toast.error("O CPF deve conter 11 dígitos.");
+        setActiveTab("dadosPessoais");
         return;
       }
       if (!validateCPF(aluno.cpf)) {
         toast.error("CPF inválido. Verifique os números digitados.");
+        setActiveTab("dadosPessoais");
         return;
       }
     }
@@ -297,6 +327,7 @@ export default function AlunoDetalhePage() {
     if (aluno.telefone && unmask(aluno.telefone).length > 0) {
       if (!validatePhone(aluno.telefone)) {
         toast.error("Telefone inválido. Informe o DDD e o número completo.");
+        setActiveTab("dadosPessoais");
         return;
       }
     }
@@ -305,7 +336,7 @@ export default function AlunoDetalhePage() {
     try {
       if (isCreating) {
         const response = await api.post("/api/alunos", aluno);
-        toast.success("Aluno criado com sucesso!");
+        toast.success("Aluno cadastrado com sucesso!");
         router.push(`/alunos/${response.data.id}`);
       } else {
         await api.put(`/api/alunos/${id}`, aluno);
@@ -388,38 +419,41 @@ export default function AlunoDetalhePage() {
 
       <div className={styles.tabContainer}>
         <button
+          type="button"
           onClick={() => setActiveTab("dadosPessoais")}
           className={activeTab === "dadosPessoais" ? styles.activeTab : ""}
         >
           Dados Pessoais
         </button>
         <button
-          onClick={() => setActiveTab("avaliacoesFisicas")}
-          disabled={isCreating}
-          className={activeTab === "avaliacoesFisicas" ? styles.activeTab : ""}
-        >
-          <FaHeartbeat style={{ marginRight: 6 }} /> Avaliações Físicas {avaliacoesAluno.length > 0 && `(${avaliacoesAluno.length})`}
-        </button>
-        <button
+          type="button"
           onClick={() => setActiveTab("avaliacoes")}
-          disabled={isCreating}
           className={activeTab === "avaliacoes" ? styles.activeTab : ""}
         >
           Questionário Anamnese
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab("documentos")}
-          disabled={isCreating}
           className={activeTab === "documentos" ? styles.activeTab : ""}
         >
           Questionário PAR-Q
         </button>
         <button
-          onClick={() => setActiveTab("arquivos")}
-          disabled={isCreating}
-          className={activeTab === "arquivos" ? styles.activeTab : ""}
+          type="button"
+          onClick={() => setActiveTab("avaliacoesFisicas")}
+          className={activeTab === "avaliacoesFisicas" ? styles.activeTab : ""}
+          title={isCreating ? "Disponível após salvar o cadastro do aluno" : "Histórico de avaliações físicas"}
         >
-          Arquivos & Exames {documentos.length > 0 && `(${documentos.length})`}
+          <FaHeartbeat style={{ marginRight: 6 }} /> Avaliações Físicas {!isCreating && avaliacoesAluno.length > 0 ? `(${avaliacoesAluno.length})` : ""}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("arquivos")}
+          className={activeTab === "arquivos" ? styles.activeTab : ""}
+          title={isCreating ? "Disponível após salvar o cadastro do aluno" : "Arquivos e exames anexados"}
+        >
+          Arquivos & Exames {!isCreating && documentos.length > 0 ? `(${documentos.length})` : ""}
         </button>
       </div>
 
@@ -580,7 +614,33 @@ export default function AlunoDetalhePage() {
               />
             </div>
 
-            {/* --- SEÇÃO DE ANAMNESE (REMOVIDA DESTA ABA) --- */}
+            {/* Footer de Navegação da Aba */}
+            <div className={styles.tabFooterActions}>
+              <button
+                type="button"
+                onClick={() => router.push("/alunos")}
+                className={styles.btnPrevTab}
+              >
+                <FaArrowLeft /> Voltar para Lista
+              </button>
+              <div className={styles.tabFooterGroup}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("avaliacoes")}
+                  className={styles.btnNextTab}
+                >
+                  Próximo: Anamnese <FaArrowRight />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className={styles.saveButton}
+                  disabled={isSaving}
+                >
+                  <FaCheck /> {isSaving ? "Salvando..." : isCreating ? "Salvar Aluno" : "Salvar Alterações"}
+                </button>
+              </div>
+            </div>
             
           </div>
         )}
@@ -597,19 +657,38 @@ export default function AlunoDetalhePage() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={handleIniciarNovaAvaliacao}
-                className={styles.btnNovaAvaliacaoTab}
-                disabled={isStartingAvaliacao}
-              >
-                <FaPlus /> {isStartingAvaliacao ? "Iniciando..." : "Nova Avaliação Física"}
-              </button>
+              {!isCreating && (
+                <button
+                  type="button"
+                  onClick={handleIniciarNovaAvaliacao}
+                  className={styles.btnNovaAvaliacaoTab}
+                  disabled={isStartingAvaliacao}
+                >
+                  <FaPlus /> {isStartingAvaliacao ? "Iniciando..." : "Nova Avaliação Física"}
+                </button>
+              )}
             </div>
 
             {loadingAvaliacoes ? (
               <div style={{ textAlign: "center", padding: "3rem", color: "#aaa" }}>
                 Carregando histórico de avaliações...
+              </div>
+            ) : isCreating ? (
+              <div className={styles.emptyAvaliacoesBox}>
+                <FaHeartbeat className={styles.emptyAvaliacoesIcon} />
+                <h4>Avaliações Físicas disponíveis após salvar</h4>
+                <p>
+                  Para iniciar testes de composição corporal, perimetrias e dobras cutâneas (Pollock 7), primeiro conclua o cadastro básico do aluno.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className={styles.btnNovaAvaliacaoTab}
+                  disabled={isSaving}
+                  style={{ marginTop: "0.5rem" }}
+                >
+                  <FaCheck /> {isSaving ? "Salvando..." : "Salvar Cadastro do Aluno"}
+                </button>
               </div>
             ) : avaliacoesAluno.length === 0 ? (
               <div className={styles.emptyAvaliacoesBox}>
@@ -899,6 +978,34 @@ export default function AlunoDetalhePage() {
               ></textarea>
             </div>
 
+            {/* Footer de Navegação da Aba */}
+            <div className={styles.tabFooterActions}>
+              <button
+                type="button"
+                onClick={() => setActiveTab("dadosPessoais")}
+                className={styles.btnPrevTab}
+              >
+                <FaArrowLeft /> Voltar: Dados Pessoais
+              </button>
+              <div className={styles.tabFooterGroup}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("documentos")}
+                  className={styles.btnNextTab}
+                >
+                  Próximo: PAR-Q <FaArrowRight />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className={styles.saveButton}
+                  disabled={isSaving}
+                >
+                  <FaCheck /> {isSaving ? "Salvando..." : isCreating ? "Salvar Aluno" : "Salvar Alterações"}
+                </button>
+              </div>
+            </div>
+
           </div>
         )}
         
@@ -923,51 +1030,91 @@ export default function AlunoDetalhePage() {
                   <button
                     type="button"
                     className={`${styles.parqBtn} ${aluno[q.id] === "SIM" ? styles.parqBtnSimActive : ""}`}
-                    onClick={() => setAluno((prev) => ({ ...prev, [q.id]: "SIM" }))}
+                    onClick={() => setAluno((prev) => ({ ...prev, [q.id]: prev[q.id] === "SIM" ? null : "SIM" }))}
                   >
                     SIM
                   </button>
                   <button
                     type="button"
                     className={`${styles.parqBtn} ${aluno[q.id] === "NAO" ? styles.parqBtnNaoActive : ""}`}
-                    onClick={() => setAluno((prev) => ({ ...prev, [q.id]: "NAO" }))}
+                    onClick={() => setAluno((prev) => ({ ...prev, [q.id]: prev[q.id] === "NAO" ? null : "NAO" }))}
                   >
                     NÃO
                   </button>
                 </div>
               </div>
             ))}
+
+            {/* Footer de Navegação da Aba */}
+            <div className={styles.tabFooterActions}>
+              <button
+                type="button"
+                onClick={() => setActiveTab("avaliacoes")}
+                className={styles.btnPrevTab}
+              >
+                <FaArrowLeft /> Voltar: Anamnese
+              </button>
+              <div className={styles.tabFooterGroup}>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className={styles.saveButton}
+                  disabled={isSaving}
+                >
+                  <FaCheck /> {isSaving ? "Salvando..." : isCreating ? "Salvar e Concluir Cadastro" : "Salvar Alterações"}
+                </button>
+              </div>
+            </div>
+
           </div>
         )}
 
         {activeTab === "arquivos" && (
           <div className={styles.arquivosContainer}>
-            <div className={styles.uploadDropzone}>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg"
-                onChange={handleUploadFile}
-                disabled={uploading}
-              />
-              <FaCloudUploadAlt className={styles.uploadIcon} />
-              <div className={styles.uploadTitle}>
-                {uploading ? "Enviando arquivo..." : "Clique ou arraste um arquivo para fazer upload"}
-              </div>
-              <p className={styles.uploadSubtitle}>
-                Formatos aceitos: PDF, Word (.doc, .docx), PNG e JPEG (máx. 25MB)
-              </p>
-            </div>
-
-            {loadingDocs ? (
-              <div style={{ color: "#aaa", textAlign: "center", padding: "2rem" }}>
-                Carregando arquivos do aluno...
-              </div>
-            ) : documentos.length === 0 ? (
-              <div className={styles.noFilesNotice}>
-                <p>Nenhum documento anexado a este aluno ainda.</p>
-                <small>Faça upload de exames, atestados médicos, laudos ou fotos de avaliação.</small>
+            {isCreating ? (
+              <div className={styles.noFilesNotice} style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
+                <FaCloudUploadAlt style={{ fontSize: "3rem", color: "#5d812e", marginBottom: "1rem" }} />
+                <h4 style={{ color: "#fff", marginBottom: "0.5rem" }}>Anexo de Arquivos & Exames disponível após salvar</h4>
+                <p style={{ color: "#aaa", maxWidth: 500, margin: "0 auto 1.5rem" }}>
+                  O upload de exames médicos, atestados e laudos estará liberado logo após a conclusão do cadastro deste aluno.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className={styles.saveButton}
+                  disabled={isSaving}
+                >
+                  <FaCheck /> {isSaving ? "Salvando..." : "Salvar Cadastro do Aluno"}
+                </button>
               </div>
             ) : (
+              <>
+                <div className={styles.uploadDropzone}>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg"
+                    onChange={handleUploadFile}
+                    disabled={uploading}
+                  />
+                  <FaCloudUploadAlt className={styles.uploadIcon} />
+                  <div className={styles.uploadTitle}>
+                    {uploading ? "Enviando arquivo..." : "Clique ou arraste um arquivo para fazer upload"}
+                  </div>
+                  <p className={styles.uploadSubtitle}>
+                    Formatos aceitos: PDF, Word (.doc, .docx), PNG e JPEG (máx. 25MB)
+                  </p>
+                </div>
+
+                {loadingDocs ? (
+                  <div style={{ color: "#aaa", textAlign: "center", padding: "2rem" }}>
+                    Carregando arquivos do aluno...
+                  </div>
+                ) : documentos.length === 0 ? (
+                  <div className={styles.noFilesNotice}>
+                    <p>Nenhum documento anexado a este aluno ainda.</p>
+                    <small>Faça upload de exames, atestados médicos, laudos ou fotos de avaliação.</small>
+                  </div>
+                ) : (
               <div className={styles.fileGrid}>
                 {documentos.map((doc) => {
                   const ext = (doc.nome || "").split(".").pop().toLowerCase();
@@ -1024,6 +1171,8 @@ export default function AlunoDetalhePage() {
                   );
                 })}
               </div>
+            )}
+            </>
             )}
           </div>
         )}
