@@ -1,12 +1,31 @@
 import axios from 'axios';
 
-// Cria a instância da API apontando para o seu Back-end
-const defaultHost = typeof window !== 'undefined'
-  ? `${window.location.protocol}//${window.location.hostname}:3333`
-  : 'http://localhost:3333';
+// Normaliza e limpa a URL da API do backend
+const getBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && typeof envUrl === 'string') {
+    const cleaned = envUrl.replace(/[\[\]\(\)'"`]/g, '').trim().replace(/\/+$/, '');
+    if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
+      return cleaned;
+    }
+    if (cleaned.length > 0) {
+      return `https://${cleaned}`;
+    }
+  }
+
+  // Fallback inteligente para ambiente web em produção (Vercel)
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname.endsWith('vercel.app')) {
+      return 'https://avaliacao-fisica-backend.onrender.com';
+    }
+    return `${window.location.protocol}//${window.location.hostname}:3333`;
+  }
+
+  return 'https://avaliacao-fisica-backend.onrender.com';
+};
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || defaultHost,
+  baseURL: getBaseUrl(),
 });
 
 // Interceptor de REQUISIÇÕES: adiciona o token no header Authorization
