@@ -4,6 +4,7 @@
 
 import './login.css';
 import { useState } from 'react';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext'; // 1. IMPORTAR O CONTEXTO
 
 export default function LoginPage() {
@@ -55,13 +56,21 @@ export default function LoginPage() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 required
-                className="text-input"
+                className="text-input password-input"
                 placeholder=" "
                 value={password} // Conectar o valor ao estado
                 onChange={(e) => setPassword(e.target.value)} // Atualizar o estado ao digitar
               />
               <label htmlFor="password" className="input-label">Senha</label>
-              {/* ... resto do seu campo de senha ... */}
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
+                title={showPassword ? "Ocultar senha" : "Ver senha"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
             
             {/* ... resto do seu formulário ... */}

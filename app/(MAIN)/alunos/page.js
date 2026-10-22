@@ -14,6 +14,8 @@ import {
   FaTrash, 
   FaSearch, 
   FaFilter, 
+  FaSlidersH,
+  FaChevronDown,
   FaTimes, 
   FaCheck,
   FaCheckCircle,
@@ -265,28 +267,31 @@ export default function AlunosPage() {
 
       {/* --- BARRA DE BUSCA E FILTROS MODERNA --- */}
       <div className={styles.searchWrapper}>
-        <div className={styles.searchInputsGroup}>
-          <div className={styles.filterSelectWrapper}>
-            <FaFilter className={styles.filterIcon} />
+        <div className={styles.searchUnifiedBar}>
+          <div className={styles.filterDropdown} title="Filtrar por">
+            <FaSlidersH className={styles.filterIcon} />
             <select
               className={styles.searchCategory}
               value={categoriaBusca}
               onChange={(e) => setCategoriaBusca(e.target.value)}
-              title="Filtrar por"
+              title="Selecione o campo de busca"
             >
               <option value="nome">Nome</option>
               <option value="matricula">Matrícula</option>
               <option value="cpf">CPF</option>
               <option value="id">ID</option>
             </select>
+            <FaChevronDown className={styles.chevronIcon} />
           </div>
 
-          <div className={styles.searchBarWrapper}>
+          <div className={styles.searchDivider} />
+
+          <div className={styles.searchInputArea}>
             <FaSearch className={styles.searchIcon} />
             <input
               type="text"
               className={styles.searchBar}
-              placeholder={`Buscar aluno por ${categoriaBusca}...`}
+              placeholder={`Buscar aluno por ${categoriaBusca === 'nome' ? 'nome completo' : categoriaBusca}...`}
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
             />

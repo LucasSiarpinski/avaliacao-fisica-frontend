@@ -15,6 +15,8 @@ import {
   FaSearch, 
   FaTimes, 
   FaFilter,
+  FaSlidersH,
+  FaChevronDown,
   FaHeartbeat,
   FaCheckCircle,
   FaClock
@@ -196,22 +198,26 @@ export default function AvaliacoesPage() {
       {/* --- BARRA DE BUSCA E FILTROS --- */}
       <div className={styles.searchWrapper}>
         <div className={styles.searchTopRow}>
-          <div className={styles.searchInputsGroup}>
-            <div className={styles.filterSelectWrapper}>
-              <FaFilter className={styles.filterIcon} />
+          <div className={styles.searchUnifiedBar}>
+            <div className={styles.filterDropdown} title="Filtrar por">
+              <FaSlidersH className={styles.filterIcon} />
               <select
                 value={searchCategory}
                 onChange={(e) => setSearchCategory(e.target.value)}
                 className={styles.searchCategory}
+                title="Selecione o campo de busca"
               >
                 <option value="todos">Todos os campos</option>
                 <option value="aluno">Nome do Aluno</option>
                 <option value="matricula">Matrícula</option>
                 <option value="avaliador">Avaliador</option>
               </select>
+              <FaChevronDown className={styles.chevronIcon} />
             </div>
 
-            <div className={styles.searchBarWrapper}>
+            <div className={styles.searchDivider} />
+
+            <div className={styles.searchInputArea}>
               <FaSearch className={styles.searchIcon} />
               <input
                 type="text"

@@ -61,8 +61,8 @@ export default function HomePage() {
     }
   };
 
-  // Primeiro nome para o "Olá"
-  const firstName = user?.name ? user.name.split(' ')[0] : 'Usuário';
+  // Nome de exibição para o "Olá" (mostra o nome completo cadastrado)
+  const displayName = user?.name || 'Usuário';
 
   const formatActivityDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -97,7 +97,7 @@ export default function HomePage() {
         {/* Seção do Cabeçalho */}
         <header className={styles.header}>
           <h1 className={styles.title}>
-            Olá, <span className={styles.userName}>{firstName}</span>!
+            Olá, <span className={styles.userName}>{displayName}</span>!
           </h1>
           <p className={styles.subtitle}>Bem-vindo ao seu painel de avaliação física.</p>
         </header>

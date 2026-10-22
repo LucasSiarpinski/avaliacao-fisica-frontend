@@ -112,14 +112,31 @@
   position: relative;
 }
 
+.password-input {
+  padding-right: 44px;
+}
+
 .password-toggle-btn {
   position: absolute;
-  right: 10px;
-  top: 12px;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  color: #777;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  color: #0074c2;
+  background-color: rgba(0, 116, 194, 0.08);
 }
 
 /* ======= CHECKBOX / LEMBRAR ======= */
