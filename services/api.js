@@ -4,12 +4,15 @@ import axios from 'axios';
 const getBaseUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl && typeof envUrl === 'string') {
-    const cleaned = envUrl.replace(/[\[\]\(\)'"`]/g, '').trim().replace(/\/+$/, '');
-    if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
-      return cleaned;
+    // Extrai o domínio limpo caso tenha vindo como markdown [url](url) ou duplicado
+    const match = envUrl.match(/https?:\/\/[a-zA-Z0-9_.-]+\.(?:com|org|net|app|io|tech|dev|br)(?::\d+)?/i)
+               || envUrl.match(/https?:\/\/(?:localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(?::\d+)?/i);
+    if (match) {
+      return match[0];
     }
+    const cleaned = envUrl.replace(/[\[\]\(\)'"`]/g, '').trim().replace(/\/+$/, '');
     if (cleaned.length > 0) {
-      return `https://${cleaned}`;
+      return cleaned.startsWith('http') ? cleaned : `https://${cleaned}`;
     }
   }
 
