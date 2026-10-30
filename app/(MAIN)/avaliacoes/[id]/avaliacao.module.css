@@ -1025,11 +1025,16 @@
     min-height: auto !important;
   }
 
-  /* Oculta toda a interface interativa do Wizard */
+  /* Oculta toda a interface interativa do Wizard e tela de edição */
   .header,
+  .stepperContainer,
   .stepperNav,
+  .singlePageNav,
+  .content,
   .stepContent,
-  .wizardFooter {
+  .wizardFooter,
+  .floatingSaveBar,
+  .actions {
     display: none !important;
   }
 

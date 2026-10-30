@@ -12,6 +12,7 @@ import {
   calcularRCQ, 
   calcularComposicaoPollock7 
 } from "../../../../utils/calculosFisicos";
+import { maskCPF, maskPhone } from "../../../../utils/masks";
 import { 
   FaWeight, 
   FaRulerVertical, 
@@ -1581,9 +1582,9 @@ export default function AvaliacaoWizardPage() {
               </tr>
               <tr>
                 <td style={{ fontWeight: 700 }}>CPF:</td>
-                <td>{aluno?.cpf || "Não informado"}</td>
+                <td>{aluno?.cpf ? maskCPF(aluno.cpf) : "Não informado"}</td>
                 <td style={{ fontWeight: 700 }}>Telefone:</td>
-                <td>{aluno?.telefone || "Não informado"}</td>
+                <td>{aluno?.telefone ? maskPhone(aluno.telefone) : "Não informado"}</td>
               </tr>
               <tr>
                 <td style={{ fontWeight: 700 }}>Avaliador Resp.:</td>
