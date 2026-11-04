@@ -2,6 +2,7 @@
 
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import api from '../services/api';
 
 const AuthContext = createContext({});
@@ -38,7 +39,15 @@ async function signIn(email, password) {
     
   } catch (error) {
     console.error('Falha no login:', error.response?.data?.error);
-    alert(error.response?.data?.error || 'Não foi possível fazer login.');
+    const msg = error.response?.data?.error || error.response?.data?.message || 'E-mail ou senha incorretos.';
+    toast.error(msg, {
+      duration: 4500,
+      style: {
+        background: '#262626',
+        color: '#fff',
+        border: '1px solid #ef4444',
+      },
+    });
   }
 }
 

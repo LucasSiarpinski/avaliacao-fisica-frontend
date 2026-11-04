@@ -1,9 +1,20 @@
 // app/layout.js
 
 import { AuthProvider } from '../contexts/AuthContext';
-import { Toaster } from 'react-hot-toast'; // <-- 1. IMPORTE O TOASTER
+import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
+export const metadata = {
+  title: 'Avaliação Física - UNOESC',
+  description: 'Sistema de Avaliação Física e Cineantropometria',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export default function RootLayout({ children }) {
   return (

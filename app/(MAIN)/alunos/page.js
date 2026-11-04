@@ -30,6 +30,8 @@ export default function AlunosPage() {
   const [isStartingAvaliacao, setIsStartingAvaliacao] = useState(false);
   const [statusModalAluno, setStatusModalAluno] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [alunoParaExcluir, setAlunoParaExcluir] = useState(null);
+  const [excluindoLoading, setExcluindoLoading] = useState(false);
 
   // --- 1. LÓGICA DE SELEÇÃO (QUE VOCÊ GOSTOU) ---
   const [alunoSelecionadoId, setAlunoSelecionadoId] = useState(null);
@@ -96,21 +98,27 @@ export default function AlunosPage() {
     }
   };
 
-  const handleExcluirAluno = async () => {
-    if (!alunoSelecionadoId) return;
-    const confirmar = window.confirm(
-      "Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
-    );
-    if (!confirmar) return;
+  const handleAbrirModalExcluir = (aluno) => {
+    if (!aluno) return;
+    setAlunoParaExcluir(aluno);
+  };
 
+  const handleConfirmarExclusaoModal = async () => {
+    if (!alunoParaExcluir) return;
+    setExcluindoLoading(true);
     try {
-      await api.delete(`/api/alunos/${alunoSelecionadoId}`);
-      toast.success("Aluno excluído com sucesso!");
-      setAlunoSelecionadoId(null);
+      await api.delete(`/api/alunos/${alunoParaExcluir.id}`);
+      toast.success(`Aluno "${alunoParaExcluir.nome}" excluído com sucesso!`);
+      if (alunoSelecionadoId === alunoParaExcluir.id) {
+        setAlunoSelecionadoId(null);
+      }
+      setAlunoParaExcluir(null);
       await fetchAlunos();
     } catch (error) {
       console.error("Erro ao excluir aluno:", error);
-      toast.error("Não foi possível excluir o aluno.");
+      toast.error(error.response?.data?.error || "Não foi possível excluir o aluno.");
+    } finally {
+      setExcluindoLoading(false);
     }
   };
 
@@ -256,7 +264,7 @@ export default function AlunosPage() {
             )}
           </button>
           <button
-            onClick={handleExcluirAluno}
+            onClick={() => handleAbrirModalExcluir(alunoSelecionado)}
             className={`${styles.actionButton} ${styles.deleteButton}`}
             disabled={!alunoSelecionadoId || isStartingAvaliacao}
           >
@@ -493,7 +501,7 @@ export default function AlunosPage() {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleExcluirAlunoDireto(aluno.id);
+                      handleAbrirModalExcluir(aluno);
                     }}
                     className={styles.mobileDeleteBtn}
                     title="Excluir Aluno"
@@ -506,6 +514,51 @@ export default function AlunosPage() {
           })
         )}
       </div>
+
+      {/* --- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE ALUNO (NATIVO DO APP) --- */}
+      {alunoParaExcluir && (
+        <div className={styles.modalOverlay} onClick={() => !excluindoLoading && setAlunoParaExcluir(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle} style={{ color: "#ef4444", display: "flex", alignItems: "center", gap: "10px" }}>
+              <FaTrash /> Confirmar Exclusão de Aluno
+            </h2>
+            <p style={{ color: "#cbd5e1", fontSize: "0.95rem", lineHeight: 1.5, margin: "1rem 0" }}>
+              Tem certeza que deseja excluir permanentemente o cadastro de <strong>"{alunoParaExcluir.nome}"</strong> (Matrícula: {alunoParaExcluir.matricula || "N/A"})?
+            </p>
+            <p style={{ color: "#f87171", fontSize: "0.85rem", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "0.75rem", borderRadius: "8px", margin: "0.5rem 0 1.25rem" }}>
+              ⚠️ <strong>Atenção:</strong> Esta ação é irreversível e excluirá todo o histórico de avaliações físicas, prontuários de anamnese, PAR-Q e arquivos anexados a este aluno.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => setAlunoParaExcluir(null)}
+                disabled={excluindoLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={styles.deleteButton}
+                style={{
+                  height: "40px",
+                  minHeight: "40px",
+                  padding: "0.45rem 1.25rem",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+                onClick={handleConfirmarExclusaoModal}
+                disabled={excluindoLoading}
+              >
+                {excluindoLoading ? "Excluindo..." : "Sim, Excluir Aluno"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* --- MODAL DE CONFIRMAÇÃO DE STATUS DO ALUNO --- */}
       {statusModalAluno && (

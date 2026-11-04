@@ -2,26 +2,41 @@
 .sidebar {
     width: 280px; 
     height: 100vh;
+    max-height: 100vh;
     
-    /* --- REMOVA/COMENTE ISTO --- */
-    /* position: fixed; */ /* <-- O PROBLEMA ESTÁ AQUI */
-    /* top: 0; */
-    /* left: 0; */
+    position: sticky;
+    top: 0;
+    left: 0;
     
-    /* --- ADICIONE ISSO --- */
-    flex-shrink: 0; /* Impede que a sidebar encolha */
+    flex-shrink: 0; /* Impede que a sidebar encolha horizontalmente */
     
     background-color: #1f1f1f;
-    padding: 24px 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    padding: 20px 16px 14px 16px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.4);
     
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     
     transition: transform 0.3s ease-in-out; 
-    
-    /* Z-index só é necessário se for 'fixed' ou 'absolute' */
-    /* z-index: 1000; */ 
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #333333 transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 4px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #4CAF50;
 }
 
 /* --- CABEÇALHO DA SIDEBAR (LOGO + BOTÃO FECHAR) --- */
@@ -29,11 +44,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .logo {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: #4CAF50; /* Verde UNOESC */
 }
@@ -55,8 +71,10 @@
 
 /* --- NAVEGAÇÃO PRINCIPAL --- */
 .nav {
-    flex-grow: 1; /* Empurra o footer para baixo */
-    overflow-y: auto; /* Permite scroll se os itens não couberem */
+    flex: 1 1 auto;
+    min-height: 0; /* CRUCIAL: Permite que o container flex encolha sem empurrar o footer para fora */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .navList {
@@ -65,20 +83,21 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Espaçamento entre os links */
+    gap: 6px; /* Espaçamento equilibrado entre os links */
 }
 
 .navItem {
     display: flex;
     align-items: center;
-    gap: 15px; /* Espaço entre ícone e texto */
+    gap: 12px; /* Espaço entre ícone e texto */
     
-    padding: 12px 15px;
+    padding: 10px 14px;
     border-radius: 8px;
     color: #a0a0a0; /* Cor do link inativo */
     text-decoration: none;
     transition: background-color 0.2s, color 0.2s;
     font-weight: 500;
+    font-size: 0.92rem;
 }
 
 .navItem:hover {
@@ -98,22 +117,23 @@
 }
 
 .icon {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     display: flex;
     align-items: center;
 }
 
 .label {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     flex-grow: 1; /* Garante que o texto ocupe o espaço */
 }
 
 
 /* --- RODAPÉ (USER + LOGOUT) --- */
 .footer {
-    border-top: 1px solid #333333;
-    padding-top: 20px;
-    margin-top: 20px;
+    border-top: 1px solid #2e2e2e;
+    padding-top: 14px;
+    margin-top: auto;
+    flex-shrink: 0; /* Garante que o rodapé NUNCA seja cortado ou esmagado */
 }
 
 .userSection {
@@ -121,7 +141,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     padding: 0 4px;
 }
 
@@ -140,9 +160,9 @@
 }
 
 .avatar {
-    width: 35px;
-    height: 35px;
-    min-width: 35px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
     border-radius: 50%;
     background-color: #4CAF50; /* Verde */
     color: black;
@@ -150,11 +170,11 @@
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 .userName {
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     color: white;
     font-weight: 500;
     white-space: nowrap;
@@ -195,41 +215,42 @@
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 12px 15px;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 14px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 0.92rem;
+    font-weight: 600;
     
-    background-color: transparent;
-    color: #FF6347; /* Vermelho/Tomate para Sair */
-    border: 1px solid #FF6347;
-    transition: background-color 0.3s;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444; /* Vermelho moderno e nítido */
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    transition: all 0.2s ease;
 }
 
 .logoutButton:hover {
-    background-color: #FF634720; /* Fundo vermelho transparente */
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
 }
 
 .copyright {
-    font-size: 0.75rem;
-    color: #555555;
+    font-size: 0.7rem;
+    color: #666666;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 
 @media (max-width: 900px) {
     
     .sidebar {
-        /* --- ADICIONE ISSO AQUI DENTRO --- */
-        position: fixed; /* Só no mobile ela flutua */
+        position: fixed; /* No mobile ela flutua */
         top: 0;
         left: 0;
-        z-index: 1000; /* Agora sim, o z-index é necessário */
-        
-        /* Por padrão, o menu está escondido fora da tela */
+        z-index: 1000;
         transform: translateX(-100%); 
     }
     

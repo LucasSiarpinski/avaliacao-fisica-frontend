@@ -12,9 +12,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState(''); // Vamos usar email em vez de código/cpf
   const [password, setPassword] = useState('');
 
-  // Estados que você já tinha, mantemos eles
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 3. PEGAR A FUNÇÃO DE LOGIN DO CONTEXTO
   const { signIn } = useAuth();
@@ -22,7 +22,12 @@ export default function LoginPage() {
   // 4. ATUALIZAR A FUNÇÃO DE SUBMISSÃO
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await signIn(email, password); // Chama a função da API
+    setIsSubmitting(true);
+    try {
+      await signIn(email, password); // Chama a função da API
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -75,7 +80,9 @@ export default function LoginPage() {
             
             {/* ... resto do seu formulário ... */}
 
-            <button type="submit" className="login-button">ENTRAR</button>
+            <button type="submit" className="login-button" disabled={isSubmitting}>
+              {isSubmitting ? "ENTRANDO..." : "ENTRAR"}
+            </button>
           </form>
           
           {/* ... resto do seu componente ... */}

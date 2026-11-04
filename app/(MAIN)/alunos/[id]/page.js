@@ -29,7 +29,8 @@ import {
   FaUserCheck,
   FaArrowLeft,
   FaArrowRight,
-  FaCheck
+  FaCheck,
+  FaLock
 } from "react-icons/fa";
 
 const parqQuestions = [
@@ -378,6 +379,22 @@ export default function AlunoDetalhePage() {
   // 2. CALCULAMOS A IDADE DINAMICAMENTE
   const idade = calculateAge(aluno.dataNasc);
 
+  const handleTabClick = (tabKey) => {
+    if (isCreating && (tabKey === "avaliacoesFisicas" || tabKey === "arquivos")) {
+      toast("Esta aba será liberada assim que o cadastro inicial do aluno for salvo.", {
+        icon: "🔒",
+        duration: 3500,
+        style: {
+          background: '#242424',
+          color: '#fff',
+          border: '1px solid #eab308',
+        },
+      });
+      return;
+    }
+    setActiveTab(tabKey);
+  };
+
   if (loading) {
     return <div>Carregando dados do aluno...</div>;
   }
@@ -420,40 +437,42 @@ export default function AlunoDetalhePage() {
       <div className={styles.tabContainer}>
         <button
           type="button"
-          onClick={() => setActiveTab("dadosPessoais")}
+          onClick={() => handleTabClick("dadosPessoais")}
           className={activeTab === "dadosPessoais" ? styles.activeTab : ""}
         >
           Dados Pessoais
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("avaliacoes")}
+          onClick={() => handleTabClick("avaliacoes")}
           className={activeTab === "avaliacoes" ? styles.activeTab : ""}
         >
           Questionário Anamnese
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("documentos")}
+          onClick={() => handleTabClick("documentos")}
           className={activeTab === "documentos" ? styles.activeTab : ""}
         >
           Questionário PAR-Q
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("avaliacoesFisicas")}
-          className={activeTab === "avaliacoesFisicas" ? styles.activeTab : ""}
-          title={isCreating ? "Disponível após salvar o cadastro do aluno" : "Histórico de avaliações físicas"}
+          onClick={() => handleTabClick("avaliacoesFisicas")}
+          className={`${activeTab === "avaliacoesFisicas" ? styles.activeTab : ""} ${isCreating ? styles.tabLocked : ""}`}
+          title={isCreating ? "Bloqueado: Conclua e salve o cadastro do aluno para liberar" : "Histórico de avaliações físicas"}
         >
-          <FaHeartbeat style={{ marginRight: 6 }} /> Avaliações Físicas {!isCreating && avaliacoesAluno.length > 0 ? `(${avaliacoesAluno.length})` : ""}
+          {isCreating ? <FaLock style={{ marginRight: 6, opacity: 0.7 }} /> : <FaHeartbeat style={{ marginRight: 6 }} />}
+          Avaliações Físicas {isCreating ? "(Bloqueado)" : avaliacoesAluno.length > 0 ? `(${avaliacoesAluno.length})` : ""}
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("arquivos")}
-          className={activeTab === "arquivos" ? styles.activeTab : ""}
-          title={isCreating ? "Disponível após salvar o cadastro do aluno" : "Arquivos e exames anexados"}
+          onClick={() => handleTabClick("arquivos")}
+          className={`${activeTab === "arquivos" ? styles.activeTab : ""} ${isCreating ? styles.tabLocked : ""}`}
+          title={isCreating ? "Bloqueado: Conclua e salve o cadastro do aluno para liberar" : "Arquivos e exames anexados"}
         >
-          Arquivos & Exames {!isCreating && documentos.length > 0 ? `(${documentos.length})` : ""}
+          {isCreating ? <FaLock style={{ marginRight: 6, opacity: 0.7 }} /> : null}
+          Arquivos & Exames {isCreating ? "(Bloqueado)" : documentos.length > 0 ? `(${documentos.length})` : ""}
         </button>
       </div>
 

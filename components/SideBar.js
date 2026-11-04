@@ -86,8 +86,7 @@ export default function SideBar({ isOpen, closeMenu }) {
                 </button>
                 
                 <div className={styles.copyright}>
-                    <p>Avaliação Física</p>
-                    <p>© 2025 UNOESC</p>
+                    <p>© 2025 UNOESC • Avaliação Física</p>
                 </div>
             </div>
         </aside>

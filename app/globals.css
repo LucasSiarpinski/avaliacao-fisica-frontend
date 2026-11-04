@@ -25,9 +25,15 @@ a {
     text-decoration: none;
 }
 
-/* Estilos de Botão Comuns (Opcional: Se você tiver um estilo de botão que não é de navegação) 
-.common-button {
-    transition: 0.3s;
-    cursor: pointer;
+/* Ocultar notificações / popups / toasts do react-hot-toast durante a impressão */
+@media print {
+  div[aria-live="polite"],
+  div[aria-live="assertive"],
+  div[role="status"],
+  .toaster,
+  div[style*="z-index: 9999"],
+  div[style*="z-index:9999"] {
+    display: none !important;
+    visibility: hidden !important;
+  }
 }
-*/
