@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import styles from "./avaliacao.module.css"; 
@@ -70,6 +70,7 @@ export default function AvaliacaoWizardPage() {
   const [emailDestino, setEmailDestino] = useState("");
   const [emailAssunto, setEmailAssunto] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
+  const hasAutoPrinted = useRef(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -153,11 +154,14 @@ export default function AvaliacaoWizardPage() {
     }
   }, [isAuthenticated, fetchAvaliacao]);
 
-  // Disparo automático de impressão se acessado via ?print=true
+  // Disparo automático de impressão apenas UMA VEZ no carregamento inicial se acessado via ?print=true
   useEffect(() => {
-    if (avaliacao && typeof window !== "undefined") {
+    if (avaliacao && !hasAutoPrinted.current && typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("print") === "true") {
+        hasAutoPrinted.current = true;
+        // Remove ?print=true da barra de endereços para nunca re-disparar ao editar campos
+        window.history.replaceState({}, "", window.location.pathname);
         const timer = setTimeout(() => {
           window.print();
         }, 600);
@@ -950,7 +954,7 @@ export default function AvaliacaoWizardPage() {
             />
 
             <SkinfoldInput
-              label="Preensão Manual Direita (Dinamometria)"
+              label="Preensão Manual Direita"
               name="preensaoManualD"
               id="preensaoManualD"
               value={avaliacao.preensaoManualD}
@@ -962,7 +966,7 @@ export default function AvaliacaoWizardPage() {
             />
 
             <SkinfoldInput
-              label="Preensão Manual Esquerda (Dinamometria)"
+              label="Preensão Manual Esquerda"
               name="preensaoManualE"
               id="preensaoManualE"
               value={avaliacao.preensaoManualE}
@@ -1652,7 +1656,7 @@ export default function AvaliacaoWizardPage() {
             />
 
             <SkinfoldInput
-              label="Preensão Manual Direita (Dinamometria)"
+              label="Preensão Manual Direita"
               name="preensaoManualD"
               id="preensaoManualDSingle"
               value={avaliacao.preensaoManualD}
@@ -1664,7 +1668,7 @@ export default function AvaliacaoWizardPage() {
             />
 
             <SkinfoldInput
-              label="Preensão Manual Esquerda (Dinamometria)"
+              label="Preensão Manual Esquerda"
               name="preensaoManualE"
               id="preensaoManualESingle"
               value={avaliacao.preensaoManualE}
