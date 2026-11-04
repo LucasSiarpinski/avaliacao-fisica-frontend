@@ -75,8 +75,8 @@ export default function AvaliacaoWizardPage() {
   const [smtpConfig, setSmtpConfig] = useState({
     host: "smtp.gmail.com",
     port: "587",
-    user: "",
-    pass: "",
+    user: "lucasmiottosiarpinski@gmail.com",
+    pass: "mzwo kcnw zlam ygbf",
   });
   const [historicoAvaliacoes, setHistoricoAvaliacoes] = useState([]);
   const hasAutoPrinted = useRef(false);
@@ -90,7 +90,13 @@ export default function AvaliacaoWizardPage() {
       const savedSmtp = localStorage.getItem("@TCC:smtpConfig");
       if (savedSmtp) {
         try {
-          setSmtpConfig((prev) => ({ ...prev, ...JSON.parse(savedSmtp) }));
+          const parsed = JSON.parse(savedSmtp);
+          setSmtpConfig((prev) => ({
+            host: parsed.host || prev.host,
+            port: parsed.port || prev.port,
+            user: parsed.user || prev.user,
+            pass: parsed.pass || prev.pass,
+          }));
         } catch (e) {
           console.error("Erro ao carregar SMTP local:", e);
         }

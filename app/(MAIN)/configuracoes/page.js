@@ -24,8 +24,8 @@ export default function ConfiguracoesPage() {
   const [smtpConfig, setSmtpConfig] = useState({
     host: "smtp.gmail.com",
     port: "587",
-    user: "",
-    pass: "",
+    user: "lucasmiottosiarpinski@gmail.com",
+    pass: "mzwo kcnw zlam ygbf",
   });
 
   useEffect(() => {
@@ -43,7 +43,12 @@ export default function ConfiguracoesPage() {
       if (savedSmtp) {
         try {
           const parsed = JSON.parse(savedSmtp);
-          setSmtpConfig((prev) => ({ ...prev, ...parsed }));
+          setSmtpConfig((prev) => ({
+            host: parsed.host || prev.host,
+            port: parsed.port || prev.port,
+            user: parsed.user || prev.user,
+            pass: parsed.pass || prev.pass,
+          }));
         } catch (e) {
           console.error("Erro ao ler configuração SMTP local:", e);
         }
