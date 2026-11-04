@@ -66,11 +66,19 @@ export default function AvaliacaoWizardPage() {
   const [showMedicalSnapshot, setShowMedicalSnapshot] = useState(false);
   const [viewMode, setViewMode] = useState("wizard"); // "wizard" ou "single"
 
-  // Estados para o envio do relatório por e-mail
+  // Estados para o envio do relatório por e-mail e histórico longitudinal
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailDestino, setEmailDestino] = useState("");
   const [emailAssunto, setEmailAssunto] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [showSmtpPanel, setShowSmtpPanel] = useState(false);
+  const [smtpConfig, setSmtpConfig] = useState({
+    host: "smtp.gmail.com",
+    port: "587",
+    user: "",
+    pass: "",
+  });
+  const [historicoAvaliacoes, setHistoricoAvaliacoes] = useState([]);
   const hasAutoPrinted = useRef(false);
 
   useEffect(() => {
@@ -78,6 +86,14 @@ export default function AvaliacaoWizardPage() {
       const savedMode = localStorage.getItem("@TCC:avaliacaoViewMode");
       if (savedMode === "single" || savedMode === "wizard") {
         setViewMode(savedMode);
+      }
+      const savedSmtp = localStorage.getItem("@TCC:smtpConfig");
+      if (savedSmtp) {
+        try {
+          setSmtpConfig((prev) => ({ ...prev, ...JSON.parse(savedSmtp) }));
+        } catch (e) {
+          console.error("Erro ao carregar SMTP local:", e);
+        }
       }
     }
   }, []);
@@ -132,8 +148,19 @@ export default function AvaliacaoWizardPage() {
       });
       setEmailDestino(data.aluno?.email || "");
       setEmailAssunto(
-        `Relatório de Avaliação Física - ${data.aluno?.nome || "Aluno"} (UNOESC)`
+        `Laudo Técnico de Avaliação Física — ${data.aluno?.nome || "Aluno"} (UNOESC)`
       );
+
+      if (Array.isArray(data.aluno?.avaliacoes)) {
+        setHistoricoAvaliacoes(data.aluno.avaliacoes);
+      } else if (data.alunoId) {
+        try {
+          const histRes = await api.get(`/api/alunos/${data.alunoId}/avaliacoes`);
+          setHistoricoAvaliacoes(histRes.data || []);
+        } catch {
+          setHistoricoAvaliacoes([]);
+        }
+      }
     } catch (error) {
       console.error("Erro ao buscar avaliação:", error);
       toast.error("Não foi possível carregar os dados da avaliação.");
@@ -211,6 +238,41 @@ export default function AvaliacaoWizardPage() {
     genero,
   ]);
 
+  const parqResumo = useMemo(() => {
+    const parqObj =
+      avaliacao?.respostasParq && typeof avaliacao.respostasParq === "object"
+        ? avaliacao.respostasParq
+        : aluno?.parq && typeof aluno.parq === "object"
+        ? aluno.parq
+        : null;
+    const keys = ["q1", "q2", "q3", "q4", "q5", "q6", "q7"];
+    if (!parqObj) {
+      return {
+        respondido: false,
+        respondidas: 0,
+        afirmativas: 0,
+        temAlerta: false,
+      };
+    }
+    let respondidas = 0;
+    let afirmativas = 0;
+    keys.forEach((k) => {
+      const val = parqObj[k];
+      if (val === "SIM" || val === "NAO" || val === true || val === false) {
+        respondidas++;
+      }
+      if (val === "SIM" || val === true) {
+        afirmativas++;
+      }
+    });
+    return {
+      respondido: respondidas > 0,
+      respondidas,
+      afirmativas,
+      temAlerta: afirmativas > 0,
+    };
+  }, [avaliacao?.respostasParq, aluno?.parq]);
+
   // --- STATUS DE PRONTIDÃO DE CADA PASSO ---
   const stepStatus = useMemo(() => {
     if (!avaliacao) return { step1: "gray", step2: "gray", step3: "gray" };
@@ -282,51 +344,63 @@ export default function AvaliacaoWizardPage() {
     if (!avaliacao) return "";
     const dataAval = new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR");
     const linhas = [
-      `RELATÓRIO DE AVALIAÇÃO FÍSICA — UNOESC`,
-      `Laudo Técnico Nº #${avaliacao.id} | Data: ${dataAval}`,
-      `Aluno(a): ${aluno?.nome || "---"} | Matrícula: ${aluno?.matricula || "---"}`,
-      `Avaliador(a): ${avaliacao.avaliador?.name || "Professor Avaliador"}`,
+      `LAUDO TÉCNICO DE AVALIAÇÃO FÍSICA — UNOESC PORTAL`,
+      `Laudo Técnico Nº #${avaliacao.id} | Data da Coleta: ${dataAval}`,
+      `Avaliado(a): ${aluno?.nome || "---"} | Matrícula: ${aluno?.matricula || "---"}`,
+      `Avaliador(a) Responsável: ${avaliacao.avaliador?.name || "Administrador"}`,
       `--------------------------------------------------`,
-      `1. ANTROPOMETRIA & IMC:`,
-      `• Peso: ${avaliacao.peso ? `${avaliacao.peso} kg` : "Não informado"}`,
-      `• Altura: ${avaliacao.altura ? `${avaliacao.altura}` : "Não informada"}`,
+      `1. TRIAGEM PREVENTIVA — PAR-Q:`,
+      parqResumo.respondido
+        ? `• Questões respondidas: ${parqResumo.respondidas} de 7 | Respostas afirmativas: ${parqResumo.afirmativas === 0 ? "Nenhuma" : parqResumo.afirmativas}\n• Resultado: ${parqResumo.temAlerta ? "Atenção: identificada resposta afirmativa no PAR-Q" : "Sem indicação de alerta na triagem preventiva"}`
+        : `• Status: Questionário não registrado`,
+      ``,
+      `2. RESUMO DA COMPOSIÇÃO CORPORAL:`,
+      `• Estatura: ${avaliacao.altura ? `${avaliacao.altura}` : "--"} | Massa Corporal: ${avaliacao.peso ? `${avaliacao.peso} kg` : "--"}`,
       `• IMC: ${imcData ? `${imcData.valor} kg/m² (${imcData.classificacao})` : "Não calculado"}`,
-      ``,
-      `2. PERIMETRIA & RCQ:`,
-      `• Cintura: ${avaliacao.circCintura ? `${avaliacao.circCintura} cm` : "--"} | Abdômen: ${avaliacao.circAbdomem ? `${avaliacao.circAbdomem} cm` : "--"} | Quadril: ${avaliacao.circQuadril ? `${avaliacao.circQuadril} cm` : "--"}`,
       `• RCQ: ${rcqData ? `${rcqData.valor} (${rcqData.risco})` : "Não calculado"}`,
-      ``,
-      `3. COMPOSIÇÃO CORPORAL (POLLOCK 7 DOBRAS):`,
       composicaoData.completo
-        ? `• % de Gordura: ${composicaoData.percGordura}% (${composicaoData.classificacaoGordura})\n• Densidade Corporal: ${composicaoData.densidadeCorporal} g/cm³ | Soma 7 Dobras: ${composicaoData.somaDobras} mm\n• Massa Magra: ${composicaoData.massaMagra ?? "--"} kg | Massa Gorda: ${composicaoData.massaGorda ?? "--"} kg`
-        : `• Protocolo Pollock 7 Dobras parcial/não mensurado nesta sessão.`,
+        ? `• % de Gordura: ${composicaoData.percGordura}% (${composicaoData.classificacaoGordura})\n• Densidade Corporal: ${composicaoData.densidadeCorporal} g/cm³ (Jackson & Pollock — 7 dobras / Equação de Siri)\n• Massa Livre de Gordura: ${composicaoData.massaMagra ?? "--"} kg | Massa Gorda: ${composicaoData.massaGorda ?? "--"} kg`
+        : `• Protocolo Jackson & Pollock (7 dobras cutâneas): parcial/não mensurado nesta sessão.`,
       ``,
-      `4. TESTES FÍSICOS NEUROMOTORES:`,
+      `3. TESTES FÍSICOS NEUROMOTORES:`,
       testesFisicosData.abdominal
-        ? `• Resistência Abdominal (1 min): ${testesFisicosData.abdominal.repeticoes} repetições — Classificação: ${testesFisicosData.abdominal.classificacao} (${testesFisicosData.abdominal.pontuacao} pts)`
-        : `• Resistência Abdominal: Não realizado`,
+        ? `• Resistência abdominal — 1 minuto: ${testesFisicosData.abdominal.repeticoes} repetições | ${testesFisicosData.abdominal.classificacao} (${testesFisicosData.abdominal.pontuacao} pontos)`
+        : `• Resistência abdominal — 1 minuto: Não realizado`,
       testesFisicosData.preensao
-        ? `• Preensão Manual (Dinamometria): Direita ${testesFisicosData.preensao.direita ?? "--"} kgf | Esquerda ${testesFisicosData.preensao.esquerda ?? "--"} kgf (Máx: ${testesFisicosData.preensao.maior} kgf) — Classificação: ${testesFisicosData.preensao.classificacao} (${testesFisicosData.preensao.pontuacao} pts)`
-        : `• Preensão Manual: Não realizado`,
+        ? `• Força de preensão manual — dinamometria: D: ${testesFisicosData.preensao.direita ?? "--"} kgf / E: ${testesFisicosData.preensao.esquerda ?? "--"} kgf | ${testesFisicosData.preensao.classificacao} (${testesFisicosData.preensao.pontuacao} pontos)`
+        : `• Força de preensão manual — dinamometria: Não realizado`,
       ``,
-      `5. PARECER TÉCNICO DO AVALIADOR:`,
-      avaliacao.observacoes || "Sem observações adicionais registradas.",
+      `4. PARECER TÉCNICO E ORIENTAÇÕES DO AVALIADOR:`,
+      avaliacao.observacoes ||
+        "Os dados foram coletados conforme os protocolos disponíveis no sistema. Recomenda-se o acompanhamento periódico da composição corporal e a realização de nova avaliação conforme o planejamento da academia.",
     ];
     return linhas.join("\n");
-  }, [avaliacao, aluno, imcData, rcqData, composicaoData, testesFisicosData]);
+  }, [avaliacao, aluno, imcData, rcqData, composicaoData, testesFisicosData, parqResumo]);
 
   const handleOpenEmailModal = () => {
     setEmailDestino(aluno?.email || "");
     setEmailAssunto(
-      `Relatório de Avaliação Física - ${aluno?.nome || "Aluno"} (UNOESC)`
+      `Laudo Técnico de Avaliação Física — ${aluno?.nome || "Aluno"} (UNOESC)`
     );
     setShowEmailModal(true);
+  };
+
+  const handleSaveSmtpInline = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("@TCC:smtpConfig", JSON.stringify(smtpConfig));
+      toast.success("E-mail remetente salvo! Agora clique em 'Enviar Laudo em PDF'.");
+      setShowSmtpPanel(false);
+    }
   };
 
   const handleSendEmailSystem = async () => {
     if (!emailDestino || !emailDestino.includes("@")) {
       toast.error("Informe um endereço de e-mail válido para o destinatário.");
       return;
+    }
+
+    if (typeof window !== "undefined" && smtpConfig.user) {
+      localStorage.setItem("@TCC:smtpConfig", JSON.stringify(smtpConfig));
     }
 
     setSendingEmail(true);
@@ -337,6 +411,7 @@ export default function AvaliacaoWizardPage() {
         destinatario: emailDestino.trim(),
         assunto: emailAssunto,
         mensagem,
+        smtpConfig,
       });
 
       setAvaliacao((prev) => ({
@@ -347,10 +422,15 @@ export default function AvaliacaoWizardPage() {
         },
       }));
 
-      toast.success(res.data.message || `Relatório enviado para ${emailDestino}!`);
+      toast.success(
+        res.data.message || `Laudo em PDF enviado com sucesso para ${emailDestino}!`
+      );
       setShowEmailModal(false);
     } catch (error) {
       console.error("Erro ao enviar relatório por e-mail:", error);
+      if (error.response?.data?.code === "SMTP_NOT_CONFIGURED") {
+        setShowSmtpPanel(true);
+      }
       toast.error(
         error.response?.data?.error || "Não foi possível enviar o relatório por e-mail."
       );
@@ -1974,42 +2054,46 @@ export default function AvaliacaoWizardPage() {
 
       {/* ========================================================
           DOCUMENTO OFICIAL IMPRESSO (LAUDO CLÍNICO & COMPOSIÇÃO)
+          Ordem de 9 seções validada pelo protocolo do TCC
           Visível exclusivamente ao imprimir (@media print)
          ======================================================== */}
       <div className={styles.printableDocument}>
-        {/* Cabeçalho Institucional */}
+        {/* Cabeçalho do Relatório */}
         <div className={styles.printHeader}>
           <div className={styles.printBrand}>
             <div className={styles.printLogoBadge}>UNOESC</div>
             <div>
               <h2 className={styles.printInstitutionName}>Universidade do Oeste de Santa Catarina</h2>
               <p className={styles.printInstitutionDept}>
-                Curso de Educação Física • Laboratório de Cineantropometria e Avaliação Funcional
+                UNOESC Portal — Sistema de Avaliação Física • Laboratório de Cineantropometria
               </p>
             </div>
           </div>
           <div className={styles.printDocInfo}>
             <span className={styles.printDocId}>Laudo Técnico Nº #{avaliacao.id}</span>
             <span className={styles.printDocDate}>
-              Data da Coleta: {new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR")}
+              Data da coleta: {new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR")}
             </span>
             <span className={styles.printDocDate}>
-              Emissão: {new Date().toLocaleDateString("pt-BR")}
+              Data de emissão: {new Date().toLocaleDateString("pt-BR")}
             </span>
           </div>
         </div>
 
         <div className={styles.printDocTitleBanner}>
-          <h1>Relatório de Avaliação Física e Composição Corporal</h1>
+          <h1>LAUDO TÉCNICO DE AVALIAÇÃO FÍSICA</h1>
+          <p style={{ margin: "2px 0 0 0", fontSize: "8.5pt", fontWeight: 600, color: "#475569" }}>
+            Avaliação Física e Composição Corporal
+          </p>
         </div>
 
-        {/* 1. Identificação do Aluno / Avaliado */}
+        {/* 1. DADOS DE IDENTIFICAÇÃO DO AVALIADO */}
         <div className={styles.printSection}>
-          <h3 className={styles.printSectionTitle}>1. Dados de Identificação do Avaliado</h3>
+          <h3 className={styles.printSectionTitle}>1. DADOS DE IDENTIFICAÇÃO DO AVALIADO</h3>
           <table className={styles.printTable}>
             <tbody>
               <tr>
-                <td style={{ width: "20%", fontWeight: 700 }}>Nome Completo:</td>
+                <td style={{ width: "20%", fontWeight: 700 }}>Nome:</td>
                 <td style={{ width: "45%" }}>{aluno?.nome || "---"}</td>
                 <td style={{ width: "15%", fontWeight: 700 }}>Matrícula:</td>
                 <td style={{ width: "20%" }}>{aluno?.matricula || "---"}</td>
@@ -2017,7 +2101,7 @@ export default function AvaliacaoWizardPage() {
               <tr>
                 <td style={{ fontWeight: 700 }}>Idade:</td>
                 <td>{idade ? `${idade} anos` : "Não informada"}</td>
-                <td style={{ fontWeight: 700 }}>Gênero:</td>
+                <td style={{ fontWeight: 700 }}>Gênero / Sexo:</td>
                 <td>{genero === "F" ? "Feminino" : "Masculino"}</td>
               </tr>
               <tr>
@@ -2027,112 +2111,233 @@ export default function AvaliacaoWizardPage() {
                 <td>{aluno?.telefone ? maskPhone(aluno.telefone) : "Não informado"}</td>
               </tr>
               <tr>
-                <td style={{ fontWeight: 700 }}>Avaliador Resp.:</td>
-                <td colSpan="3">{avaliacao.avaliador?.name || "Professor Avaliador"}</td>
+                <td style={{ fontWeight: 700 }}>Avaliador responsável:</td>
+                <td colSpan="3">{avaliacao.avaliador?.name || "Administrador"}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {/* 2. Resumo da Composição Corporal */}
+        {/* 2. TRIAGEM PREVENTIVA — QUESTIONÁRIO PAR-Q */}
         <div className={styles.printSection}>
-          <h3 className={styles.printSectionTitle}>2. Resumo da Composição Corporal</h3>
+          <h3 className={styles.printSectionTitle}>2. TRIAGEM PREVENTIVA — QUESTIONÁRIO PAR-Q</h3>
+          <table className={styles.printTable}>
+            <tbody>
+              <tr>
+                <td style={{ width: "22%", fontWeight: 700 }}>Status:</td>
+                <td style={{ width: "28%" }}>
+                  {parqResumo.respondido ? "Questionário respondido" : "Não registrado"}
+                </td>
+                <td style={{ width: "25%", fontWeight: 700 }}>Questões respondidas:</td>
+                <td style={{ width: "25%" }}>{parqResumo.respondidas} de 7</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 700 }}>Respostas afirmativas:</td>
+                <td style={{ fontWeight: 700, color: parqResumo.temAlerta ? "#b91c1c" : "#15803d" }}>
+                  {parqResumo.afirmativas === 0 ? "Nenhuma" : `${parqResumo.afirmativas} resposta(s) "Sim"`}
+                </td>
+                <td style={{ fontWeight: 700 }}>Resultado:</td>
+                <td style={{ fontWeight: 700, color: parqResumo.temAlerta ? "#b91c1c" : "#15803d" }}>
+                  {parqResumo.temAlerta
+                    ? "Alerta identificado na triagem preventiva"
+                    : "Sem indicação de alerta na triagem preventiva"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          {parqResumo.temAlerta && (
+            <div
+              style={{
+                marginTop: "4px",
+                padding: "5px 8px",
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: "4px",
+                color: "#991b1b",
+                fontSize: "8pt",
+                fontWeight: 700,
+              }}
+            >
+              Atenção: foi identificada resposta afirmativa no PAR-Q. Recomenda-se avaliação de profissional de saúde antes da realização de atividades físicas intensas.
+            </div>
+          )}
+        </div>
+
+        {/* 3. ANAMNESE E HISTÓRICO DE SAÚDE */}
+        <div className={styles.printSection}>
+          <h3 className={styles.printSectionTitle}>3. ANAMNESE E HISTÓRICO DE SAÚDE</h3>
+          <table className={styles.printTable}>
+            <thead>
+              <tr>
+                <th style={{ width: "32%" }}>Item</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ fontWeight: 700 }}>Histórico de doenças</td>
+                <td>{avaliacao.historicoMedico || aluno?.anamnese?.historicoMedico || "Não informado"}</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 700 }}>Uso de medicamentos</td>
+                <td>{avaliacao.medicamentosEmUso || aluno?.anamnese?.medicamentos || "Não informado"}</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 700 }}>Lesões, limitações ou objetivos</td>
+                <td>{avaliacao.objetivos || aluno?.anamnese?.lesoes || "Não informado"}</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 700 }}>Prática de exercícios e hábitos</td>
+                <td>{avaliacao.habitos || "Informada no cadastro"}</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 700 }}>Observações clínicas</td>
+                <td>{avaliacao.observacoes ? "Registradas no parecer técnico" : "Sem observações adicionais"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* 4. RESUMO DA COMPOSIÇÃO CORPORAL */}
+        <div className={styles.printSection}>
+          <h3 className={styles.printSectionTitle}>4. RESUMO DA COMPOSIÇÃO CORPORAL</h3>
           <div className={styles.printKpiGrid}>
             <div className={styles.printKpiCard}>
-              <span className={styles.printKpiTitle}>Estatura / Altura</span>
-              <p className={styles.printKpiValue}>{avaliacao.altura ? `${avaliacao.altura} cm` : "--"}</p>
+              <span className={styles.printKpiTitle}>Estatura</span>
+              <p className={styles.printKpiValue}>{avaliacao.altura ? `${avaliacao.altura}` : "--"}</p>
               <span className={styles.printKpiSub}>Estatímetro</span>
             </div>
             <div className={styles.printKpiCard}>
-              <span className={styles.printKpiTitle}>Massa Corporal Total</span>
+              <span className={styles.printKpiTitle}>Massa Corporal</span>
               <p className={styles.printKpiValue}>{avaliacao.peso ? `${avaliacao.peso} kg` : "--"}</p>
               <span className={styles.printKpiSub}>Balança Antropométrica</span>
             </div>
             <div className={styles.printKpiCard}>
-              <span className={styles.printKpiTitle}>Índice IMC (OMS)</span>
-              <p className={styles.printKpiValue}>{imcData ? imcData.valor : "--"}</p>
-              <span className={styles.printKpiSub}>
-                {imcData?.classificacao || "Pendente"}
-              </span>
+              <span className={styles.printKpiTitle}>IMC e Classificação</span>
+              <p className={styles.printKpiValue}>{imcData ? `${imcData.valor} kg/m²` : "--"}</p>
+              <span className={styles.printKpiSub}>{imcData?.classificacao || "Pendente"}</span>
             </div>
             <div className={styles.printKpiCard}>
               <span className={styles.printKpiTitle}>Relação Cintura-Quadril</span>
               <p className={styles.printKpiValue}>{rcqData ? rcqData.valor : "--"}</p>
-              <span className={styles.printKpiSub}>
-                {rcqData?.risco || "Não calculado"}
-              </span>
+              <span className={styles.printKpiSub}>{rcqData?.risco || "Não calculado"}</span>
             </div>
             <div className={styles.printKpiCard}>
-              <span className={styles.printKpiTitle}>% de Gordura Corporal</span>
+              <span className={styles.printKpiTitle}>Percentual de Gordura</span>
               <p className={styles.printKpiValue}>
                 {composicaoData.percGordura ? `${composicaoData.percGordura}%` : "--"}
               </p>
               <span className={styles.printKpiSub}>
-                {composicaoData.classificacaoGordura || "Pollock 7 Dobras"}
+                {composicaoData.classificacaoGordura || "Não calculado"}
               </span>
             </div>
             <div className={styles.printKpiCard}>
-              <span className={styles.printKpiTitle}>Massa Magra Livre</span>
+              <span className={styles.printKpiTitle}>Massa Livre de Gordura</span>
               <p className={styles.printKpiValue}>
                 {composicaoData.massaMagra ? `${composicaoData.massaMagra} kg` : "--"}
               </p>
-              <span className={styles.printKpiSub}>Músculo & Massa Óssea</span>
+              <span className={styles.printKpiSub}>Massa Magra</span>
             </div>
             <div className={styles.printKpiCard}>
-              <span className={styles.printKpiTitle}>Massa Gorda Estimada</span>
+              <span className={styles.printKpiTitle}>Massa Gorda</span>
               <p className={styles.printKpiValue}>
                 {composicaoData.massaGorda ? `${composicaoData.massaGorda} kg` : "--"}
               </p>
               <span className={styles.printKpiSub}>Tecido Adiposo</span>
             </div>
             <div className={styles.printKpiCard}>
-              <span className={styles.printKpiTitle}>Protocolo Científico</span>
-              <p className={styles.printKpiValue} style={{ fontSize: "9.5pt" }}>
-                Pollock 7 Dobras
+              <span className={styles.printKpiTitle}>Densidade Corporal</span>
+              <p className={styles.printKpiValue} style={{ fontSize: "10pt" }}>
+                {composicaoData.densidadeCorporal ? `${composicaoData.densidadeCorporal} g/cm³` : "--"}
               </p>
               <span className={styles.printKpiSub}>Equação de Siri (1961)</span>
             </div>
           </div>
+          <div
+            style={{
+              marginTop: "4px",
+              padding: "4px 8px",
+              background: "#f8fafc",
+              border: "1px solid #cbd5e1",
+              borderRadius: "4px",
+              fontSize: "8pt",
+              color: "#1e293b",
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "8px",
+            }}
+          >
+            <span>
+              <strong>Protocolo:</strong> Jackson & Pollock — 7 dobras cutâneas
+            </span>
+            <span>
+              <strong>Equação utilizada:</strong> Siri
+            </span>
+            <span>
+              <strong>Densidade corporal:</strong>{" "}
+              {composicaoData.densidadeCorporal
+                ? `${composicaoData.densidadeCorporal} g/cm³`
+                : "Não calculada"}
+            </span>
+          </div>
         </div>
 
-        {/* 3 e 4. Perimetria e Dobras Cutâneas */}
+        {/* 5 e 6. PERIMETRIA E DOBRAS CUTÂNEAS */}
         <div className={styles.printTwoCols}>
           <div className={styles.printCol}>
-            <h3 className={styles.printSectionTitle}>3. Perimetria / Circunferências (cm)</h3>
+            <h3 className={styles.printSectionTitle}>
+              5. PERIMETRIA E CIRCUNFERÊNCIAS CORPORAIS (cm)
+            </h3>
             <table className={styles.printTable}>
               <thead>
                 <tr>
-                  <th>Região Anatômica</th>
+                  <th>Região Corporal</th>
                   <th style={{ textAlign: "right" }}>Medida (cm)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Circunferência da Cintura</td>
-                  <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.circCintura ? `${avaliacao.circCintura} cm` : "--"}</td>
+                  <td>Cintura</td>
+                  <td style={{ textAlign: "right", fontWeight: 700 }}>
+                    {avaliacao.circCintura ? `${avaliacao.circCintura} cm` : "--"}
+                  </td>
                 </tr>
                 <tr>
-                  <td>Circunferência do Abdômen</td>
-                  <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.circAbdomem ? `${avaliacao.circAbdomem} cm` : "--"}</td>
+                  <td>Abdômen</td>
+                  <td style={{ textAlign: "right", fontWeight: 700 }}>
+                    {avaliacao.circAbdomem ? `${avaliacao.circAbdomem} cm` : "--"}
+                  </td>
                 </tr>
                 <tr>
-                  <td>Circunferência do Quadril</td>
-                  <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.circQuadril ? `${avaliacao.circQuadril} cm` : "--"}</td>
+                  <td>Quadril</td>
+                  <td style={{ textAlign: "right", fontWeight: 700 }}>
+                    {avaliacao.circQuadril ? `${avaliacao.circQuadril} cm` : "--"}
+                  </td>
                 </tr>
                 <tr>
-                  <td>Braço Relaxado Direito</td>
-                  <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.circBracoRelaxadoD ? `${avaliacao.circBracoRelaxadoD} cm` : "--"}</td>
+                  <td>Braço relaxado direito</td>
+                  <td style={{ textAlign: "right", fontWeight: 700 }}>
+                    {avaliacao.circBracoRelaxadoD ? `${avaliacao.circBracoRelaxadoD} cm` : "--"}
+                  </td>
                 </tr>
                 <tr>
-                  <td>Braço Relaxado Esquerdo</td>
-                  <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.circBracoRelaxadoE ? `${avaliacao.circBracoRelaxadoE} cm` : "--"}</td>
+                  <td>Braço relaxado esquerdo</td>
+                  <td style={{ textAlign: "right", fontWeight: 700 }}>
+                    {avaliacao.circBracoRelaxadoE ? `${avaliacao.circBracoRelaxadoE} cm` : "--"}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           <div className={styles.printCol}>
-            <h3 className={styles.printSectionTitle}>4. Dobras Cutâneas (mm) - Pollock 7</h3>
+            <h3 className={styles.printSectionTitle}>
+              6. DOBRAS CUTÂNEAS (mm) — PROTOCOLO DE JACKSON & POLLOCK
+            </h3>
+            <p style={{ margin: "0 0 4px 0", fontSize: "7.5pt", color: "#475569", fontStyle: "italic" }}>
+              Jackson & Pollock — protocolo de 7 dobras cutâneas
+            </p>
             {composicaoData.completo ? (
               <table className={styles.printTable}>
                 <thead>
@@ -2144,127 +2349,226 @@ export default function AvaliacaoWizardPage() {
                 <tbody>
                   <tr>
                     <td>Tríceps</td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.dcTriceps ? `${avaliacao.dcTriceps} mm` : "--"}</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>
+                      {avaliacao.dcTriceps ? `${avaliacao.dcTriceps} mm` : "--"}
+                    </td>
                   </tr>
                   <tr>
                     <td>Subescapular</td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.dcSubescapular ? `${avaliacao.dcSubescapular} mm` : "--"}</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>
+                      {avaliacao.dcSubescapular ? `${avaliacao.dcSubescapular} mm` : "--"}
+                    </td>
                   </tr>
                   <tr>
-                    <td>Peitoral (Torácica)</td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.dcPeitoral ? `${avaliacao.dcPeitoral} mm` : "--"}</td>
+                    <td>Peitoral torácica</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>
+                      {avaliacao.dcPeitoral ? `${avaliacao.dcPeitoral} mm` : "--"}
+                    </td>
                   </tr>
                   <tr>
-                    <td>Axilar Média</td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.dcAxilarMedia ? `${avaliacao.dcAxilarMedia} mm` : "--"}</td>
+                    <td>Axilar média</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>
+                      {avaliacao.dcAxilarMedia ? `${avaliacao.dcAxilarMedia} mm` : "--"}
+                    </td>
                   </tr>
                   <tr>
                     <td>Supra-ilíaca</td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.dcSuprailiaca ? `${avaliacao.dcSuprailiaca} mm` : "--"}</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>
+                      {avaliacao.dcSuprailiaca ? `${avaliacao.dcSuprailiaca} mm` : "--"}
+                    </td>
                   </tr>
                   <tr>
                     <td>Abdominal</td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.dcAbdominal ? `${avaliacao.dcAbdominal} mm` : "--"}</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>
+                      {avaliacao.dcAbdominal ? `${avaliacao.dcAbdominal} mm` : "--"}
+                    </td>
                   </tr>
                   <tr>
-                    <td>Coxa Medial</td>
-                    <td style={{ textAlign: "right", fontWeight: 700 }}>{avaliacao.dcCoxa ? `${avaliacao.dcCoxa} mm` : "--"}</td>
+                    <td>Coxa medial</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>
+                      {avaliacao.dcCoxa ? `${avaliacao.dcCoxa} mm` : "--"}
+                    </td>
                   </tr>
                   <tr style={{ background: "#f8fafc" }}>
-                    <td style={{ fontWeight: 800 }}>Somatório das 7 Dobras:</td>
-                    <td style={{ textAlign: "right", fontWeight: 800 }}>{composicaoData.somaDobras} mm</td>
+                    <td style={{ fontWeight: 800 }}>Somatório das sete dobras:</td>
+                    <td style={{ textAlign: "right", fontWeight: 800 }}>
+                      {composicaoData.somaDobras} mm
+                    </td>
                   </tr>
                 </tbody>
               </table>
             ) : (
               <div className={styles.printNoticePartial}>
-                <p><strong>Relatório Antropométrico Simplificado:</strong></p>
+                <p><strong>Jackson & Pollock — protocolo de 7 dobras cutâneas:</strong></p>
                 <p>
-                  As 7 dobras cutâneas do protocolo Jackson & Pollock não foram integralmente mensuradas nesta sessão. O percentual de gordura foi omitido para assegurar fidelidade métrica.
+                  As sete dobras cutâneas não foram integralmente mensuradas nesta sessão. O percentual de gordura foi omitido para assegurar fidelidade métrica.
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* 5. Testes Físicos Neuromotores */}
+        {/* 7. TESTES FÍSICOS NEUROMOTORES */}
         <div className={styles.printSection}>
-          <h3 className={styles.printSectionTitle}>5. Testes Físicos Neuromotores (Força e Resistência Muscular)</h3>
+          <h3 className={styles.printSectionTitle}>7. TESTES FÍSICOS NEUROMOTORES</h3>
           <table className={styles.printTable}>
             <thead>
               <tr>
-                <th>Teste Físico / Protocolo</th>
-                <th>Resultado Obtido</th>
+                <th>Teste/protocolo</th>
+                <th>Resultado obtido</th>
                 <th>Classificação</th>
                 <th style={{ textAlign: "right" }}>Pontuação</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Resistência Abdominal (1 minuto)</td>
+                <td>Resistência abdominal — 1 minuto</td>
                 <td style={{ fontWeight: 700 }}>
-                  {testesFisicosData.abdominal ? `${testesFisicosData.abdominal.repeticoes} repetições` : "--"}
+                  {testesFisicosData.abdominal
+                    ? `${testesFisicosData.abdominal.repeticoes} repetições`
+                    : "--"}
                 </td>
-                <td>{testesFisicosData.abdominal ? testesFisicosData.abdominal.classificacao : "Não avaliado"}</td>
+                <td>
+                  {testesFisicosData.abdominal
+                    ? testesFisicosData.abdominal.classificacao
+                    : "Não avaliado"}
+                </td>
                 <td style={{ textAlign: "right", fontWeight: 700 }}>
-                  {testesFisicosData.abdominal ? `${testesFisicosData.abdominal.pontuacao} pts` : "--"}
+                  {testesFisicosData.abdominal
+                    ? `${testesFisicosData.abdominal.pontuacao} pontos`
+                    : "--"}
                 </td>
               </tr>
               <tr>
-                <td>Força de Preensão Manual — Dinamometria (Dir. / Esq.)</td>
+                <td>Força de preensão manual — dinamometria</td>
                 <td style={{ fontWeight: 700 }}>
                   {testesFisicosData.preensao
-                    ? `D: ${testesFisicosData.preensao.direita ?? "--"} kgf | E: ${testesFisicosData.preensao.esquerda ?? "--"} kgf (Máx: ${testesFisicosData.preensao.maior} kgf)`
+                    ? `D: ${testesFisicosData.preensao.direita ?? "--"} kgf / E: ${testesFisicosData.preensao.esquerda ?? "--"} kgf`
                     : "--"}
                 </td>
-                <td>{testesFisicosData.preensao ? testesFisicosData.preensao.classificacao : "Não avaliado"}</td>
+                <td>
+                  {testesFisicosData.preensao
+                    ? testesFisicosData.preensao.classificacao
+                    : "Não avaliado"}
+                </td>
                 <td style={{ textAlign: "right", fontWeight: 700 }}>
-                  {testesFisicosData.preensao ? `${testesFisicosData.preensao.pontuacao} pts` : "--"}
+                  {testesFisicosData.preensao
+                    ? `${testesFisicosData.preensao.pontuacao} pontos`
+                    : "--"}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {/* 6. Parecer Técnico do Avaliador */}
+        {/* 8. HISTÓRICO E EVOLUÇÃO DAS AVALIAÇÕES */}
         <div className={styles.printSection}>
-          <h3 className={styles.printSectionTitle}>6. Parecer Técnico e Orientações do Avaliador</h3>
+          <h3 className={styles.printSectionTitle}>8. HISTÓRICO E EVOLUÇÃO DAS AVALIAÇÕES</h3>
+          {historicoAvaliacoes && historicoAvaliacoes.length > 1 ? (
+            <table className={styles.printTable}>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Massa corporal</th>
+                  <th>IMC</th>
+                  <th>Gordura corporal</th>
+                  <th>Massa livre de gordura</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historicoAvaliacoes.slice(0, 5).map((item) => {
+                  const isCurrent = Number(item.id) === Number(avaliacao.id);
+                  const hImc = isCurrent
+                    ? imcData
+                    : calcularIMC(item.peso, item.altura);
+                  const hComp = isCurrent
+                    ? composicaoData
+                    : calcularComposicaoPollock7(item, idade, genero, item.peso);
+                  return (
+                    <tr key={item.id}>
+                      <td style={{ fontWeight: isCurrent ? 700 : 500 }}>
+                        {new Date(item.dataAvaliacao).toLocaleDateString("pt-BR")}
+                        {isCurrent ? " (Atual)" : ""}
+                      </td>
+                      <td>{item.peso ? `${item.peso} kg` : "--"}</td>
+                      <td>
+                        {hImc?.valor
+                          ? String(hImc.valor).replace(".", ",")
+                          : item.resultados?.imc?.valor || "--"}
+                      </td>
+                      <td>
+                        {hComp?.percGordura
+                          ? `${String(hComp.percGordura).replace(".", ",")}%`
+                          : item.resultados?.composicao?.percGordura
+                          ? `${item.resultados.composicao.percGordura}%`
+                          : "--"}
+                      </td>
+                      <td>
+                        {hComp?.massaMagra
+                          ? `${String(hComp.massaMagra).replace(".", ",")} kg`
+                          : item.resultados?.composicao?.massaMagra
+                          ? `${item.resultados.composicao.massaMagra} kg`
+                          : "--"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className={styles.printNotesBox}>
+              <p style={{ margin: 0, color: "#334155" }}>
+                Este é o primeiro registro do avaliado. Ainda não existem avaliações anteriores para comparação.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* 9. PARECER TÉCNICO E ORIENTAÇÕES DO AVALIADOR */}
+        <div className={styles.printSection}>
+          <h3 className={styles.printSectionTitle}>9. PARECER TÉCNICO E ORIENTAÇÕES DO AVALIADOR</h3>
           <div className={styles.printNotesBox}>
-            {avaliacao.observacoes ? (
-              <p style={{ margin: 0, whiteSpace: "pre-line" }}>{avaliacao.observacoes}</p>
-            ) : (
-              <p style={{ margin: 0, fontStyle: "italic", color: "#64748b" }}>
-                Nenhuma contraindicação clínica ou recomendação específica foi registrada nesta avaliação. O aluno foi orientado quanto aos resultados antropométricos obtidos.
+            <p style={{ margin: 0, whiteSpace: "pre-line" }}>
+              {avaliacao.observacoes ||
+                "Os dados foram coletados conforme os protocolos disponíveis no sistema. Recomenda-se o acompanhamento periódico da composição corporal e a realização de nova avaliação conforme o planejamento da academia."}
+            </p>
+            {parqResumo.temAlerta && (
+              <p style={{ margin: "4px 0 0 0", color: "#991b1b", fontWeight: 700 }}>
+                Nota de Triagem (PAR-Q): Foi registrada resposta afirmativa no questionário PAR-Q. Recomenda-se orientação médica complementar antes de atividades de alta intensidade.
               </p>
             )}
           </div>
         </div>
 
-        {/* 7. Assinaturas Oficiais */}
+        {/* ASSINATURAS E IDENTIFICAÇÃO FINAL */}
         <div className={styles.printSignatures}>
           <div className={styles.printSignBlock}>
             <div className={styles.printSignLine}></div>
-            <p className={styles.printSignName}>{avaliacao.avaliador?.name || "Profissional Avaliador"}</p>
+            <p className={styles.printSignName}>
+              Avaliador responsável: {avaliacao.avaliador?.name || "Administrador"}
+            </p>
             <p className={styles.printSignRole}>Profissional de Educação Física / Avaliador</p>
           </div>
 
           <div className={styles.printSignBlock}>
             <div className={styles.printSignLine}></div>
-            <p className={styles.printSignName}>{aluno?.nome || "Aluno Avaliado"}</p>
-            <p className={styles.printSignRole}>Assinatura do Aluno / Avaliado</p>
+            <p className={styles.printSignName}>{aluno?.nome || "Avaliado"}</p>
+            <p className={styles.printSignRole}>
+              Assinatura ou ciência do avaliado • Código #{avaliacao.id}-{new Date(avaliacao.dataAvaliacao).getFullYear()}
+            </p>
           </div>
         </div>
       </div>
 
       {/* ========================================================
-          MODAL RESPONSIVO DE ENVIO DE RELATÓRIO POR E-MAIL
+          MODAL RESPONSIVO DE ENVIO DE RELATÓRIO POR E-MAIL (COM PDF ANEXO)
          ======================================================== */}
       {showEmailModal && (
         <div className={styles.emailModalOverlay} onClick={() => setShowEmailModal(false)}>
           <div className={styles.emailModalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.emailModalHeader}>
               <h3>
-                <FaEnvelope style={{ color: "#a4d864" }} /> Enviar Relatório de Avaliação por E-mail
+                <FaEnvelope style={{ color: "#a4d864" }} /> Enviar Laudo em PDF por E-mail
               </h3>
               <button
                 type="button"
@@ -2277,6 +2581,131 @@ export default function AvaliacaoWizardPage() {
             </div>
 
             <div className={styles.emailModalBody}>
+              {/* Banner informando que o PDF é anexado automaticamente + botão de configurar remetente */}
+              <div
+                style={{
+                  background: "#1c2618",
+                  border: "1px solid #36462f",
+                  borderRadius: "8px",
+                  padding: "0.75rem 1rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "0.5rem",
+                }}
+              >
+                <div style={{ fontSize: "0.84rem", color: "#cbd5e1" }}>
+                  📎 <strong>Anexo automático:</strong>{" "}
+                  <span style={{ color: "#a4d864" }}>
+                    Laudo_Avaliacao_Fisica_{avaliacao.id}.pdf
+                  </span>
+                  <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "2px" }}>
+                    Remetente:{" "}
+                    {smtpConfig.user ? (
+                      <strong style={{ color: "#4ade80" }}>{smtpConfig.user}</strong>
+                    ) : (
+                      <span style={{ color: "#fbbf24" }}>
+                        Padrão do servidor (.env) ou configure seu e-mail ao lado
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowSmtpPanel((prev) => !prev)}
+                  style={{
+                    background: "#263222",
+                    border: "1px solid #5d812e",
+                    color: "#a4d864",
+                    padding: "0.4rem 0.75rem",
+                    borderRadius: "6px",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  ⚙️ {showSmtpPanel ? "Ocultar Config. E-mail" : "Configurar E-mail de Origem"}
+                </button>
+              </div>
+
+              {showSmtpPanel && (
+                <div
+                  style={{
+                    background: "#141a12",
+                    border: "1px solid #3b522f",
+                    borderRadius: "8px",
+                    padding: "1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <div style={{ fontSize: "0.82rem", color: "#a4d864", fontWeight: 700 }}>
+                    Configurar E-mail Remetente (SMTP) — envia o PDF diretamente para a caixa de entrada
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "0.6rem" }}>
+                    <div className={styles.formGroup}>
+                      <label>Servidor SMTP</label>
+                      <input
+                        type="text"
+                        value={smtpConfig.host}
+                        onChange={(e) => setSmtpConfig({ ...smtpConfig, host: e.target.value })}
+                        placeholder="smtp.gmail.com"
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Porta</label>
+                      <input
+                        type="number"
+                        value={smtpConfig.port}
+                        onChange={(e) => setSmtpConfig({ ...smtpConfig, port: e.target.value })}
+                        placeholder="587"
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Seu E-mail Remetente (ex: Gmail)</label>
+                    <input
+                      type="email"
+                      value={smtpConfig.user}
+                      onChange={(e) => setSmtpConfig({ ...smtpConfig, user: e.target.value })}
+                      placeholder="seuemail@gmail.com"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Senha de App do E-mail (16 dígitos no Gmail)</label>
+                    <input
+                      type="password"
+                      value={smtpConfig.pass}
+                      onChange={(e) => setSmtpConfig({ ...smtpConfig, pass: e.target.value })}
+                      placeholder="xxxx xxxx xxxx xxxx"
+                    />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+                    <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+                      💡 No Gmail, gere em: Conta Google ➔ Segurança ➔ Verificação em 2 etapas ➔ Senhas de app.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleSaveSmtpInline}
+                      style={{
+                        background: "#a4d864",
+                        color: "#141a12",
+                        border: "none",
+                        borderRadius: "6px",
+                        padding: "0.45rem 0.9rem",
+                        fontWeight: 700,
+                        fontSize: "0.82rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Salvar E-mail Remetente
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className={styles.formGroup}>
                 <label htmlFor="emailDestinoInput">E-mail do Destinatário (Aluno) *</label>
                 <input
@@ -2300,9 +2729,9 @@ export default function AvaliacaoWizardPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Resumo do Laudo a ser Enviado</label>
+                <label>Resumo no Corpo do E-mail (além do Laudo completo em PDF anexo)</label>
                 <textarea
-                  rows="7"
+                  rows="6"
                   value={gerarResumoRelatorioTexto()}
                   readOnly
                   className={styles.emailPreviewBox}
@@ -2323,9 +2752,9 @@ export default function AvaliacaoWizardPage() {
                 type="button"
                 className={styles.printHeaderButton}
                 onClick={() => handleFinalizar("completo")}
-                title="Salva o PDF oficial para anexar caso deseje"
+                title="Salva o PDF oficial no computador"
               >
-                <FaPrint /> Baixar PDF
+                <FaPrint /> Imprimir / Salvar PDF
               </button>
               <button
                 type="button"
@@ -2333,7 +2762,7 @@ export default function AvaliacaoWizardPage() {
                 onClick={handleSendEmailSystem}
                 disabled={sendingEmail}
               >
-                <FaPaperPlane /> {sendingEmail ? "Enviando..." : "Enviar pelo Sistema"}
+                <FaPaperPlane /> {sendingEmail ? "Gerando PDF e Enviando..." : "Enviar Laudo em PDF"}
               </button>
             </div>
           </div>
