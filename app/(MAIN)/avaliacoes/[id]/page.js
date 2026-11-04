@@ -10,7 +10,8 @@ import api from "../../../../services/api";
 import { 
   calcularIMC, 
   calcularRCQ, 
-  calcularComposicaoPollock7 
+  calcularComposicaoPollock7,
+  calcularTestesFisicos
 } from "../../../../utils/calculosFisicos";
 import { maskCPF, maskPhone } from "../../../../utils/masks";
 import { 
@@ -27,7 +28,11 @@ import {
   FaChevronDown, 
   FaChevronUp,
   FaLayerGroup,
-  FaFileAlt
+  FaFileAlt,
+  FaDumbbell,
+  FaEnvelope,
+  FaPaperPlane,
+  FaTimes
 } from "react-icons/fa";
 
 function calcularIdade(dataNasc) {
@@ -59,6 +64,12 @@ export default function AvaliacaoWizardPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showMedicalSnapshot, setShowMedicalSnapshot] = useState(false);
   const [viewMode, setViewMode] = useState("wizard"); // "wizard" ou "single"
+
+  // Estados para o envio do relatório por e-mail
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailDestino, setEmailDestino] = useState("");
+  const [emailAssunto, setEmailAssunto] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -100,7 +111,27 @@ export default function AvaliacaoWizardPage() {
     try {
       setLoading(true);
       const response = await api.get(`/api/avaliacoes/${id}`);
-      setAvaliacao(response.data); 
+      const data = response.data;
+      const tfSalvos = data.resultados?.testesFisicos || {};
+      setAvaliacao({
+        ...data,
+        resistenciaAbdominal:
+          tfSalvos.resistenciaAbdominal !== undefined && tfSalvos.resistenciaAbdominal !== null
+            ? String(tfSalvos.resistenciaAbdominal)
+            : "",
+        preensaoManualD:
+          tfSalvos.preensaoManualD !== undefined && tfSalvos.preensaoManualD !== null
+            ? String(tfSalvos.preensaoManualD)
+            : "",
+        preensaoManualE:
+          tfSalvos.preensaoManualE !== undefined && tfSalvos.preensaoManualE !== null
+            ? String(tfSalvos.preensaoManualE)
+            : "",
+      });
+      setEmailDestino(data.aluno?.email || "");
+      setEmailAssunto(
+        `Relatório de Avaliação Física - ${data.aluno?.nome || "Aluno"} (UNOESC)`
+      );
     } catch (error) {
       console.error("Erro ao buscar avaliação:", error);
       toast.error("Não foi possível carregar os dados da avaliação.");
@@ -164,6 +195,17 @@ export default function AvaliacaoWizardPage() {
     return calcularComposicaoPollock7(avaliacao, idade, genero, avaliacao.peso);
   }, [avaliacao, idade, genero]);
 
+  const testesFisicosData = useMemo(() => {
+    if (!avaliacao) return { completo: false, parcial: false, abdominal: null, preensao: null };
+    return calcularTestesFisicos(avaliacao, idade, genero);
+  }, [
+    avaliacao?.resistenciaAbdominal,
+    avaliacao?.preensaoManualD,
+    avaliacao?.preensaoManualE,
+    idade,
+    genero,
+  ]);
+
   // --- STATUS DE PRONTIDÃO DE CADA PASSO ---
   const stepStatus = useMemo(() => {
     if (!avaliacao) return { step1: "gray", step2: "gray", step3: "gray" };
@@ -183,15 +225,15 @@ export default function AvaliacaoWizardPage() {
     );
     const step2 = p2Filled ? "green" : p2Partial ? "yellow" : "gray";
 
-    // Passo 3: Dobras Pollock
+    // Passo 3: Dobras Pollock + Testes Físicos
     const step3 = composicaoData.completo 
       ? "green" 
-      : composicaoData.faltantes.length < 7 
+      : composicaoData.faltantes.length < 7 || testesFisicosData.parcial
         ? "yellow" 
         : "gray";
 
     return { step1, step2, step3 };
-  }, [avaliacao, composicaoData]);
+  }, [avaliacao, composicaoData, testesFisicosData]);
 
   // --- PERSISTÊNCIA / SALVAMENTO ---
   const handleSave = async (showSuccessToast = true) => {
@@ -199,9 +241,11 @@ export default function AvaliacaoWizardPage() {
     setIsSaving(true);
     try {
       const resultadosCalculados = {
+        ...(avaliacao.resultados || {}),
         imc: imcData,
         rcq: rcqData,
         composicao: composicaoData,
+        testesFisicos: testesFisicosData,
         calculadoEm: new Date().toISOString(),
       };
 
@@ -209,6 +253,11 @@ export default function AvaliacaoWizardPage() {
         ...avaliacao,
         resultados: resultadosCalculados,
       });
+
+      setAvaliacao((prev) => ({
+        ...prev,
+        resultados: resultadosCalculados,
+      }));
 
       if (showSuccessToast) {
         toast.success("Dados da avaliação salvos com sucesso!");
@@ -221,6 +270,99 @@ export default function AvaliacaoWizardPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Gera o resumo textual estruturado para envio do relatório por e-mail
+  const gerarResumoRelatorioTexto = useCallback(() => {
+    if (!avaliacao) return "";
+    const dataAval = new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR");
+    const linhas = [
+      `RELATÓRIO DE AVALIAÇÃO FÍSICA — UNOESC`,
+      `Laudo Técnico Nº #${avaliacao.id} | Data: ${dataAval}`,
+      `Aluno(a): ${aluno?.nome || "---"} | Matrícula: ${aluno?.matricula || "---"}`,
+      `Avaliador(a): ${avaliacao.avaliador?.name || "Professor Avaliador"}`,
+      `--------------------------------------------------`,
+      `1. ANTROPOMETRIA & IMC:`,
+      `• Peso: ${avaliacao.peso ? `${avaliacao.peso} kg` : "Não informado"}`,
+      `• Altura: ${avaliacao.altura ? `${avaliacao.altura}` : "Não informada"}`,
+      `• IMC: ${imcData ? `${imcData.valor} kg/m² (${imcData.classificacao})` : "Não calculado"}`,
+      ``,
+      `2. PERIMETRIA & RCQ:`,
+      `• Cintura: ${avaliacao.circCintura ? `${avaliacao.circCintura} cm` : "--"} | Abdômen: ${avaliacao.circAbdomem ? `${avaliacao.circAbdomem} cm` : "--"} | Quadril: ${avaliacao.circQuadril ? `${avaliacao.circQuadril} cm` : "--"}`,
+      `• RCQ: ${rcqData ? `${rcqData.valor} (${rcqData.risco})` : "Não calculado"}`,
+      ``,
+      `3. COMPOSIÇÃO CORPORAL (POLLOCK 7 DOBRAS):`,
+      composicaoData.completo
+        ? `• % de Gordura: ${composicaoData.percGordura}% (${composicaoData.classificacaoGordura})\n• Densidade Corporal: ${composicaoData.densidadeCorporal} g/cm³ | Soma 7 Dobras: ${composicaoData.somaDobras} mm\n• Massa Magra: ${composicaoData.massaMagra ?? "--"} kg | Massa Gorda: ${composicaoData.massaGorda ?? "--"} kg`
+        : `• Protocolo Pollock 7 Dobras parcial/não mensurado nesta sessão.`,
+      ``,
+      `4. TESTES FÍSICOS NEUROMOTORES:`,
+      testesFisicosData.abdominal
+        ? `• Resistência Abdominal (1 min): ${testesFisicosData.abdominal.repeticoes} repetições — Classificação: ${testesFisicosData.abdominal.classificacao} (${testesFisicosData.abdominal.pontuacao} pts)`
+        : `• Resistência Abdominal: Não realizado`,
+      testesFisicosData.preensao
+        ? `• Preensão Manual (Dinamometria): Direita ${testesFisicosData.preensao.direita ?? "--"} kgf | Esquerda ${testesFisicosData.preensao.esquerda ?? "--"} kgf (Máx: ${testesFisicosData.preensao.maior} kgf) — Classificação: ${testesFisicosData.preensao.classificacao} (${testesFisicosData.preensao.pontuacao} pts)`
+        : `• Preensão Manual: Não realizado`,
+      ``,
+      `5. PARECER TÉCNICO DO AVALIADOR:`,
+      avaliacao.observacoes || "Sem observações adicionais registradas.",
+    ];
+    return linhas.join("\n");
+  }, [avaliacao, aluno, imcData, rcqData, composicaoData, testesFisicosData]);
+
+  const handleOpenEmailModal = () => {
+    setEmailDestino(aluno?.email || "");
+    setEmailAssunto(
+      `Relatório de Avaliação Física - ${aluno?.nome || "Aluno"} (UNOESC)`
+    );
+    setShowEmailModal(true);
+  };
+
+  const handleSendEmailSystem = async () => {
+    if (!emailDestino || !emailDestino.includes("@")) {
+      toast.error("Informe um endereço de e-mail válido para o destinatário.");
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      await handleSave(false);
+      const mensagem = gerarResumoRelatorioTexto();
+      const res = await api.post(`/api/avaliacoes/${id}/enviar-email`, {
+        destinatario: emailDestino.trim(),
+        assunto: emailAssunto,
+        mensagem,
+      });
+
+      setAvaliacao((prev) => ({
+        ...prev,
+        resultados: {
+          ...(prev.resultados || {}),
+          ultimoEnvioEmail: res.data.envio,
+        },
+      }));
+
+      toast.success(res.data.message || `Relatório enviado para ${emailDestino}!`);
+      setShowEmailModal(false);
+    } catch (error) {
+      console.error("Erro ao enviar relatório por e-mail:", error);
+      toast.error(
+        error.response?.data?.error || "Não foi possível enviar o relatório por e-mail."
+      );
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const handleOpenMailto = async () => {
+    await handleSave(false);
+    const body = encodeURIComponent(gerarResumoRelatorioTexto());
+    const subject = encodeURIComponent(
+      emailAssunto || `Relatório de Avaliação Física - ${aluno?.nome || "Aluno"}`
+    );
+    const to = encodeURIComponent(emailDestino || aluno?.email || "");
+    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    toast.success("Cliente de e-mail aberto com o relatório preenchido!");
   };
 
   const handleFinalizar = async (tipoRelatorio = "completo") => {
@@ -312,6 +454,14 @@ export default function AvaliacaoWizardPage() {
           </button>
           <button
             type="button"
+            onClick={handleOpenEmailModal}
+            className={styles.emailHeaderButton}
+            title="Exportar e enviar relatório de avaliação por e-mail para o aluno"
+          >
+            <FaEnvelope /> Enviar por E-mail
+          </button>
+          <button
+            type="button"
             onClick={() => router.push("/avaliacoes")}
             className={styles.backButton}
             disabled={isSaving}
@@ -373,8 +523,8 @@ export default function AvaliacaoWizardPage() {
           >
             <span className={styles.stepNumber}>3</span>
             <div className={styles.stepText}>
-              <span className={styles.stepTitle}>Dobras Cutâneas</span>
-              <span className={styles.stepSubtitle}>Pollock 7 Dobras</span>
+              <span className={styles.stepTitle}>Dobras & Testes</span>
+              <span className={styles.stepSubtitle}>Pollock 7 + Neuromotores</span>
             </div>
             <span className={`${styles.stepStatusDot} ${
               stepStatus.step3 === "green" ? styles.statusDotGreen : stepStatus.step3 === "yellow" ? styles.statusDotYellow : styles.statusDotGray
@@ -390,7 +540,7 @@ export default function AvaliacaoWizardPage() {
             <span className={styles.stepNumber}>4</span>
             <div className={styles.stepText}>
               <span className={styles.stepTitle}>Revisão & Laudo</span>
-              <span className={styles.stepSubtitle}>Checklist e Resultados</span>
+              <span className={styles.stepSubtitle}>PDF e Envio p/ E-mail</span>
             </div>
           </button>
         </div>
@@ -417,7 +567,7 @@ export default function AvaliacaoWizardPage() {
             className={styles.singlePageNavLink}
             onClick={() => handleNavigateTo(3, "secao-dobras")}
           >
-            <FaHeartbeat /> 3. Pollock 7 Dobras
+            <FaHeartbeat /> 3. Dobras & Testes Físicos
           </button>
           <button
             type="button"
@@ -738,6 +888,90 @@ export default function AvaliacaoWizardPage() {
               onChange={handleChange}
               placeholder="Ex: 16.5"
             />
+
+            {/* --- SEÇÃO DE TESTES FÍSICOS NEUROMOTORES --- */}
+            <h3 className={styles.formSectionTitle} style={{ marginTop: "2rem" }}>
+              <FaDumbbell /> Testes Físicos Neuromotores (Resistência Abdominal & Preensão Manual)
+            </h3>
+
+            <div className={styles.calcSummaryCard}>
+              <div className={styles.calcCardItem}>
+                <span className={styles.calcCardLabel}>Resistência Abdominal (1 min)</span>
+                <span className={styles.calcCardValue}>
+                  {testesFisicosData.abdominal
+                    ? `${testesFisicosData.abdominal.repeticoes} rep`
+                    : "Aguardando..."}
+                  {testesFisicosData.abdominal && (
+                    <span
+                      className={styles.calcBadge}
+                      style={{
+                        backgroundColor: `${testesFisicosData.abdominal.cor}22`,
+                        color: testesFisicosData.abdominal.cor,
+                        border: `1px solid ${testesFisicosData.abdominal.cor}`,
+                      }}
+                    >
+                      {testesFisicosData.abdominal.classificacao} ({testesFisicosData.abdominal.pontuacao} pts)
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className={styles.calcCardItem}>
+                <span className={styles.calcCardLabel}>Preensão Manual Máx. (Dinamometria)</span>
+                <span className={styles.calcCardValue}>
+                  {testesFisicosData.preensao
+                    ? `${testesFisicosData.preensao.maior} kgf`
+                    : "Aguardando..."}
+                  {testesFisicosData.preensao && (
+                    <span
+                      className={styles.calcBadge}
+                      style={{
+                        backgroundColor: `${testesFisicosData.preensao.cor}22`,
+                        color: testesFisicosData.preensao.cor,
+                        border: `1px solid ${testesFisicosData.preensao.cor}`,
+                      }}
+                    >
+                      {testesFisicosData.preensao.classificacao} ({testesFisicosData.preensao.pontuacao} pts)
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <SkinfoldInput
+              label="Resistência Abdominal (1 min)"
+              name="resistenciaAbdominal"
+              id="resistenciaAbdominal"
+              value={avaliacao.resistenciaAbdominal}
+              onChange={handleChange}
+              placeholder="Ex: 35"
+              step={1}
+              min={0}
+              unit="rep"
+            />
+
+            <SkinfoldInput
+              label="Preensão Manual Direita (Dinamometria)"
+              name="preensaoManualD"
+              id="preensaoManualD"
+              value={avaliacao.preensaoManualD}
+              onChange={handleChange}
+              placeholder="Ex: 44.5"
+              step={0.5}
+              min={0}
+              unit="kgf"
+            />
+
+            <SkinfoldInput
+              label="Preensão Manual Esquerda (Dinamometria)"
+              name="preensaoManualE"
+              id="preensaoManualE"
+              value={avaliacao.preensaoManualE}
+              onChange={handleChange}
+              placeholder="Ex: 42.0"
+              step={0.5}
+              min={0}
+              unit="kgf"
+            />
           </div>
             )}
 
@@ -814,6 +1048,26 @@ export default function AvaliacaoWizardPage() {
                     </button>
                   )}
                 </div>
+
+                {/* Item 4: Testes Físicos */}
+                <div className={styles.checkItem}>
+                  <div className={styles.checkItemHeader}>
+                    <span className={styles.checkItemTitle}>4. Testes Físicos</span>
+                    <span className={`${styles.checkItemStatus} ${testesFisicosData.completo ? styles.checkSuccess : styles.checkWarning}`}>
+                      {testesFisicosData.completo ? "Concluído" : testesFisicosData.parcial ? "Parcial" : "Opcional"}
+                    </span>
+                  </div>
+                  <p className={styles.checkItemDesc}>
+                    {testesFisicosData.parcial
+                      ? `Abdominal: ${testesFisicosData.abdominal ? `${testesFisicosData.abdominal.repeticoes} rep (${testesFisicosData.abdominal.classificacao})` : "--"} • Preensão: ${testesFisicosData.preensao ? `${testesFisicosData.preensao.maior} kgf (${testesFisicosData.preensao.classificacao})` : "--"}`
+                      : "Resistência abdominal e preensão manual disponíveis no Passo 3."}
+                  </p>
+                  {!testesFisicosData.completo && (
+                    <button type="button" className={styles.fixButton} onClick={() => handleNavigateTo(3, "secao-dobras")}>
+                      Preencher Testes no Passo 3 ➔
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -858,6 +1112,20 @@ export default function AvaliacaoWizardPage() {
                   {composicaoData.massaGorda ? `Gordura: ${composicaoData.massaGorda} kg` : "Aguardando cálculo"}
                 </span>
               </div>
+
+              <div className={styles.resultCard}>
+                <span className={styles.resultCardTitle}>Testes Físicos (Força & Abd.)</span>
+                <p className={styles.resultCardNumber} style={{ fontSize: "1.25rem" }}>
+                  {testesFisicosData.abdominal || testesFisicosData.preensao
+                    ? `${testesFisicosData.abdominal ? `${testesFisicosData.abdominal.repeticoes} rep` : "--"} / ${testesFisicosData.preensao ? `${testesFisicosData.preensao.maior} kgf` : "--"}`
+                    : "--"}
+                </p>
+                <span className={styles.resultCardSub} style={{ color: testesFisicosData.abdominal?.cor || testesFisicosData.preensao?.cor || "#94a3b8" }}>
+                  {testesFisicosData.abdominal || testesFisicosData.preensao
+                    ? `Abd: ${testesFisicosData.abdominal?.classificacao || "--"} • Preensão: ${testesFisicosData.preensao?.classificacao || "--"}`
+                    : "Abdominal e Preensão"}
+                </span>
+              </div>
             </div>
 
             {/* Parecer do Avaliador */}
@@ -878,7 +1146,7 @@ export default function AvaliacaoWizardPage() {
             {/* Ações Inteligentes de Emissão do Laudo */}
             <div style={{ background: "#20281d", border: "1px solid #36462f", borderRadius: "12px", padding: "1.5rem", marginTop: "1rem" }}>
               <h4 style={{ margin: "0 0 0.5rem 0", color: "#a4d864" }}>
-                Opções de Emissão de Relatório:
+                Opções de Emissão e Envio de Relatório:
               </h4>
 
               {stepStatus.step1 !== "green" ? (
@@ -893,7 +1161,14 @@ export default function AvaliacaoWizardPage() {
                     onClick={() => handleFinalizar("completo")}
                     className={styles.finishButton}
                   >
-                    <FaPrint /> Finalizar e Emitir Laudo Completo de Composição Corporal
+                    <FaPrint /> Emitir Laudo Completo em PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenEmailModal}
+                    className={styles.emailHeaderButton}
+                  >
+                    <FaEnvelope /> Enviar Relatório por E-mail
                   </button>
                   <span style={{ color: "#94a3b8", fontSize: "0.9rem" }}>
                     ✓ Todas as 7 dobras e medidas estão 100% preenchidas.
@@ -904,7 +1179,7 @@ export default function AvaliacaoWizardPage() {
                   <div style={{ color: "#fbbf24", display: "flex", alignItems: "center", gap: "8px" }}>
                     <FaExclamationTriangle />
                     <span>
-                      Faltam {composicaoData.faltantes.length} dobras cutâneas para o cálculo de Pollock. Você pode emitir o relatório antropométrico parcial ou voltar e preenchê-las:
+                      Faltam {composicaoData.faltantes.length} dobras cutâneas para o cálculo de Pollock. Você pode emitir o relatório antropométrico parcial, enviar por e-mail ou voltar e preenchê-las:
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
@@ -914,7 +1189,14 @@ export default function AvaliacaoWizardPage() {
                       className={styles.finishButton}
                       style={{ background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)" }}
                     >
-                      <FaPrint /> Emitir Relatório Antropométrico (IMC + Perimetria)
+                      <FaPrint /> Emitir Relatório em PDF (IMC + Perimetria)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenEmailModal}
+                      className={styles.emailHeaderButton}
+                    >
+                      <FaEnvelope /> Enviar Relatório por E-mail
                     </button>
                     <button
                       type="button"
@@ -925,6 +1207,13 @@ export default function AvaliacaoWizardPage() {
                       Voltar ao Passo 3 e Preencher Dobras ➔
                     </button>
                   </div>
+                </div>
+              )}
+
+              {avaliacao.resultados?.ultimoEnvioEmail && (
+                <div style={{ marginTop: "0.85rem", fontSize: "0.82rem", color: "#4ade80" }}>
+                  ✓ Último envio por e-mail registrado para <strong>{avaliacao.resultados.ultimoEnvioEmail.enviadoPara}</strong> em{" "}
+                  {new Date(avaliacao.resultados.ultimoEnvioEmail.enviadoEm).toLocaleString("pt-BR")}
                 </div>
               )}
             </div>
@@ -1301,6 +1590,90 @@ export default function AvaliacaoWizardPage() {
               onChange={handleChange}
               placeholder="Ex: 16.5"
             />
+
+            {/* --- SEÇÃO DE TESTES FÍSICOS NEUROMOTORES (MODO PÁGINA ÚNICA) --- */}
+            <h3 className={styles.formSectionTitle} style={{ marginTop: "2rem" }}>
+              <FaDumbbell /> Testes Físicos Neuromotores (Resistência Abdominal & Preensão Manual)
+            </h3>
+
+            <div className={styles.calcSummaryCard}>
+              <div className={styles.calcCardItem}>
+                <span className={styles.calcCardLabel}>Resistência Abdominal (1 min)</span>
+                <span className={styles.calcCardValue}>
+                  {testesFisicosData.abdominal
+                    ? `${testesFisicosData.abdominal.repeticoes} rep`
+                    : "Aguardando..."}
+                  {testesFisicosData.abdominal && (
+                    <span
+                      className={styles.calcBadge}
+                      style={{
+                        backgroundColor: `${testesFisicosData.abdominal.cor}22`,
+                        color: testesFisicosData.abdominal.cor,
+                        border: `1px solid ${testesFisicosData.abdominal.cor}`,
+                      }}
+                    >
+                      {testesFisicosData.abdominal.classificacao} ({testesFisicosData.abdominal.pontuacao} pts)
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className={styles.calcCardItem}>
+                <span className={styles.calcCardLabel}>Preensão Manual Máx. (Dinamometria)</span>
+                <span className={styles.calcCardValue}>
+                  {testesFisicosData.preensao
+                    ? `${testesFisicosData.preensao.maior} kgf`
+                    : "Aguardando..."}
+                  {testesFisicosData.preensao && (
+                    <span
+                      className={styles.calcBadge}
+                      style={{
+                        backgroundColor: `${testesFisicosData.preensao.cor}22`,
+                        color: testesFisicosData.preensao.cor,
+                        border: `1px solid ${testesFisicosData.preensao.cor}`,
+                      }}
+                    >
+                      {testesFisicosData.preensao.classificacao} ({testesFisicosData.preensao.pontuacao} pts)
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <SkinfoldInput
+              label="Resistência Abdominal (1 min)"
+              name="resistenciaAbdominal"
+              id="resistenciaAbdominalSingle"
+              value={avaliacao.resistenciaAbdominal}
+              onChange={handleChange}
+              placeholder="Ex: 35"
+              step={1}
+              min={0}
+              unit="rep"
+            />
+
+            <SkinfoldInput
+              label="Preensão Manual Direita (Dinamometria)"
+              name="preensaoManualD"
+              id="preensaoManualDSingle"
+              value={avaliacao.preensaoManualD}
+              onChange={handleChange}
+              placeholder="Ex: 44.5"
+              step={0.5}
+              min={0}
+              unit="kgf"
+            />
+
+            <SkinfoldInput
+              label="Preensão Manual Esquerda (Dinamometria)"
+              name="preensaoManualE"
+              id="preensaoManualESingle"
+              value={avaliacao.preensaoManualE}
+              onChange={handleChange}
+              placeholder="Ex: 42.0"
+              step={0.5}
+              min={0}
+              unit="kgf"
+            />
           </div>
             </section>
 
@@ -1383,6 +1756,26 @@ export default function AvaliacaoWizardPage() {
                     </button>
                   )}
                 </div>
+
+                {/* Item 4: Testes Físicos */}
+                <div className={styles.checkItem}>
+                  <div className={styles.checkItemHeader}>
+                    <span className={styles.checkItemTitle}>4. Testes Físicos</span>
+                    <span className={`${styles.checkItemStatus} ${testesFisicosData.completo ? styles.checkSuccess : styles.checkWarning}`}>
+                      {testesFisicosData.completo ? "Concluído" : testesFisicosData.parcial ? "Parcial" : "Opcional"}
+                    </span>
+                  </div>
+                  <p className={styles.checkItemDesc}>
+                    {testesFisicosData.parcial
+                      ? `Abdominal: ${testesFisicosData.abdominal ? `${testesFisicosData.abdominal.repeticoes} rep (${testesFisicosData.abdominal.classificacao})` : "--"} • Preensão: ${testesFisicosData.preensao ? `${testesFisicosData.preensao.maior} kgf (${testesFisicosData.preensao.classificacao})` : "--"}`
+                      : "Resistência abdominal e preensão manual disponíveis na Seção 3."}
+                  </p>
+                  {!testesFisicosData.completo && (
+                    <button type="button" className={styles.fixButton} onClick={() => handleNavigateTo(3, "secao-dobras")}>
+                      Preencher Testes na Seção 3 ➔
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1427,6 +1820,20 @@ export default function AvaliacaoWizardPage() {
                   {composicaoData.massaGorda ? `Gordura: ${composicaoData.massaGorda} kg` : "Aguardando cálculo"}
                 </span>
               </div>
+
+              <div className={styles.resultCard}>
+                <span className={styles.resultCardTitle}>Testes Físicos (Força & Abd.)</span>
+                <p className={styles.resultCardNumber} style={{ fontSize: "1.25rem" }}>
+                  {testesFisicosData.abdominal || testesFisicosData.preensao
+                    ? `${testesFisicosData.abdominal ? `${testesFisicosData.abdominal.repeticoes} rep` : "--"} / ${testesFisicosData.preensao ? `${testesFisicosData.preensao.maior} kgf` : "--"}`
+                    : "--"}
+                </p>
+                <span className={styles.resultCardSub} style={{ color: testesFisicosData.abdominal?.cor || testesFisicosData.preensao?.cor || "#94a3b8" }}>
+                  {testesFisicosData.abdominal || testesFisicosData.preensao
+                    ? `Abd: ${testesFisicosData.abdominal?.classificacao || "--"} • Preensão: ${testesFisicosData.preensao?.classificacao || "--"}`
+                    : "Abdominal e Preensão"}
+                </span>
+              </div>
             </div>
 
             {/* Parecer do Avaliador */}
@@ -1447,7 +1854,7 @@ export default function AvaliacaoWizardPage() {
             {/* Ações Inteligentes de Emissão do Laudo */}
             <div style={{ background: "#20281d", border: "1px solid #36462f", borderRadius: "12px", padding: "1.5rem", marginTop: "1rem" }}>
               <h4 style={{ margin: "0 0 0.5rem 0", color: "#a4d864" }}>
-                Opções de Emissão de Relatório:
+                Opções de Emissão e Envio de Relatório:
               </h4>
 
               {stepStatus.step1 !== "green" ? (
@@ -1462,7 +1869,14 @@ export default function AvaliacaoWizardPage() {
                     onClick={() => handleFinalizar("completo")}
                     className={styles.finishButton}
                   >
-                    <FaPrint /> Finalizar e Emitir Laudo Completo de Composição Corporal
+                    <FaPrint /> Emitir Laudo Completo em PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenEmailModal}
+                    className={styles.emailHeaderButton}
+                  >
+                    <FaEnvelope /> Enviar Relatório por E-mail
                   </button>
                   <span style={{ color: "#94a3b8", fontSize: "0.9rem" }}>
                     ✓ Todas as 7 dobras e medidas estão 100% preenchidas.
@@ -1473,7 +1887,7 @@ export default function AvaliacaoWizardPage() {
                   <div style={{ color: "#fbbf24", display: "flex", alignItems: "center", gap: "8px" }}>
                     <FaExclamationTriangle />
                     <span>
-                      Faltam {composicaoData.faltantes.length} dobras cutâneas para o cálculo de Pollock. Você pode emitir o relatório antropométrico parcial ou voltar e preenchê-las:
+                      Faltam {composicaoData.faltantes.length} dobras cutâneas para o cálculo de Pollock. Você pode emitir o relatório antropométrico parcial, enviar por e-mail ou voltar e preenchê-las:
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
@@ -1483,17 +1897,31 @@ export default function AvaliacaoWizardPage() {
                       className={styles.finishButton}
                       style={{ background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)" }}
                     >
-                      <FaPrint /> Emitir Relatório Antropométrico (IMC + Perimetria)
+                      <FaPrint /> Emitir Relatório em PDF (IMC + Perimetria)
                     </button>
                     <button
                       type="button"
-                      onClick={() => setCurrentStep(3)}
+                      onClick={handleOpenEmailModal}
+                      className={styles.emailHeaderButton}
+                    >
+                      <FaEnvelope /> Enviar Relatório por E-mail
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleNavigateTo(3, "secao-dobras")}
                       className={styles.backButton}
                       style={{ border: "1px solid #5d812e", color: "#a4d864" }}
                     >
-                      Voltar ao Passo 3 e Preencher Dobras ➔
+                      Ir para Seção 3 e Preencher Dobras ➔
                     </button>
                   </div>
+                </div>
+              )}
+
+              {avaliacao.resultados?.ultimoEnvioEmail && (
+                <div style={{ marginTop: "0.85rem", fontSize: "0.82rem", color: "#4ade80" }}>
+                  ✓ Último envio por e-mail registrado para <strong>{avaliacao.resultados.ultimoEnvioEmail.enviadoPara}</strong> em{" "}
+                  {new Date(avaliacao.resultados.ultimoEnvioEmail.enviadoEm).toLocaleString("pt-BR")}
                 </div>
               )}
             </div>
@@ -1517,6 +1945,13 @@ export default function AvaliacaoWizardPage() {
                   className={styles.printHeaderButton}
                 >
                   <FaPrint /> Imprimir Laudo Oficial
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenEmailModal}
+                  className={styles.emailHeaderButton}
+                >
+                  <FaEnvelope /> Enviar por E-mail
                 </button>
                 <button
                   type="button"
@@ -1747,9 +2182,48 @@ export default function AvaliacaoWizardPage() {
           </div>
         </div>
 
-        {/* 5. Parecer Técnico do Avaliador */}
+        {/* 5. Testes Físicos Neuromotores */}
         <div className={styles.printSection}>
-          <h3 className={styles.printSectionTitle}>5. Parecer Técnico e Orientações do Avaliador</h3>
+          <h3 className={styles.printSectionTitle}>5. Testes Físicos Neuromotores (Força e Resistência Muscular)</h3>
+          <table className={styles.printTable}>
+            <thead>
+              <tr>
+                <th>Teste Físico / Protocolo</th>
+                <th>Resultado Obtido</th>
+                <th>Classificação</th>
+                <th style={{ textAlign: "right" }}>Pontuação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Resistência Abdominal (1 minuto)</td>
+                <td style={{ fontWeight: 700 }}>
+                  {testesFisicosData.abdominal ? `${testesFisicosData.abdominal.repeticoes} repetições` : "--"}
+                </td>
+                <td>{testesFisicosData.abdominal ? testesFisicosData.abdominal.classificacao : "Não avaliado"}</td>
+                <td style={{ textAlign: "right", fontWeight: 700 }}>
+                  {testesFisicosData.abdominal ? `${testesFisicosData.abdominal.pontuacao} pts` : "--"}
+                </td>
+              </tr>
+              <tr>
+                <td>Força de Preensão Manual — Dinamometria (Dir. / Esq.)</td>
+                <td style={{ fontWeight: 700 }}>
+                  {testesFisicosData.preensao
+                    ? `D: ${testesFisicosData.preensao.direita ?? "--"} kgf | E: ${testesFisicosData.preensao.esquerda ?? "--"} kgf (Máx: ${testesFisicosData.preensao.maior} kgf)`
+                    : "--"}
+                </td>
+                <td>{testesFisicosData.preensao ? testesFisicosData.preensao.classificacao : "Não avaliado"}</td>
+                <td style={{ textAlign: "right", fontWeight: 700 }}>
+                  {testesFisicosData.preensao ? `${testesFisicosData.preensao.pontuacao} pts` : "--"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* 6. Parecer Técnico do Avaliador */}
+        <div className={styles.printSection}>
+          <h3 className={styles.printSectionTitle}>6. Parecer Técnico e Orientações do Avaliador</h3>
           <div className={styles.printNotesBox}>
             {avaliacao.observacoes ? (
               <p style={{ margin: 0, whiteSpace: "pre-line" }}>{avaliacao.observacoes}</p>
@@ -1761,7 +2235,7 @@ export default function AvaliacaoWizardPage() {
           </div>
         </div>
 
-        {/* 6. Assinaturas Oficiais */}
+        {/* 7. Assinaturas Oficiais */}
         <div className={styles.printSignatures}>
           <div className={styles.printSignBlock}>
             <div className={styles.printSignLine}></div>
@@ -1776,6 +2250,90 @@ export default function AvaliacaoWizardPage() {
           </div>
         </div>
       </div>
+
+      {/* ========================================================
+          MODAL RESPONSIVO DE ENVIO DE RELATÓRIO POR E-MAIL
+         ======================================================== */}
+      {showEmailModal && (
+        <div className={styles.emailModalOverlay} onClick={() => setShowEmailModal(false)}>
+          <div className={styles.emailModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.emailModalHeader}>
+              <h3>
+                <FaEnvelope style={{ color: "#a4d864" }} /> Enviar Relatório de Avaliação por E-mail
+              </h3>
+              <button
+                type="button"
+                className={styles.emailModalClose}
+                onClick={() => setShowEmailModal(false)}
+                aria-label="Fechar modal"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className={styles.emailModalBody}>
+              <div className={styles.formGroup}>
+                <label htmlFor="emailDestinoInput">E-mail do Destinatário (Aluno) *</label>
+                <input
+                  id="emailDestinoInput"
+                  type="email"
+                  value={emailDestino}
+                  onChange={(e) => setEmailDestino(e.target.value)}
+                  placeholder="aluno@exemplo.com"
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="emailAssuntoInput">Assunto da Mensagem</label>
+                <input
+                  id="emailAssuntoInput"
+                  type="text"
+                  value={emailAssunto}
+                  onChange={(e) => setEmailAssunto(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Resumo do Laudo a ser Enviado</label>
+                <textarea
+                  rows="7"
+                  value={gerarResumoRelatorioTexto()}
+                  readOnly
+                  className={styles.emailPreviewBox}
+                />
+              </div>
+            </div>
+
+            <div className={styles.emailModalFooter}>
+              <button
+                type="button"
+                className={styles.backButton}
+                onClick={handleOpenMailto}
+                title="Abre seu aplicativo de e-mail padrão já preenchido"
+              >
+                <FaEnvelope /> Abrir no App de E-mail
+              </button>
+              <button
+                type="button"
+                className={styles.printHeaderButton}
+                onClick={() => handleFinalizar("completo")}
+                title="Salva o PDF oficial para anexar caso deseje"
+              >
+                <FaPrint /> Baixar PDF
+              </button>
+              <button
+                type="button"
+                className={styles.finishButton}
+                onClick={handleSendEmailSystem}
+                disabled={sendingEmail}
+              >
+                <FaPaperPlane /> {sendingEmail ? "Enviando..." : "Enviar pelo Sistema"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

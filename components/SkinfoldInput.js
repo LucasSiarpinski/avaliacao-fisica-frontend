@@ -13,6 +13,7 @@ export default function SkinfoldInput({
   placeholder = "Ex: 12.5",
   step = 0.5,
   min = 0,
+  unit = "mm",
 }) {
   const inputId = id || name;
 
@@ -58,7 +59,7 @@ export default function SkinfoldInput({
         <label htmlFor={inputId} className={styles.label}>
           {label}
         </label>
-        <span className={styles.unitBadge}>mm</span>
+        <span className={styles.unitBadge}>{unit}</span>
       </div>
 
       <div className={styles.stepperWrapper}>
@@ -67,7 +68,7 @@ export default function SkinfoldInput({
           className={styles.stepBtn}
           onClick={() => handleStep(-step)}
           aria-label={`Diminuir ${label}`}
-          title="Diminuir 0.5 mm"
+          title={`Diminuir ${step} ${unit}`}
         >
           <FaMinus size={13} />
         </button>
@@ -90,7 +91,7 @@ export default function SkinfoldInput({
           className={styles.stepBtn}
           onClick={() => handleStep(step)}
           aria-label={`Aumentar ${label}`}
-          title="Aumentar 0.5 mm"
+          title={`Aumentar ${step} ${unit}`}
         >
           <FaPlus size={13} />
         </button>

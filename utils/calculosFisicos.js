@@ -184,3 +184,127 @@ export function calcularComposicaoPollock7(dobras, idade, genero = "M", peso) {
     massaMagra,
   };
 }
+
+/**
+ * Avaliação e Pontuação de Testes Físicos Neuromotores
+ * 1. Resistência Abdominal (repetições em 1 minuto - Pollock & Wilmore / ACSM)
+ * 2. Força de Preensão Manual / Dinamometria (kgf - Mão Direita e Esquerda - ACSM)
+ */
+export function calcularTestesFisicos(dados, idade = 25, genero = "M") {
+  const isMasc = String(genero).toUpperCase().startsWith("M");
+  const id = parseInt(idade, 10) || 25;
+
+  const repAbdominal = parseInt(dados?.resistenciaAbdominal, 10);
+  const preensaoD = parseFloat(dados?.preensaoManualD);
+  const preensaoE = parseFloat(dados?.preensaoManualE);
+
+  let abdominal = null;
+  if (!isNaN(repAbdominal) && repAbdominal >= 0) {
+    // Pontos de corte baseados em Pollock & Wilmore / ACSM (ajustados por faixa etária e sexo)
+    const ajusteIdade = id >= 50 ? -10 : id >= 40 ? -6 : id >= 30 ? -3 : 0;
+    const baseExcelente = (isMasc ? 44 : 38) + ajusteIdade;
+    const baseBom = (isMasc ? 38 : 32) + ajusteIdade;
+    const baseMedio = (isMasc ? 31 : 25) + ajusteIdade;
+    const baseRegular = (isMasc ? 24 : 18) + ajusteIdade;
+
+    let classificacao = "Fraco";
+    let cor = "#e53e3e";
+    let pontuacao = 20;
+
+    if (repAbdominal >= baseExcelente) {
+      classificacao = "Excelente";
+      cor = "#10b981";
+      pontuacao = 100;
+    } else if (repAbdominal >= baseBom) {
+      classificacao = "Bom";
+      cor = "#48bb78";
+      pontuacao = 80;
+    } else if (repAbdominal >= baseMedio) {
+      classificacao = "Médio";
+      cor = "#ecc94b";
+      pontuacao = 60;
+    } else if (repAbdominal >= baseRegular) {
+      classificacao = "Abaixo da Média";
+      cor = "#ed8936";
+      pontuacao = 40;
+    }
+
+    abdominal = {
+      repeticoes: repAbdominal,
+      classificacao,
+      pontuacao,
+      cor,
+    };
+  }
+
+  let preensao = null;
+  const temD = !isNaN(preensaoD) && preensaoD > 0;
+  const temE = !isNaN(preensaoE) && preensaoE > 0;
+
+  if (temD || temE) {
+    const valD = temD ? parseFloat(preensaoD.toFixed(1)) : null;
+    const valE = temE ? parseFloat(preensaoE.toFixed(1)) : null;
+    const maior = Math.max(valD || 0, valE || 0);
+    const media =
+      valD !== null && valE !== null
+        ? parseFloat(((valD + valE) / 2).toFixed(1))
+        : maior;
+    const soma =
+      valD !== null && valE !== null
+        ? parseFloat((valD + valE).toFixed(1))
+        : maior;
+
+    // Referência ACSM para força de preensão manual máxima (kgf)
+    const ajusteIdadeKgf = id >= 50 ? -6 : id >= 40 ? -3 : 0;
+    const corteExcelente = (isMasc ? 52 : 34) + ajusteIdadeKgf;
+    const corteBom = (isMasc ? 46 : 30) + ajusteIdadeKgf;
+    const corteMedio = (isMasc ? 40 : 25) + ajusteIdadeKgf;
+    const corteRegular = (isMasc ? 34 : 20) + ajusteIdadeKgf;
+
+    let classificacao = "Fraco";
+    let cor = "#e53e3e";
+    let pontuacao = 20;
+
+    if (maior >= corteExcelente) {
+      classificacao = "Excelente";
+      cor = "#10b981";
+      pontuacao = 100;
+    } else if (maior >= corteBom) {
+      classificacao = "Bom";
+      cor = "#48bb78";
+      pontuacao = 80;
+    } else if (maior >= corteMedio) {
+      classificacao = "Médio";
+      cor = "#ecc94b";
+      pontuacao = 60;
+    } else if (maior >= corteRegular) {
+      classificacao = "Abaixo da Média";
+      cor = "#ed8936";
+      pontuacao = 40;
+    }
+
+    preensao = {
+      direita: valD,
+      esquerda: valE,
+      maior,
+      media,
+      soma,
+      classificacao,
+      pontuacao,
+      cor,
+    };
+  }
+
+  const completo = Boolean(abdominal && preensao && temD && temE);
+  const parcial = Boolean(abdominal || preensao);
+
+  return {
+    completo,
+    parcial,
+    resistenciaAbdominal: !isNaN(repAbdominal) && repAbdominal >= 0 ? repAbdominal : null,
+    preensaoManualD: temD ? parseFloat(preensaoD.toFixed(1)) : null,
+    preensaoManualE: temE ? parseFloat(preensaoE.toFixed(1)) : null,
+    abdominal,
+    preensao,
+  };
+}
