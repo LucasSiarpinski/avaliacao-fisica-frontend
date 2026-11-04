@@ -36,7 +36,7 @@ import {
 } from "react-icons/fa";
 
 function calcularIdade(dataNasc) {
-  if (!dataNasc) return 25;
+  if (!dataNasc) return null;
   try {
     const hoje = new Date();
     const nasc = new Date(dataNasc);
@@ -45,9 +45,10 @@ function calcularIdade(dataNasc) {
     if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) {
       idade--;
     }
-    return isNaN(idade) ? 25 : idade;
+    if (isNaN(idade) || idade < 5 || idade > 120) return null;
+    return idade;
   } catch {
-    return 25;
+    return null;
   }
 }
 
@@ -409,7 +410,7 @@ export default function AvaliacaoWizardPage() {
           </h1>
           <div className={styles.alunoMetaRow}>
             <span className={styles.alunoMetaBadge}>
-              {idade} anos • {genero === "F" ? "Feminino" : "Masculino"}
+              {idade ? `${idade} anos` : "Idade não informada"} • {genero === "F" ? "Feminino" : "Masculino"}
             </span>
             {aluno?.matricula && (
               <span className={styles.alunoMetaBadge}>
@@ -2015,7 +2016,7 @@ export default function AvaliacaoWizardPage() {
               </tr>
               <tr>
                 <td style={{ fontWeight: 700 }}>Idade:</td>
-                <td>{idade} anos</td>
+                <td>{idade ? `${idade} anos` : "Não informada"}</td>
                 <td style={{ fontWeight: 700 }}>Gênero:</td>
                 <td>{genero === "F" ? "Feminino" : "Masculino"}</td>
               </tr>

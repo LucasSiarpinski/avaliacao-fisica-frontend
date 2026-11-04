@@ -304,6 +304,15 @@ export default function AlunoDetalhePage() {
       return;
     }
 
+    const idadeCalculada = calculateAge(aluno.dataNasc);
+    if (idadeCalculada === null || isNaN(idadeCalculada) || idadeCalculada < 5 || idadeCalculada > 120) {
+      toast.error(
+        "Data de nascimento inválida! O aluno deve ter entre 5 e 120 anos (verifique o ano digitado)."
+      );
+      setActiveTab("dadosPessoais");
+      return;
+    }
+
     if (!aluno.matricula || !aluno.matricula.trim()) {
       toast.error("Por favor, preencha a Matrícula na aba Dados Pessoais.");
       setActiveTab("dadosPessoais");
@@ -553,6 +562,8 @@ export default function AlunoDetalhePage() {
                 type="date"
                 value={aluno.dataNasc || ""}
                 onChange={handleChange}
+                min="1910-01-01"
+                max={new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().split("T")[0]}
                 required
               />
             </div>
@@ -561,7 +572,13 @@ export default function AlunoDetalhePage() {
               <input
                 id="idade"
                 name="idade"
-                value={idade !== null ? `${idade} anos` : "--"}
+                value={
+                  idade !== null && idade >= 5 && idade <= 120
+                    ? `${idade} anos`
+                    : idade !== null
+                      ? `Ano inválido (${idade} anos — corrija a Data de Nasc.)`
+                      : "--"
+                }
                 disabled
                 className={styles.disabledInput}
               />

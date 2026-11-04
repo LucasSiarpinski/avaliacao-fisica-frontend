@@ -44,7 +44,16 @@ export default function AlunoModal({ onClose, onSubmit, errorMessage }) {
           <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
 
           {/* NOVO CAMPO: Data de Nascimento */}
-          <input type="date" name="dataNasc" placeholder="Data de Nascimento" value={formData.dataNasc} onChange={handleChange} required />
+          <input
+            type="date"
+            name="dataNasc"
+            placeholder="Data de Nascimento"
+            value={formData.dataNasc}
+            onChange={handleChange}
+            min="1910-01-01"
+            max={new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().split("T")[0]}
+            required
+          />
 
           {/* Campo Matrícula */}
           <input type="text" name="matricula" placeholder="Matrícula" value={formData.matricula} onChange={handleChange} required />
