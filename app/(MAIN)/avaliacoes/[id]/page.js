@@ -413,36 +413,79 @@ export default function AvaliacaoWizardPage() {
     try {
       await handleSave(false);
       const mensagem = gerarResumoRelatorioTexto();
-      const res = await api.post(`/api/avaliacoes/${id}/enviar-email`, {
-        destinatario: emailDestino.trim(),
-        assunto: emailAssunto,
-        mensagem,
-        smtpConfig,
+      const avaliacaoCompleta = {
+        ...avaliacao,
+        resultados: {
+          ...(avaliacao.resultados || {}),
+          imc: imcData,
+          rcq: rcqData,
+          composicao: composicaoData,
+          testesFisicos: testesFisicosData,
+        },
+      };
+
+      // Dispara o envio via rota interna do Next.js (Vercel), onde as portas 465/587 do Gmail não são bloqueadas pelo Render Free
+      const response = await fetch("/api/enviar-laudo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          destinatario: emailDestino.trim(),
+          assunto: emailAssunto,
+          mensagem,
+          avaliacao: avaliacaoCompleta,
+          historicoAvaliacoes,
+          smtpConfig,
+        }),
       });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Falha ao enviar o laudo em PDF.");
+      }
+
+      // Registra o histórico do envio no banco de dados (sem travar no SMTP do Render)
+      api
+        .post(`/api/avaliacoes/${id}/enviar-email`, {
+          destinatario: emailDestino.trim(),
+          assunto: emailAssunto,
+          mensagem,
+          jaEnviadoPeloFrontend: true,
+          infoFrontend: data.envio,
+        })
+        .catch((err) => console.warn("Aviso ao registrar log de envio:", err));
 
       setAvaliacao((prev) => ({
         ...prev,
         resultados: {
           ...(prev.resultados || {}),
-          ultimoEnvioEmail: res.data.envio,
+          ultimoEnvioEmail: data.envio,
         },
       }));
 
       toast.success(
-        res.data.message || `Laudo em PDF enviado com sucesso para ${emailDestino}!`
+        data.message || `Laudo em PDF enviado com sucesso para ${emailDestino}!`
       );
       setShowEmailModal(false);
     } catch (error) {
       console.error("Erro ao enviar relatório por e-mail:", error);
-      if (error.response?.data?.code === "SMTP_NOT_CONFIGURED") {
-        setShowSmtpPanel(true);
-      }
       toast.error(
-        error.response?.data?.error || "Não foi possível enviar o relatório por e-mail."
+        error.message || "Não foi possível enviar o relatório por e-mail."
       );
     } finally {
       setSendingEmail(false);
     }
+  };
+
+  const handleOpenGmailWeb = async () => {
+    await handleSave(false);
+    const body = encodeURIComponent(gerarResumoRelatorioTexto());
+    const subject = encodeURIComponent(
+      emailAssunto || `Laudo Técnico de Avaliação Física — ${aluno?.nome || "Aluno"} (UNOESC)`
+    );
+    const to = encodeURIComponent(emailDestino || aluno?.email || "");
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, "_blank", "noopener,noreferrer");
+    toast.success("Página do Gmail aberta com destinatário e laudo preenchidos!");
   };
 
   const handleOpenMailto = async () => {
@@ -2749,10 +2792,18 @@ export default function AvaliacaoWizardPage() {
               <button
                 type="button"
                 className={styles.backButton}
+                onClick={handleOpenGmailWeb}
+                title="Abre a página do Gmail no navegador já com destinatário, assunto e descrição preenchidos"
+              >
+                <FaEnvelope /> Abrir no Gmail
+              </button>
+              <button
+                type="button"
+                className={styles.backButton}
                 onClick={handleOpenMailto}
                 title="Abre seu aplicativo de e-mail padrão já preenchido"
               >
-                <FaEnvelope /> Abrir no App de E-mail
+                <FaEnvelope /> App de E-mail
               </button>
               <button
                 type="button"
@@ -2760,7 +2811,7 @@ export default function AvaliacaoWizardPage() {
                 onClick={() => handleFinalizar("completo")}
                 title="Salva o PDF oficial no computador"
               >
-                <FaPrint /> Imprimir / Salvar PDF
+                <FaPrint /> Salvar PDF
               </button>
               <button
                 type="button"
@@ -2768,7 +2819,7 @@ export default function AvaliacaoWizardPage() {
                 onClick={handleSendEmailSystem}
                 disabled={sendingEmail}
               >
-                <FaPaperPlane /> {sendingEmail ? "Gerando PDF e Enviando..." : "Enviar Laudo em PDF"}
+                <FaPaperPlane /> {sendingEmail ? "Enviando (2s)..." : "Enviar Laudo em PDF"}
               </button>
             </div>
           </div>
