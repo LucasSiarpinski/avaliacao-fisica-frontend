@@ -91,12 +91,18 @@ export default function AvaliacaoWizardPage() {
       if (savedSmtp) {
         try {
           const parsed = JSON.parse(savedSmtp);
-          setSmtpConfig((prev) => ({
-            host: parsed.host || prev.host,
-            port: parsed.port || prev.port,
-            user: parsed.user || prev.user,
-            pass: parsed.pass || prev.pass,
-          }));
+          let cleanUser = (parsed.user || "").trim();
+          if (cleanUser.endsWith("@gmail.co")) {
+            cleanUser = `${cleanUser}m`;
+          }
+          const updated = {
+            host: parsed.host || "smtp.gmail.com",
+            port: parsed.port || "587",
+            user: cleanUser || "lucasmiottosiarpinski@gmail.com",
+            pass: parsed.pass || "mzwo kcnw zlam ygbf",
+          };
+          setSmtpConfig(updated);
+          localStorage.setItem("@TCC:smtpConfig", JSON.stringify(updated));
         } catch (e) {
           console.error("Erro ao carregar SMTP local:", e);
         }

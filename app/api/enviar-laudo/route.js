@@ -396,11 +396,14 @@ export async function POST(request) {
     const pdfBuffer = await gerarPdfLaudoBuffer(avaliacao, historicoAvaliacoes || []);
 
     const host = (smtpConfig?.host || process.env.SMTP_HOST || "smtp.gmail.com").trim();
-    const user = (
+    let user = (
       smtpConfig?.user ||
       process.env.SMTP_USER ||
       "lucasmiottosiarpinski@gmail.com"
     ).trim();
+    if (user.endsWith("@gmail.co")) {
+      user = `${user}m`;
+    }
     const pass = (
       smtpConfig?.pass ||
       process.env.SMTP_PASS ||
@@ -477,3 +480,4 @@ export async function POST(request) {
     );
   }
 }
+
