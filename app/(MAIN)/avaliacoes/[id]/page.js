@@ -65,6 +65,7 @@ export default function AvaliacaoWizardPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showMedicalSnapshot, setShowMedicalSnapshot] = useState(false);
   const [viewMode, setViewMode] = useState("wizard"); // "wizard" ou "single"
+  const [isLaudoOnly, setIsLaudoOnly] = useState(false);
 
   // Estados para o envio do relatório por e-mail e histórico longitudinal
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -83,6 +84,10 @@ export default function AvaliacaoWizardPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("modo") === "laudo" || urlParams.get("print") === "true") {
+        setIsLaudoOnly(true);
+      }
       const savedMode = localStorage.getItem("@TCC:avaliacaoViewMode");
       if (savedMode === "single" || savedMode === "wizard") {
         setViewMode(savedMode);
@@ -200,8 +205,9 @@ export default function AvaliacaoWizardPage() {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("print") === "true") {
         hasAutoPrinted.current = true;
-        // Remove ?print=true da barra de endereços para nunca re-disparar ao editar campos
-        window.history.replaceState({}, "", window.location.pathname);
+        setIsLaudoOnly(true);
+        // Remove ?print=true da barra de endereços mantendo modo=laudo
+        window.history.replaceState({}, "", `${window.location.pathname}?modo=laudo`);
         const timer = setTimeout(() => {
           window.print();
         }, 600);
@@ -565,62 +571,108 @@ export default function AvaliacaoWizardPage() {
         </div>
 
         <div className={styles.actions}>
-          {/* Seletor de Modo de Visualização */}
-          <div className={styles.viewModeToggle}>
-            <button
-              type="button"
-              className={`${styles.viewModeBtn} ${viewMode === "wizard" ? styles.viewModeBtnActive : ""}`}
-              onClick={() => handleToggleViewMode("wizard")}
-              title="Visualização Passo a Passo em 4 Etapas"
-            >
-              <FaLayerGroup /> Etapas
-            </button>
-            <button
-              type="button"
-              className={`${styles.viewModeBtn} ${viewMode === "single" ? styles.viewModeBtnActive : ""}`}
-              onClick={() => handleToggleViewMode("single")}
-              title="Visualização em Página Única Contínua"
-            >
-              <FaFileAlt /> Página Única
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => handleFinalizar("imprimir")}
-            className={styles.printHeaderButton}
-            title="Emitir Laudo Clínico Oficial e Imprimir"
-          >
-            <FaPrint /> Imprimir Laudo
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenEmailModal}
-            className={styles.emailHeaderButton}
-            title="Exportar e enviar relatório de avaliação por e-mail para o aluno"
-          >
-            <FaEnvelope /> Enviar por E-mail
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/avaliacoes")}
-            className={styles.backButton}
-            disabled={isSaving}
-          >
-            <FaArrowLeft /> Lista de Avaliações
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSave(true)}
-            className={styles.saveButton}
-            disabled={isSaving}
-          >
-            <FaSave /> {isSaving ? "Salvando..." : "Salvar Rascunho"}
-          </button>
+          {!isLaudoOnly ? (
+            <>
+              {/* Seletor de Modo de Visualização */}
+              <div className={styles.viewModeToggle}>
+                <button
+                  type="button"
+                  className={`${styles.viewModeBtn} ${viewMode === "wizard" ? styles.viewModeBtnActive : ""}`}
+                  onClick={() => handleToggleViewMode("wizard")}
+                  title="Visualização Passo a Passo em 4 Etapas"
+                >
+                  <FaLayerGroup /> Etapas
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.viewModeBtn} ${viewMode === "single" ? styles.viewModeBtnActive : ""}`}
+                  onClick={() => handleToggleViewMode("single")}
+                  title="Visualização em Página Única Contínua"
+                >
+                  <FaFileAlt /> Página Única
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLaudoOnly(true);
+                  handleFinalizar("imprimir");
+                }}
+                className={styles.printHeaderButton}
+                title="Emitir Laudo Clínico Oficial e Imprimir"
+              >
+                <FaPrint /> Emitir Laudo
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenEmailModal}
+                className={styles.emailHeaderButton}
+                title="Exportar e enviar relatório de avaliação por e-mail para o aluno"
+              >
+                <FaEnvelope /> Enviar por E-mail
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/avaliacoes")}
+                className={styles.backButton}
+                disabled={isSaving}
+              >
+                <FaArrowLeft /> Lista de Avaliações
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSave(true)}
+                className={styles.saveButton}
+                disabled={isSaving}
+              >
+                <FaSave /> {isSaving ? "Salvando..." : "Salvar Rascunho"}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className={styles.printHeaderButton}
+                title="Imprimir ou Salvar Laudo em PDF"
+              >
+                <FaPrint /> Imprimir / Salvar PDF
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenEmailModal}
+                className={styles.emailHeaderButton}
+                title="Enviar Laudo em PDF por E-mail"
+              >
+                <FaEnvelope /> Enviar por E-mail
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLaudoOnly(false);
+                  if (typeof window !== "undefined") {
+                    window.history.replaceState({}, "", window.location.pathname);
+                  }
+                }}
+                className={styles.saveButton}
+                title="Abrir formulário para editar medidas da avaliação"
+              >
+                <FaFileAlt /> Editar Avaliação
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/avaliacoes")}
+                className={styles.backButton}
+              >
+                <FaArrowLeft /> Lista de Avaliações
+              </button>
+            </>
+          )}
         </div>
       </header>
 
-      {/* --- NAVEGAÇÃO SUPERIOR: STEPPER OU ATALHOS --- */}
-      {viewMode === "wizard" ? (
+      {/* --- NAVEGAÇÃO SUPERIOR: STEPPER OU ATALHOS (Apenas no modo Edição) --- */}
+      {!isLaudoOnly && (viewMode === "wizard" ? (
       <div className={styles.stepperContainer}>
         <div className={styles.stepperNav}>
           {/* Passo 1 */}
@@ -717,9 +769,10 @@ export default function AvaliacaoWizardPage() {
             <FaCheckCircle /> 4. Diagnóstico & Laudo
           </button>
         </div>
-      )}
+      ))}
 
-      {/* --- CONTEÚDO PRINCIPAL --- */}
+      {/* --- CONTEÚDO PRINCIPAL (Oculto quando estiver apenas visualizando/emitindo o Laudo) --- */}
+      {!isLaudoOnly && (
       <main className={styles.content}>
         {viewMode === "wizard" ? (
           <>
@@ -2106,13 +2159,14 @@ export default function AvaliacaoWizardPage() {
           </div>
         )}
       </main>
+      )}
 
       {/* ========================================================
           DOCUMENTO OFICIAL IMPRESSO (LAUDO CLÍNICO & COMPOSIÇÃO)
           Ordem de 9 seções validada pelo protocolo do TCC
-          Visível exclusivamente ao imprimir (@media print)
+          Visível ao imprimir (@media print) OU no modo Emitir Laudo (isLaudoOnly)
          ======================================================== */}
-      <div className={styles.printableDocument}>
+      <div className={`${styles.printableDocument} ${isLaudoOnly ? styles.laudoPreviewOnScreen : ""}`}>
         {/* Cabeçalho do Relatório */}
         <div className={styles.printHeader}>
           <div className={styles.printBrand}>

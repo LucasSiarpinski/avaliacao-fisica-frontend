@@ -76,7 +76,7 @@ export default function AvaliacoesPage() {
       return;
     }
 
-    router.push(`/avaliacoes/${targetId}?print=true`);
+    router.push(`/avaliacoes/${targetId}?print=true&modo=laudo`);
   };
 
   const handleExcluir = async (idParaExcluir) => {
@@ -435,16 +435,18 @@ export default function AvaliacoesPage() {
             const imc = ava.resultados?.imc;
             const composicao = ava.resultados?.composicao;
             const completed = isCompleted(ava);
+            const isSelected = ava.id === selecionadoId;
 
             return (
               <div
                 key={ava.id}
-                className={styles.mobileCard}
-                onClick={() => router.push(`/avaliacoes/${ava.id}`)}
+                className={`${styles.mobileCard} ${isSelected ? styles.mobileCardSelected : ""}`}
+                onClick={() => handleRowClick(ava.id)}
               >
                 <div className={styles.mobileCardHeader}>
-                  <div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <h4 className={styles.mobileCardStudentName}>
+                      {isSelected && <span className={styles.checkIcon} style={{ marginRight: 6 }}>✓</span>}
                       {ava.aluno?.nome || "Aluno não encontrado"}
                     </h4>
                     <span className={styles.mobileCardMatricula}>
@@ -505,16 +507,6 @@ export default function AvaliacoesPage() {
                 </div>
 
                 <div className={styles.mobileCardFooter}>
-                  <button
-                    type="button"
-                    className={styles.mobileOpenBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/avaliacoes/${ava.id}`);
-                    }}
-                  >
-                    <FaHeartbeat /> Acessar Avaliação
-                  </button>
                   {completed && (
                     <button
                       type="button"
@@ -523,11 +515,21 @@ export default function AvaliacoesPage() {
                         e.stopPropagation();
                         handleImprimir(ava.id);
                       }}
-                      title="Emitir laudo impresso"
+                      title="Emitir laudo impresso sem precisar editar"
                     >
-                      <FaPrint /> Laudo
+                      <FaPrint /> Emitir Laudo
                     </button>
                   )}
+                  <button
+                    type="button"
+                    className={styles.mobileOpenBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/avaliacoes/${ava.id}`);
+                    }}
+                  >
+                    <FaEdit /> {completed ? "Editar" : "Preencher"}
+                  </button>
                   <button
                     type="button"
                     className={styles.mobileDeleteBtn}

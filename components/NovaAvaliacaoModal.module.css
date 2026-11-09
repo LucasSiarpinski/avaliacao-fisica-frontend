@@ -99,17 +99,23 @@
 /* --- Barra de Pesquisa --- */
 .searchSection {
   padding: 1.25rem 1.75rem 0.75rem 1.75rem;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .searchBox {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   background-color: #242424;
   border: 1px solid #383838;
   border-radius: 8px;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 0.85rem;
   transition: border-color 0.2s ease;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .searchBox:focus-within {
@@ -118,7 +124,9 @@
 
 .searchIcon {
   color: #777;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
 }
 
@@ -126,8 +134,10 @@
   background: transparent;
   border: none;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  flex: 1;
   width: 100%;
+  min-width: 0;
   outline: none;
 }
 
@@ -320,4 +330,88 @@
 .footerCancelBtn:hover {
   background-color: #282828;
   color: #fff;
+}
+
+@media (max-width: 640px) {
+  .overlay {
+    padding: 0.75rem;
+  }
+
+  .modal {
+    max-height: 90vh;
+    border-radius: 10px;
+  }
+
+  .header {
+    padding: 1rem 1rem 0.75rem 1rem;
+  }
+
+  .headerTitle {
+    font-size: 1.1rem;
+    gap: 0.45rem;
+  }
+
+  .headerTitle svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .headerSubtitle {
+    font-size: 0.78rem;
+  }
+
+  .searchSection {
+    padding: 0.75rem 1rem 0.5rem 1rem;
+  }
+
+  .searchBox {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .searchIcon {
+    font-size: 0.85rem;
+    width: 14px;
+    height: 14px;
+  }
+
+  .searchInput {
+    font-size: 0.85rem;
+  }
+
+  .bodyList {
+    padding: 0.5rem 1rem 1rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .studentCard {
+    padding: 0.7rem 0.85rem;
+    gap: 0.5rem;
+  }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    font-size: 0.88rem;
+  }
+
+  .studentName {
+    font-size: 0.88rem;
+  }
+
+  .studentMeta {
+    font-size: 0.74rem;
+  }
+
+  .actionBadge {
+    font-size: 0.75rem;
+    padding: 0.32rem 0.6rem;
+  }
+
+  .footer {
+    padding: 0.75rem 1rem;
+    font-size: 0.76rem;
+  }
 }
