@@ -50,9 +50,16 @@ export default function FormProfessorPage() {
                 const campusData = campusRes.data || [];
                 setCampus(campusData);
 
-                // Define campus padrão se for novo
-                if (!isEditing && campusData.length > 0) {
-                    setFormData(prev => ({ ...prev, campusId: String(campusData[0].id) }));
+                // Define campus padrão e garante campos limpos se for novo
+                if (!isEditing) {
+                    setFormData({
+                        name: '',
+                        email: '',
+                        password: '',
+                        role: 'PROFESSOR',
+                        status: 'ACTIVE',
+                        campusId: campusData.length > 0 ? String(campusData[0].id) : '',
+                    });
                 }
             } catch (err) {
                 console.error("Erro ao buscar campus:", err);
@@ -142,7 +149,25 @@ export default function FormProfessorPage() {
             
             {formError && <p className={styles.errorMessage}>{formError}</p>}
 
-            <form onSubmit={handleSave} className={styles.modalForm} style={{ maxWidth: "600px" }}>
+            <form onSubmit={handleSave} className={styles.modalForm} style={{ maxWidth: "600px", position: "relative" }} autoComplete="off">
+                {/* Campos isca invisíveis (sem display:none para o Chrome não ignorar) que absorvem o autofill do navegador */}
+                <input
+                    type="text"
+                    name="prevent_autofill_username"
+                    autoComplete="username"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    style={{ position: "absolute", opacity: 0, height: 0, width: 0, padding: 0, border: "none", pointerEvents: "none" }}
+                />
+                <input
+                    type="password"
+                    name="prevent_autofill_password"
+                    autoComplete="current-password"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    style={{ position: "absolute", opacity: 0, height: 0, width: 0, padding: 0, border: "none", pointerEvents: "none" }}
+                />
+
                 <label className={styles.formLabel}>Nome Completo:</label>
                 <input 
                     name="name" 
@@ -150,6 +175,7 @@ export default function FormProfessorPage() {
                     onChange={handleChange} 
                     className={styles.formInput} 
                     placeholder="Ex: Prof. João da Silva"
+                    autoComplete="off"
                     required 
                 />
 
@@ -161,6 +187,7 @@ export default function FormProfessorPage() {
                     className={styles.formInput} 
                     type="email" 
                     placeholder="email@unoesc.edu.br"
+                    autoComplete="new-password"
                     required 
                 />
 
@@ -171,6 +198,7 @@ export default function FormProfessorPage() {
                     onChange={handleChange} 
                     className={styles.formInput} 
                     type="password"
+                    autoComplete="new-password"
                     required={!isEditing}
                     placeholder={isEditing ? "Deixe em branco para não alterar" : "Senha obrigatória"}
                 />
