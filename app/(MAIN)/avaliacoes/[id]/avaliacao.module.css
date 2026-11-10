@@ -1602,7 +1602,7 @@
   margin: 1pt 0 0 0;
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   .laudoPreviewOnScreen {
     padding: 0.9rem;
     font-size: 8.5pt;
@@ -1621,12 +1621,18 @@
 @media print {
   .container {
     background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #0f172a !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
-    min-height: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
   }
 
   /* Oculta toda a interface interativa do Wizard e tela de edição */
@@ -1643,142 +1649,171 @@
     display: none !important;
   }
 
-  /* Exibe exclusivamente o laudo estruturado e limpo */
-  .printableDocument {
+  /* Exibe exclusivamente o laudo estruturado e idêntico no Desktop e Mobile */
+  .printableDocument,
+  .laudoPreviewOnScreen {
     display: block !important;
     color: #0f172a !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
     width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-    font-size: 9.5pt !important;
-    line-height: 1.35 !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
   }
 
-  .printHeader {
+  .printHeader,
+  .laudoPreviewOnScreen .printHeader {
     display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     justify-content: space-between !important;
     align-items: center !important;
-    border-bottom: 2.5px solid #2e7d32 !important;
-    padding-bottom: 8pt !important;
-    margin-bottom: 8pt !important;
+    border-bottom: 2px solid #2e7d32 !important;
+    padding-bottom: 6pt !important;
+    margin-bottom: 6pt !important;
   }
 
-  .printBrand {
+  .printBrand,
+  .laudoPreviewOnScreen .printBrand {
     display: flex !important;
     align-items: center !important;
-    gap: 10pt !important;
+    gap: 8pt !important;
   }
 
-  .printLogoBadge {
+  .printLogoBadge,
+  .laudoPreviewOnScreen .printLogoBadge {
     background: #2e7d32 !important;
     color: #ffffff !important;
     font-weight: 900 !important;
-    font-size: 13pt !important;
-    padding: 5pt 10pt !important;
+    font-size: 12pt !important;
+    padding: 4pt 9pt !important;
     border-radius: 4pt !important;
     letter-spacing: 1px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .printInstitutionName {
-    font-size: 11pt !important;
+  .printInstitutionName,
+  .laudoPreviewOnScreen .printInstitutionName {
+    font-size: 10.5pt !important;
     font-weight: 800 !important;
     color: #1b5e20 !important;
     margin: 0 !important;
   }
 
-  .printInstitutionDept {
-    font-size: 8pt !important;
+  .printInstitutionDept,
+  .laudoPreviewOnScreen .printInstitutionDept {
+    font-size: 7.8pt !important;
     color: #475569 !important;
-    margin: 2pt 0 0 0 !important;
+    margin: 1pt 0 0 0 !important;
   }
 
-  .printDocInfo {
+  .printDocInfo,
+  .laudoPreviewOnScreen .printDocInfo {
     text-align: right !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 2pt !important;
+    gap: 1pt !important;
   }
 
-  .printDocId {
-    font-size: 9pt !important;
+  .printDocId,
+  .laudoPreviewOnScreen .printDocId {
+    font-size: 8.5pt !important;
     font-weight: 700 !important;
     color: #2e7d32 !important;
   }
 
-  .printDocDate {
-    font-size: 7.8pt !important;
+  .printDocDate,
+  .laudoPreviewOnScreen .printDocDate {
+    font-size: 7.5pt !important;
     color: #64748b !important;
   }
 
-  .printDocTitleBanner {
+  .printDocTitleBanner,
+  .laudoPreviewOnScreen .printDocTitleBanner {
     text-align: center !important;
-    margin-bottom: 10pt !important;
+    margin-bottom: 7pt !important;
   }
 
-  .printDocTitleBanner h1 {
-    font-size: 11.5pt !important;
+  .printDocTitleBanner h1,
+  .laudoPreviewOnScreen .printDocTitleBanner h1 {
+    font-size: 11pt !important;
     font-weight: 800 !important;
     color: #0f172a !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
     margin: 0 !important;
     border-bottom: 1px solid #cbd5e1 !important;
-    padding-bottom: 5pt !important;
+    padding-bottom: 4pt !important;
   }
 
-  .printSection {
-    margin-bottom: 9pt !important;
+  .printSection,
+  .laudoPreviewOnScreen .printSection {
+    margin-bottom: 6pt !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  .printSectionTitle {
-    font-size: 9pt !important;
+  .printSectionTitle,
+  .laudoPreviewOnScreen .printSectionTitle {
+    font-size: 8.5pt !important;
     font-weight: 800 !important;
     color: #1b5e20 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.3px !important;
-    border-left: 3.5pt solid #2e7d32 !important;
-    padding-left: 6pt !important;
-    margin: 0 0 5pt 0 !important;
+    border-left: 3pt solid #2e7d32 !important;
+    padding-left: 5pt !important;
+    margin: 0 0 4pt 0 !important;
   }
 
-  .printTable {
+  .printTable,
+  .laudoPreviewOnScreen .printTable {
     width: 100% !important;
     border-collapse: collapse !important;
-    margin-bottom: 6pt !important;
-    font-size: 8.5pt !important;
+    margin-bottom: 4pt !important;
+    font-size: 8pt !important;
   }
 
-  .printTable th {
+  .printTable th,
+  .laudoPreviewOnScreen .printTable th {
     background: #f1f5f9 !important;
     color: #0f172a !important;
     font-weight: 700 !important;
     text-align: left !important;
-    padding: 3.5pt 6pt !important;
+    padding: 2.8pt 5pt !important;
     border: 1px solid #cbd5e1 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .printTable td {
-    padding: 3.5pt 6pt !important;
+  .printTable td,
+  .laudoPreviewOnScreen .printTable td {
+    padding: 2.8pt 5pt !important;
     border: 1px solid #e2e8f0 !important;
     color: #1e293b !important;
   }
 
-  .printKpiGrid {
+  .printKpiGrid,
+  .laudoPreviewOnScreen .printKpiGrid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 6pt !important;
-    margin-bottom: 8pt !important;
+    gap: 5pt !important;
+    margin-bottom: 6pt !important;
   }
 
-  .printKpiCard {
+  .printKpiCard,
+  .laudoPreviewOnScreen .printKpiCard {
     border: 1px solid #cbd5e1 !important;
     border-radius: 4pt !important;
-    padding: 5pt 6pt !important;
+    padding: 4pt 5pt !important;
     background: #f8fafc !important;
     display: flex !important;
     flex-direction: column !important;
@@ -1787,92 +1822,107 @@
     print-color-adjust: exact !important;
   }
 
-  .printKpiTitle {
-    font-size: 6.8pt !important;
+  .printKpiTitle,
+  .laudoPreviewOnScreen .printKpiTitle {
+    font-size: 6.5pt !important;
     text-transform: uppercase !important;
     color: #64748b !important;
     font-weight: 700 !important;
     margin: 0 !important;
   }
 
-  .printKpiValue {
-    font-size: 11pt !important;
+  .printKpiValue,
+  .laudoPreviewOnScreen .printKpiValue {
+    font-size: 10.5pt !important;
     font-weight: 800 !important;
     color: #0f172a !important;
     margin: 0 !important;
   }
 
-  .printKpiSub {
-    font-size: 7.2pt !important;
+  .printKpiSub,
+  .laudoPreviewOnScreen .printKpiSub {
+    font-size: 7pt !important;
     font-weight: 600 !important;
     color: #2e7d32 !important;
     margin: 0 !important;
   }
 
-  .printTwoCols {
+  .printTwoCols,
+  .laudoPreviewOnScreen .printTwoCols {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 10pt !important;
-    margin-bottom: 8pt !important;
+    gap: 8pt !important;
+    margin-bottom: 6pt !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  .printCol {
+  .printCol,
+  .laudoPreviewOnScreen .printCol {
     display: flex !important;
     flex-direction: column !important;
   }
 
-  .printNoticePartial {
+  .printNoticePartial,
+  .laudoPreviewOnScreen .printNoticePartial {
     background: #fefce8 !important;
     border: 1px dashed #ca8a04 !important;
     border-radius: 4pt !important;
-    padding: 7pt !important;
-    font-size: 7.8pt !important;
+    padding: 5pt !important;
+    font-size: 7.5pt !important;
     color: #854d0e !important;
-    line-height: 1.4 !important;
+    line-height: 1.35 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .printNotesBox {
+  .printNotesBox,
+  .laudoPreviewOnScreen .printNotesBox {
     border: 1px solid #cbd5e1 !important;
     border-radius: 4pt !important;
-    padding: 6pt 8pt !important;
+    padding: 5pt 7pt !important;
     background: #f8fafc !important;
-    font-size: 8.5pt !important;
-    line-height: 1.35 !important;
+    font-size: 8pt !important;
+    line-height: 1.3 !important;
     color: #1e293b !important;
-    min-height: 28pt !important;
+    min-height: 22pt !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .printSignatures {
+  .printSignatures,
+  .laudoPreviewOnScreen .printSignatures {
     display: flex !important;
+    flex-direction: row !important;
     justify-content: space-between !important;
-    margin-top: 22pt !important;
+    margin-top: 14pt !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  .printSignBlock {
+  .printSignBlock,
+  .laudoPreviewOnScreen .printSignBlock {
     width: 44% !important;
     text-align: center !important;
   }
 
-  .printSignLine {
+  .printSignLine,
+  .laudoPreviewOnScreen .printSignLine {
     border-top: 1px solid #334155 !important;
-    margin-bottom: 3pt !important;
+    margin-bottom: 2.5pt !important;
   }
 
-  .printSignName {
-    font-size: 8.5pt !important;
+  .printSignName,
+  .laudoPreviewOnScreen .printSignName {
+    font-size: 8pt !important;
     font-weight: 700 !important;
     color: #0f172a !important;
     margin: 0 !important;
   }
 
-  .printSignRole {
-    font-size: 7.2pt !important;
+  .printSignRole,
+  .laudoPreviewOnScreen .printSignRole {
+    font-size: 7pt !important;
     color: #64748b !important;
     margin: 1pt 0 0 0 !important;
   }

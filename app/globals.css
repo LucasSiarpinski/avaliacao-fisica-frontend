@@ -25,8 +25,29 @@ a {
     text-decoration: none;
 }
 
-/* Ocultar notificações / popups / toasts do react-hot-toast durante a impressão */
+/* Configuração global de página A4 e reset de fundo escuro na impressão (Desktop e Mobile) */
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm;
+}
+
 @media print {
+  html,
+  body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   div[aria-live="polite"],
   div[aria-live="assertive"],
   div[role="status"],

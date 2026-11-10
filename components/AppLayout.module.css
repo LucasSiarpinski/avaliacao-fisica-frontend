@@ -93,7 +93,7 @@
 /* --- O PONTO DE QUEBRA (Breakpoint) ---                                   */
 /* ======================================================================== */
 
-@media (max-width: 900px) {
+@media screen and (max-width: 900px) {
     
     /* No mobile, o layoutWrapper não precisa mais ser flex,
        pois a sidebar vai "flutuar" por cima
@@ -120,7 +120,7 @@
     }
 }
 
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
     .pageContent {
       padding: 0.5rem;
     }
@@ -129,17 +129,27 @@
 @media print {
     .layoutWrapper {
         display: block !important;
+        background: #ffffff !important;
         background-color: #ffffff !important;
-        min-height: auto !important;
+        min-height: 0 !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     .mainContent {
+        min-height: 0 !important;
         height: auto !important;
         overflow: visible !important;
         display: block !important;
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     .pageContent {
         padding: 0 !important;
+        margin: 0 !important;
         width: 100% !important;
+        background: #ffffff !important;
     }
     .mobileHeader,
     .mobileOverlay {
