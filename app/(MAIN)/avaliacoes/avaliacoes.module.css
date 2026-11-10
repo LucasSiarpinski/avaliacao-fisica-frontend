@@ -463,70 +463,65 @@
 
 .mobileCard {
     background-color: #1e1e1e;
-    border: 1px solid #333;
-    border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    border: 1px solid #2e2e2e;
+    border-radius: 10px;
+    padding: 0.9rem;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.65rem;
     cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     -webkit-tap-highlight-color: transparent;
 }
 
 .mobileCard:hover {
     border-color: #5d812e;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
 .mobileCardSelected {
     border-color: #5d812e;
-    background-color: rgba(93, 129, 46, 0.14);
-    box-shadow: 0 0 0 1px #5d812e, 0 6px 18px rgba(0, 0, 0, 0.4);
-}
-
-.mobileCard:active {
-    transform: scale(0.985);
-    background-color: #242424;
+    background-color: rgba(93, 129, 46, 0.12);
+    box-shadow: 0 0 0 1px #5d812e, 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .mobileCardHeader {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding-bottom: 0.75rem;
+    gap: 0.6rem;
+    padding-bottom: 0.55rem;
     border-bottom: 1px solid #2a2a2a;
 }
 
 .mobileCardStudentName {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 0.98rem;
     font-weight: 700;
     color: #ffffff;
     line-height: 1.3;
+    word-break: break-word;
 }
 
 .mobileCardMatricula {
-    font-size: 0.8rem;
-    color: #999;
+    font-size: 0.75rem;
+    color: #94a3b8;
     font-weight: 500;
-    margin-top: 0.2rem;
+    margin-top: 0.15rem;
     display: block;
 }
 
 .mobileCardBody {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.35rem;
 }
 
 .mobileCardMeta {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
 }
 
 .mobileCardMetaLabel {
@@ -540,58 +535,32 @@
 
 .mobileCardMetrics {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.4rem;
     flex-wrap: wrap;
     align-items: center;
-    margin-top: 0.4rem;
-    padding-top: 0.6rem;
-    border-top: 1px dashed #333;
+    margin-top: 0.25rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #303030;
 }
 
 .mobileCardFooter {
     display: flex;
-    gap: 0.6rem;
+    gap: 0.5rem;
     align-items: center;
-    padding-top: 0.75rem;
+    padding-top: 0.55rem;
     border-top: 1px solid #2a2a2a;
 }
 
-.mobileOpenBtn {
-    flex: 1;
-    min-height: 46px;
-    height: 46px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #4d6d24 0%, #5d812e 100%);
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(93, 129, 46, 0.3);
-    transition: all 0.15s ease;
-}
-
-.mobileOpenBtn:hover {
-    background: linear-gradient(135deg, #597d2b 0%, #6e9837 100%);
-}
-
-.mobileOpenBtn:active {
-    transform: scale(0.97);
-}
-
+/* Botão largo principal: Emitir Laudo */
 .mobilePrintBtn {
     flex: 1;
-    min-height: 46px;
-    height: 46px;
+    min-height: 44px;
+    height: 44px;
     padding: 0 0.85rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     background: linear-gradient(135deg, #0c4a6e 0%, #0284c7 100%);
     color: #ffffff;
     border: 1px solid #0284c7;
@@ -599,7 +568,8 @@
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.28);
+    transition: all 0.15s ease;
 }
 
 .mobilePrintBtn:hover {
@@ -607,19 +577,55 @@
     color: #fff;
 }
 
-.mobileDeleteBtn {
-    min-height: 46px;
-    min-width: 46px;
-    height: 46px;
-    width: 46px;
-    display: inline-flex;
+.mobilePrintBtn:active {
+    transform: scale(0.98);
+}
+
+/* Icon Buttons quadrados (44x44px / h-11 w-11): Editar (Lápis) e Excluir (Lixeira) */
+.mobileIconEditBtn {
+    min-height: 44px;
+    min-width: 44px;
+    height: 44px;
+    width: 44px;
+    flex-shrink: 0;
+    display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #231b1b;
-    color: #f87171;
-    border: 1px solid #4a2828;
+    background-color: #242b1d;
+    color: #a4d864;
+    border: 1px solid rgba(93, 129, 46, 0.55);
     border-radius: 8px;
     cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mobileIconEditBtn:hover,
+.mobileIconEditBtn:active {
+    background-color: #5d812e;
+    color: #ffffff;
+}
+
+.mobileIconDeleteBtn {
+    min-height: 44px;
+    min-width: 44px;
+    height: 44px;
+    width: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #261919;
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mobileIconDeleteBtn:hover,
+.mobileIconDeleteBtn:active {
+    background-color: #dc2626;
+    color: #ffffff;
 }
 
 .noResultsCard {
@@ -641,38 +647,35 @@
     }
     .header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding-bottom: 0.85rem;
+        margin-bottom: 0.25rem;
     }
     .title {
-        font-size: clamp(1.2rem, 4vw, 1.5rem);
+        font-size: clamp(1.15rem, 4vw, 1.4rem);
     }
     .headerActions {
         width: 100%;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
+        display: flex;
     }
     .newStudentButton {
-        grid-column: 1 / -1;
         width: 100%;
-        height: 40px;
-        min-height: 40px;
-        max-height: 42px;
-        padding: 0.45rem 0.75rem;
-        font-size: 0.85rem;
+        min-height: 44px;
+        height: 44px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
         justify-content: center;
         box-sizing: border-box;
     }
-    .actionButton {
-        width: 100%;
-        height: 40px;
-        min-height: 40px;
-        max-height: 42px;
-        padding: 0.45rem 0.65rem;
-        font-size: 0.85rem;
-        justify-content: center;
-        box-sizing: border-box;
+    .statusBadgeConcluida,
+    .statusBadgeAndamento {
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
+    }
+    .metricTag {
+        font-size: 0.75rem;
+        padding: 0.18rem 0.48rem;
     }
     .searchTopRow {
         flex-direction: column;
@@ -682,6 +685,7 @@
     .searchUnifiedBar {
         width: 100%;
         min-width: 0;
+        min-height: 44px;
         box-sizing: border-box;
         padding: 0.25rem 0.5rem;
         gap: 0.25rem;
@@ -728,20 +732,7 @@
     .mobileCardsList {
         display: flex;
         flex-direction: column;
-        gap: 0.85rem;
-        margin-top: 1rem;
-    }
-    .mobileOpenBtn, .mobilePrintBtn, .mobileDeleteBtn {
-        height: 40px;
-        min-height: 40px;
-        max-height: 42px;
-        font-size: 0.85rem;
-    }
-    .mobilePrintBtn {
-        padding: 0 0.75rem;
-    }
-    .mobileDeleteBtn {
-        width: 40px;
-        min-width: 40px;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
     }
 }

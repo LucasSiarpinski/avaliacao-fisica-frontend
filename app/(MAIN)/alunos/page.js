@@ -20,7 +20,8 @@ import {
   FaCheck,
   FaCheckCircle,
   FaBan,
-  FaHeartbeat 
+  FaHeartbeat,
+  FaEllipsisV
 } from "react-icons/fa";
 
 export default function AlunosPage() {
@@ -32,6 +33,16 @@ export default function AlunosPage() {
   const [statusLoading, setStatusLoading] = useState(false);
   const [alunoParaExcluir, setAlunoParaExcluir] = useState(null);
   const [excluindoLoading, setExcluindoLoading] = useState(false);
+  const [openKebabId, setOpenKebabId] = useState(null);
+
+  // Fecha o menu Kebab ao tocar fora
+  useEffect(() => {
+    const handleOutsideClick = () => setOpenKebabId(null);
+    if (openKebabId !== null) {
+      window.addEventListener("click", handleOutsideClick);
+    }
+    return () => window.removeEventListener("click", handleOutsideClick);
+  }, [openKebabId]);
 
   // --- 1. LÓGICA DE SELEÇÃO (QUE VOCÊ GOSTOU) ---
   const [alunoSelecionadoId, setAlunoSelecionadoId] = useState(null);
@@ -218,7 +229,7 @@ export default function AlunosPage() {
 
   return (
     <div className={styles.container}>
-      {/* --- CABEÇALHO --- */}
+      {/* --- CABEÇALHO LIMPO --- */}
       <header className={styles.header}>
         <h1 className={styles.title}>Gerenciamento de Alunos</h1>
         <div className={styles.headerActions}>
@@ -226,49 +237,7 @@ export default function AlunosPage() {
             onClick={() => router.push("/alunos/novo")}
             className={styles.newStudentButton}
           >
-            <FaUserPlus /> Novo Aluno
-          </button>
-          <button
-            onClick={handleIniciarAvaliacaoSelecionado}
-            className={`${styles.actionButton} ${styles.avaliarButton}`}
-            disabled={!alunoSelecionadoId || isStartingAvaliacao}
-            title={alunoSelecionadoId ? "Iniciar avaliação física para o aluno selecionado" : "Selecione um aluno na tabela"}
-          >
-            <FaHeartbeat /> {isStartingAvaliacao ? "Iniciando..." : "Avaliar Aluno"}
-          </button>
-          <button
-            onClick={() => router.push(`/alunos/${alunoSelecionadoId}`)}
-            className={`${styles.actionButton} ${styles.editButton}`}
-            disabled={!alunoSelecionadoId || isStartingAvaliacao}
-          >
-            <FaEdit /> Editar
-          </button>
-          <button
-            onClick={() => handleAbrirModalStatus(alunoSelecionado)}
-            className={`${styles.actionButton} ${
-              alunoSelecionado?.status === "ATIVO"
-                ? styles.inativarButton
-                : styles.ativarButton
-            }`}
-            disabled={!alunoSelecionadoId || isStartingAvaliacao}
-            title={alunoSelecionado ? (alunoSelecionado.status === "ATIVO" ? "Inativar matrícula do aluno" : "Ativar matrícula do aluno") : "Selecione um aluno na tabela"}
-          >
-            {alunoSelecionado?.status === "ATIVO" ? (
-              <>
-                <FaBan /> Inativar
-              </>
-            ) : (
-              <>
-                <FaCheckCircle /> Ativar
-              </>
-            )}
-          </button>
-          <button
-            onClick={() => handleAbrirModalExcluir(alunoSelecionado)}
-            className={`${styles.actionButton} ${styles.deleteButton}`}
-            disabled={!alunoSelecionadoId || isStartingAvaliacao}
-          >
-            <FaTrash /> Excluir
+            <FaUserPlus /> + Novo Aluno
           </button>
         </div>
       </header>
@@ -326,11 +295,11 @@ export default function AlunosPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th style={{ width: "45px", textAlign: "center" }}></th>
               <th>Nome Completo</th>
               <th>Matrícula</th>
               <th>Status</th> 
               <th>Status Anamnese</th>
+              <th style={{ textAlign: "right" }}>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -363,15 +332,6 @@ export default function AlunosPage() {
                     onDoubleClick={() => router.push(`/alunos/${aluno.id}`)}
                     title="Clique duas vezes para editar este aluno"
                   >
-                    <td style={{ textAlign: "center" }}>
-                      <span
-                        className={`${styles.checkIndicator} ${
-                          isSelected ? styles.checkIndicatorActive : ""
-                        }`}
-                      >
-                        {isSelected && <FaCheck size={10} />}
-                      </span>
-                    </td>
                     <td>
                       <strong style={{ color: "#fff" }}>{aluno.nome}</strong>
                     </td>
@@ -395,6 +355,55 @@ export default function AlunosPage() {
                         {anamneseLabel}
                       </span>
                     </td>
+                    <td style={{ textAlign: "right" }}>
+                      <div className={styles.desktopRowActions}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleIniciarAvaliacaoDireto(aluno);
+                          }}
+                          className={styles.desktopAvaliarBtn}
+                          disabled={isStartingAvaliacao}
+                          title="Iniciar Avaliação Física"
+                        >
+                          <FaHeartbeat /> Avaliar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/alunos/${aluno.id}`);
+                          }}
+                          className={styles.desktopIconBtn}
+                          title="Editar aluno"
+                        >
+                          <FaEdit size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAbrirModalStatus(aluno);
+                          }}
+                          className={styles.desktopIconBtn}
+                          title={isAtivo ? "Inativar aluno" : "Ativar aluno"}
+                        >
+                          {isAtivo ? <FaBan size={13} /> : <FaCheckCircle size={13} />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAbrirModalExcluir(aluno);
+                          }}
+                          className={`${styles.desktopIconBtn} ${styles.desktopIconBtnDanger}`}
+                          title="Excluir aluno"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })
@@ -415,6 +424,7 @@ export default function AlunosPage() {
           alunosFiltrados.map((aluno) => {
             const isSelected = aluno.id === alunoSelecionadoId;
             const isAtivo = aluno.status === "ATIVO";
+            const isKebabOpen = openKebabId === aluno.id;
 
             let anamneseLabel = "Pendente";
             let anamneseClass = styles.anamnesePending;
@@ -441,6 +451,73 @@ export default function AlunosPage() {
                       Matrícula: {aluno.matricula || "---"}
                     </span>
                   </div>
+
+                  {/* Menu Kebab (⋮) no canto superior direito — Progressive Disclosure */}
+                  <div className={styles.kebabWrapper}>
+                    <button
+                      type="button"
+                      className={styles.kebabButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenKebabId((prev) => (prev === aluno.id ? null : aluno.id));
+                      }}
+                      aria-label="Mais opções do aluno"
+                      title="Mais ações"
+                    >
+                      <FaEllipsisV size={15} />
+                    </button>
+
+                    {isKebabOpen && (
+                      <div
+                        className={styles.kebabDropdown}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className={styles.kebabItem}
+                          onClick={() => {
+                            setOpenKebabId(null);
+                            router.push(`/alunos/${aluno.id}`);
+                          }}
+                        >
+                          <FaEdit size={13} /> Editar Cadastro
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.kebabItem}
+                          onClick={() => {
+                            setOpenKebabId(null);
+                            handleAbrirModalStatus(aluno);
+                          }}
+                        >
+                          {isAtivo ? (
+                            <>
+                              <FaBan size={13} /> Inativar Aluno
+                            </>
+                          ) : (
+                            <>
+                              <FaCheckCircle size={13} /> Ativar Aluno
+                            </>
+                          )}
+                        </button>
+                        <div className={styles.kebabDivider} />
+                        <button
+                          type="button"
+                          className={`${styles.kebabItem} ${styles.kebabItemDanger}`}
+                          onClick={() => {
+                            setOpenKebabId(null);
+                            handleAbrirModalExcluir(aluno);
+                          }}
+                        >
+                          <FaTrash size={13} /> Excluir Aluno
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Badges compactos de Status e Anamnese */}
+                <div className={styles.mobileCardBadgesRow}>
                   <span
                     className={`${styles.statusBadge} ${
                       isAtivo ? styles.statusAtivo : styles.statusInativo
@@ -453,15 +530,13 @@ export default function AlunosPage() {
                     ></span>
                     {aluno.status}
                   </span>
-                </div>
 
-                <div className={styles.mobileCardMeta}>
-                  <span className={styles.mobileCardMetaLabel}>Anamnese:</span>
                   <span className={`${styles.anamneseBadge} ${anamneseClass}`}>
-                    {anamneseLabel}
+                    Anamnese: {anamneseLabel}
                   </span>
                 </div>
 
+                {/* Ação Principal Visível: Botão Verde "Avaliar" */}
                 <div className={styles.mobileCardFooter}>
                   <button
                     type="button"
@@ -473,40 +548,7 @@ export default function AlunosPage() {
                     disabled={isStartingAvaliacao}
                     title="Iniciar Avaliação Física"
                   >
-                    <FaHeartbeat /> Avaliar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/alunos/${aluno.id}`);
-                    }}
-                    className={styles.mobileEditBtn}
-                    title="Editar Aluno"
-                  >
-                    <FaEdit /> Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAbrirModalStatus(aluno);
-                    }}
-                    className={isAtivo ? styles.mobileInativarBtn : styles.mobileAtivarBtn}
-                    title={isAtivo ? "Inativar Aluno" : "Ativar Aluno"}
-                  >
-                    {isAtivo ? <FaBan size={12} /> : <FaCheckCircle size={12} />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAbrirModalExcluir(aluno);
-                    }}
-                    className={styles.mobileDeleteBtn}
-                    title="Excluir Aluno"
-                  >
-                    <FaTrash size={12} />
+                    <FaHeartbeat size={15} /> Avaliar
                   </button>
                 </div>
               </div>

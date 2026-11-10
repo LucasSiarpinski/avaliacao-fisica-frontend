@@ -161,7 +161,7 @@ export default function AvaliacoesPage() {
       />
 
       <div className={styles.container}>
-        {/* --- CABEÇALHO --- */}
+        {/* --- CABEÇALHO LIMPO --- */}
         <header className={styles.header}>
           <h1 className={styles.title}>Gerenciamento de Avaliações Físicas</h1>
           <div className={styles.headerActions}>
@@ -169,31 +169,10 @@ export default function AvaliacoesPage() {
               onClick={() => setIsModalOpen(true)}
               className={styles.newStudentButton}
             >
-              <FaPlus /> Nova Avaliação
+              <FaPlus /> + Nova Avaliação
             </button>
-          <button
-            onClick={handleEditar}
-            className={`${styles.actionButton} ${styles.editButton}`}
-            disabled={!selecionadoId}
-          >
-            <FaEdit /> Visualizar / Editar
-          </button>
-          <button
-            onClick={() => handleImprimir()}
-            className={`${styles.actionButton} ${styles.printButton}`}
-            disabled={!selecionadoId}
-          >
-            <FaPrint /> Emitir Laudo
-          </button>
-          <button
-            onClick={() => handleExcluir()}
-            className={`${styles.actionButton} ${styles.deleteButton}`}
-            disabled={!selecionadoId}
-          >
-            <FaTrash /> Excluir
-          </button>
-        </div>
-      </header>
+          </div>
+        </header>
 
       {/* --- BARRA DE BUSCA E FILTROS --- */}
       <div className={styles.searchWrapper}>
@@ -507,39 +486,40 @@ export default function AvaliacoesPage() {
                 </div>
 
                 <div className={styles.mobileCardFooter}>
-                  {completed && (
-                    <button
-                      type="button"
-                      className={styles.mobilePrintBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleImprimir(ava.id);
-                      }}
-                      title="Emitir laudo impresso sem precisar editar"
-                    >
-                      <FaPrint /> Emitir Laudo
-                    </button>
-                  )}
                   <button
                     type="button"
-                    className={styles.mobileOpenBtn}
+                    className={styles.mobilePrintBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImprimir(ava.id);
+                    }}
+                    title="Emitir laudo impresso"
+                  >
+                    <FaPrint size={15} /> Emitir Laudo
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.mobileIconEditBtn}
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/avaliacoes/${ava.id}`);
                     }}
+                    aria-label="Editar avaliação"
+                    title="Editar avaliação"
                   >
-                    <FaEdit /> {completed ? "Editar" : "Preencher"}
+                    <FaEdit size={16} />
                   </button>
                   <button
                     type="button"
-                    className={styles.mobileDeleteBtn}
+                    className={styles.mobileIconDeleteBtn}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExcluir(ava.id);
                     }}
+                    aria-label="Excluir avaliação"
                     title="Excluir avaliação"
                   >
-                    <FaTrash size={12} />
+                    <FaTrash size={15} />
                   </button>
                 </div>
               </div>
