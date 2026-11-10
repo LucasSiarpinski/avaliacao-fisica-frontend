@@ -922,6 +922,7 @@ export default function AvaliacaoWizardPage() {
                 type="date" 
                 value={avaliacao.dataAvaliacao ? avaliacao.dataAvaliacao.split("T")[0] : ""} 
                 disabled 
+                style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}
               />
             </div>
 
@@ -1760,6 +1761,7 @@ export default function AvaliacaoWizardPage() {
                 type="date" 
                 value={avaliacao.dataAvaliacao ? avaliacao.dataAvaliacao.split("T")[0] : ""} 
                 disabled 
+                style={{ width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}
               />
             </div>
 

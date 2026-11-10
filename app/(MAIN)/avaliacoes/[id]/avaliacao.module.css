@@ -68,6 +68,9 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.8rem;
+  max-width: 100%;
+  min-width: 0;
+  word-break: break-word;
 }
 
 .alunoMetaBadge {
@@ -79,7 +82,9 @@
   padding: 0.2rem 0.55rem;
   border-radius: 12px;
   margin: 0;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .statusBadgeConcluida {
@@ -399,6 +404,8 @@
 .formGroup textarea, 
 .formGroup select {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 0.75rem 1rem;
   background-color: #242c20;
   border: 1px solid #3c4936;
@@ -408,6 +415,23 @@
   font-family: inherit;
   box-sizing: border-box;
   transition: all 0.2s ease;
+}
+
+.formGroup input[type="date"] {
+  min-height: 44px;
+  max-width: 100%;
+  width: 100%;
+  display: block;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  color-scheme: dark;
+}
+
+.formGroup input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+  cursor: pointer;
+  padding: 4px;
 }
 
 .formGroup input:focus, 
@@ -1399,12 +1423,16 @@
   margin-bottom: 8pt;
   flex-wrap: wrap;
   gap: 8pt;
+  max-width: 100%;
 }
 
 .laudoPreviewOnScreen .printBrand {
   display: flex;
   align-items: center;
   gap: 10pt;
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .laudoPreviewOnScreen .printLogoBadge {
@@ -1435,17 +1463,23 @@
   display: flex;
   flex-direction: column;
   gap: 2pt;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .laudoPreviewOnScreen .printDocId {
   font-size: 9pt;
   font-weight: 700;
   color: #2e7d32;
+  word-break: break-word;
 }
 
 .laudoPreviewOnScreen .printDocDate {
   font-size: 7.8pt;
   color: #64748b;
+  word-break: break-word;
 }
 
 .laudoPreviewOnScreen .printDocTitleBanner {
@@ -1607,6 +1641,17 @@
     padding: 0.9rem;
     font-size: 8.5pt;
     overflow-x: auto;
+  }
+
+  .laudoPreviewOnScreen .printHeader {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .laudoPreviewOnScreen .printDocInfo {
+    text-align: left !important;
+    align-items: flex-start !important;
   }
 
   .laudoPreviewOnScreen .printKpiGrid {

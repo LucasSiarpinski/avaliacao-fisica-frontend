@@ -531,6 +531,9 @@
 .mobileCardMetaVal {
     color: #d1d5db;
     font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+    max-width: 65%;
 }
 
 .mobileCardMetrics {
