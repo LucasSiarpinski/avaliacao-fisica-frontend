@@ -1,8 +1,24 @@
 import { NextResponse } from "next/server";
+import { createRequire } from "module";
 import PDFDocument from "pdfkit";
+import "pdfkit/standard-fonts/Helvetica";
+import "pdfkit/standard-fonts/HelveticaBold";
+import "pdfkit/standard-fonts/HelveticaOblique";
+import "pdfkit/standard-fonts/HelveticaBoldOblique";
 import nodemailer from "nodemailer";
 
 export const runtime = "nodejs";
+
+// Garante que o Node File Tracer (NFT) da Vercel inclua os módulos CJS das fontes padrão do PDFKit no bundle serverless (/var/task)
+try {
+  const req = createRequire(import.meta.url);
+  req("pdfkit/standard-fonts/Helvetica");
+  req("pdfkit/standard-fonts/HelveticaBold");
+  req("pdfkit/standard-fonts/HelveticaOblique");
+  req("pdfkit/standard-fonts/HelveticaBoldOblique");
+} catch {
+  // Ignorado se o ambiente resolver apenas via ESM
+}
 
 function maskCPF(cpf) {
   if (!cpf) return "Não informado";
@@ -373,6 +389,109 @@ function gerarPdfLaudoBuffer(avaliacao, historicoAvaliacoes = []) {
   });
 }
 
+// Fallback nativo PDF 1.4 (zero dependências externas de arquivos de fonte) caso o serverless da Vercel bloqueie acesso a standard-fonts
+function gerarPdfNativoFallback(avaliacao, historicoAvaliacoes = []) {
+  const aluno = avaliacao?.aluno || {};
+  const avaliador = avaliacao?.avaliador || {};
+  const res = avaliacao?.resultados || {};
+  const imc = res.imc || null;
+  const rcq = res.rcq || null;
+  const comp = res.composicao || {};
+  const tf = res.testesFisicos || {};
+  const idade = calcularIdadeValida(aluno.dataNasc);
+  const generoLabel = String(aluno.genero || "M").toUpperCase().startsWith("F") ? "Feminino" : "Masculino";
+  const dataColeta = avaliacao?.dataAvaliacao
+    ? new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR")
+    : new Date().toLocaleDateString("pt-BR");
+
+  const esc = (str) => {
+    const clean = String(str ?? "")
+      .replace(/—|–/g, "-")
+      .replace(/•/g, "*")
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'");
+    let out = "";
+    for (let i = 0; i < clean.length; i++) {
+      const code = clean.charCodeAt(i);
+      if (clean[i] === "(" || clean[i] === ")" || clean[i] === "\\") {
+        out += "\\" + clean[i];
+      } else if (code >= 32 && code <= 126) {
+        out += clean[i];
+      } else if (code >= 160 && code <= 255) {
+        out += "\\" + code.toString(8).padStart(3, "0");
+      } else {
+        out += " ";
+      }
+    }
+    return out;
+  };
+
+  const lines = [
+    { bold: true, size: 13, text: "UNOESC - UNIVERSIDADE DO OESTE DE SANTA CATARINA" },
+    { bold: false, size: 9, text: "Sistema de Avaliacao Fisica e Cineantropometria - Laudo Tecnico Oficial" },
+    { bold: true, size: 9.5, text: `Laudo No #${avaliacao?.id || 1}  |  Data da coleta: ${dataColeta}` },
+    { bold: true, size: 11, text: "--------------------------------------------------------------------------------" },
+    { bold: true, size: 10, text: "1. DADOS DE IDENTIFICACAO DO AVALIADO" },
+    { bold: false, size: 9, text: `Nome: ${aluno.nome || "---"}   |   Matricula: ${aluno.matricula || "---"}` },
+    { bold: false, size: 9, text: `Idade: ${idade ? `${idade} anos` : "Nao informada"}   |   Genero: ${generoLabel}   |   CPF: ${maskCPF(aluno.cpf)}` },
+    { bold: false, size: 9, text: `Telefone: ${maskPhone(aluno.telefone)}   |   Avaliador: ${avaliador.name || "Administrador"}` },
+    { bold: true, size: 10, text: "2. ANAMNESE E HISTORICO DE SAUDE" },
+    { bold: false, size: 9, text: `Historico medico: ${avaliacao?.historicoMedico || "Nao informado"}` },
+    { bold: false, size: 9, text: `Medicamentos em uso: ${avaliacao?.medicamentosEmUso || "Nao informado"}` },
+    { bold: false, size: 9, text: `Objetivos / Observacoes: ${avaliacao?.objetivos || "Nao informado"}` },
+    { bold: true, size: 10, text: "3. RESUMO DA COMPOSICAO CORPORAL" },
+    { bold: false, size: 9, text: `Estatura: ${avaliacao?.altura || "--"} m   |   Massa corporal: ${avaliacao?.peso ? `${avaliacao.peso} kg` : "--"}   |   IMC: ${imc ? `${imc.valor} kg/m2 (${imc.classificacao})` : "--"}` },
+    { bold: false, size: 9, text: `RCQ: ${rcq ? `${rcq.valor} (${rcq.risco})` : "--"}   |   % Gordura (Pollock 7 / Siri): ${comp.percGordura ? `${comp.percGordura}% (${comp.classificacaoGordura || ""})` : "--"}` },
+    { bold: false, size: 9, text: `Massa Magra: ${comp.massaMagra ? `${comp.massaMagra} kg` : "--"}   |   Massa Gorda: ${comp.massaGorda ? `${comp.massaGorda} kg` : "--"}   |   Densidade: ${comp.densidadeCorporal ? `${comp.densidadeCorporal} g/cm3` : "--"}` },
+    { bold: true, size: 10, text: "4. PERIMETRIA E CIRCUNFERENCIAS CORPORAIS (cm)" },
+    { bold: false, size: 9, text: `Cintura: ${avaliacao?.circCintura ?? "--"} cm  |  Abdomen: ${avaliacao?.circAbdomem ?? "--"} cm  |  Quadril: ${avaliacao?.circQuadril ?? "--"} cm` },
+    { bold: false, size: 9, text: `Braco relaxado direito: ${avaliacao?.circBracoRelaxadoD ?? "--"} cm  |  Braco relaxado esquerdo: ${avaliacao?.circBracoRelaxadoE ?? "--"} cm` },
+    { bold: true, size: 10, text: "5. DOBRAS CUTANEAS (mm) - PROTOCOLO DE JACKSON & POLLOCK (7 DOBRAS)" },
+    { bold: false, size: 9, text: `Triceps: ${avaliacao?.dcTriceps ?? "--"} mm  |  Subescapular: ${avaliacao?.dcSubescapular ?? "--"} mm  |  Peitoral: ${avaliacao?.dcPeitoral ?? "--"} mm  |  Axilar media: ${avaliacao?.dcAxilarMedia ?? "--"} mm` },
+    { bold: false, size: 9, text: `Supra-iliaca: ${avaliacao?.dcSuprailiaca ?? "--"} mm  |  Abdominal: ${avaliacao?.dcAbdominal ?? "--"} mm  |  Coxa: ${avaliacao?.dcCoxa ?? "--"} mm  |  Soma 7 DC: ${comp.somaDobras ? `${comp.somaDobras} mm` : "--"}` },
+    { bold: true, size: 10, text: "6. TESTES FISICOS NEUROMOTORES" },
+    { bold: false, size: 9, text: `Resistencia abdominal (1 min): ${tf.abdominal ? `${tf.abdominal.repeticoes} rep - ${tf.abdominal.classificacao} (${tf.abdominal.pontuacao} pts)` : "Nao avaliado"}` },
+    { bold: false, size: 9, text: `Preensao manual (dinamometria): ${tf.preensao ? `D: ${tf.preensao.direita ?? "--"} kgf / E: ${tf.preensao.esquerda ?? "--"} kgf - ${tf.preensao.classificacao}` : "Nao avaliado"}` },
+    { bold: true, size: 10, text: "7. PARECER TECNICO DO AVALIADOR" },
+    { bold: false, size: 9, text: avaliacao?.observacoes || "Recomenda-se o acompanhamento periodico da composicao corporal conforme planejamento." },
+    { bold: true, size: 9, text: `Avaliador Responsavel: ${avaliador.name || "Administrador"}   |   Codigo: UNOESC-LAUDO-${avaliacao?.id || 1}` },
+  ];
+
+  let y = 790;
+  const ops = ["BT"];
+  for (const l of lines) {
+    const fontKey = l.bold ? "/F2" : "/F1";
+    y -= l.bold ? 20 : 15;
+    ops.push(`${fontKey} ${l.size} Tf`);
+    ops.push(`1 0 0 1 42 ${y} Tm (${esc(l.text)}) Tj`);
+  }
+  ops.push("ET");
+  const streamContent = ops.join("\n");
+
+  const objs = [
+    "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+    "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj\n",
+    "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n",
+    "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\nendobj\n",
+    `6 0 obj\n<< /Length ${Buffer.byteLength(streamContent, "latin1")} >>\nstream\n${streamContent}\nendstream\nendobj\n`,
+  ];
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  for (const o of objs) {
+    offsets.push(Buffer.byteLength(pdf, "latin1"));
+    pdf += o;
+  }
+  const xrefPos = Buffer.byteLength(pdf, "latin1");
+  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+  for (let i = 1; i < offsets.length; i++) {
+    pdf += `${String(offsets[i]).padStart(10, "0")} 00000 n \n`;
+  }
+  pdf += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF`;
+  return Buffer.from(pdf, "latin1");
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -393,7 +512,13 @@ export async function POST(request) {
       );
     }
 
-    const pdfBuffer = await gerarPdfLaudoBuffer(avaliacao, historicoAvaliacoes || []);
+    let pdfBuffer;
+    try {
+      pdfBuffer = await gerarPdfLaudoBuffer(avaliacao, historicoAvaliacoes || []);
+    } catch (pdfErr) {
+      console.warn("Fallback PDF nativo ativado devido a erro de fonte no ambiente serverless:", pdfErr.message);
+      pdfBuffer = gerarPdfNativoFallback(avaliacao, historicoAvaliacoes || []);
+    }
 
     const host = (smtpConfig?.host || process.env.SMTP_HOST || "smtp.gmail.com").trim();
     let user = (

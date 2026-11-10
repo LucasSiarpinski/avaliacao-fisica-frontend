@@ -11,7 +11,10 @@ import {
   LuCheck, 
   LuInfo,
   LuSave,
-  LuMail
+  LuMail,
+  LuEye,
+  LuEyeOff,
+  LuShieldAlert
 } from "react-icons/lu";
 import { useAuth } from "../../../contexts/AuthContext";
 import styles from "./configuracoes.module.css";
@@ -19,8 +22,10 @@ import styles from "./configuracoes.module.css";
 export default function ConfiguracoesPage() {
   const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
 
   const [viewMode, setViewMode] = useState("wizard"); // "wizard" ou "single"
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
   const [smtpConfig, setSmtpConfig] = useState({
     host: "smtp.gmail.com",
     port: "587",
@@ -180,67 +185,111 @@ export default function ConfiguracoesPage() {
           </button>
         </section>
 
-        {/* Card de Configuração de E-mail Remetente (SMTP) */}
-        <section className={styles.card}>
-          <div className={styles.cardHeader}>
-            <LuMail /> E-mail de Origem (SMTP) para Envio de Laudos em PDF
-          </div>
-          <p style={{ color: "#aaa", fontSize: "0.9rem", margin: 0, lineHeight: 1.5 }}>
-            Configure aqui a conta de e-mail remetente (ex.: Gmail com <strong>Senha de App de 16 caracteres</strong>) para que o sistema envie automaticamente o Laudo em PDF anexado para o aluno.
-          </p>
-
-          <form onSubmit={handleSalvarSmtp} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem", marginTop: "0.5rem" }}>
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>Servidor SMTP (Host)</label>
-              <input
-                type="text"
-                value={smtpConfig.host}
-                onChange={(e) => setSmtpConfig((prev) => ({ ...prev, host: e.target.value }))}
-                placeholder="smtp.gmail.com"
-                style={{ width: "100%", padding: "0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
-              />
+        {/* Card de Configuração de E-mail Remetente (SMTP) — EXCLUSIVO ADMIN (RBAC) */}
+        {isAdmin && (
+          <section className={styles.card}>
+            <div className={styles.cardHeader} style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                <LuMail /> E-mail de Origem (SMTP) para Envio de Laudos em PDF
+              </span>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  backgroundColor: "rgba(255, 193, 7, 0.15)",
+                  color: "#ffc107",
+                  border: "1px solid rgba(255, 193, 7, 0.35)",
+                  padding: "0.2rem 0.6rem",
+                  borderRadius: "12px",
+                }}
+              >
+                <LuShieldAlert size={13} /> Exclusivo Admin
+              </span>
             </div>
+            <p style={{ color: "#aaa", fontSize: "0.9rem", margin: 0, lineHeight: 1.5 }}>
+              Configure aqui a conta global de e-mail remetente (ex.: Gmail com <strong>Senha de App de 16 caracteres</strong>) para que o sistema envie automaticamente o Laudo em PDF anexado para o aluno. Esta seção é restrita a usuários com permissão <strong>ADMIN</strong>.
+            </p>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>Porta SMTP</label>
-              <input
-                type="number"
-                value={smtpConfig.port}
-                onChange={(e) => setSmtpConfig((prev) => ({ ...prev, port: e.target.value }))}
-                placeholder="587"
-                style={{ width: "100%", padding: "0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
-              />
-            </div>
+            <form onSubmit={handleSalvarSmtp} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem", marginTop: "0.5rem" }} autoComplete="off">
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Servidor SMTP (Host)</label>
+                <input
+                  type="text"
+                  value={smtpConfig.host}
+                  onChange={(e) => setSmtpConfig((prev) => ({ ...prev, host: e.target.value }))}
+                  placeholder="smtp.gmail.com"
+                  style={{ width: "100%", minHeight: "44px", padding: "0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
+                />
+              </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>E-mail de Origem (Remetente)</label>
-              <input
-                type="email"
-                value={smtpConfig.user}
-                onChange={(e) => setSmtpConfig((prev) => ({ ...prev, user: e.target.value }))}
-                placeholder="seuemail@gmail.com"
-                style={{ width: "100%", padding: "0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
-              />
-            </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Porta SMTP</label>
+                <input
+                  type="number"
+                  value={smtpConfig.port}
+                  onChange={(e) => setSmtpConfig((prev) => ({ ...prev, port: e.target.value }))}
+                  placeholder="587"
+                  style={{ width: "100%", minHeight: "44px", padding: "0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
+                />
+              </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>Senha de App (16 letras) / Senha SMTP</label>
-              <input
-                type="password"
-                value={smtpConfig.pass}
-                onChange={(e) => setSmtpConfig((prev) => ({ ...prev, pass: e.target.value }))}
-                placeholder="xxxx xxxx xxxx xxxx"
-                style={{ width: "100%", padding: "0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
-              />
-            </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>E-mail de Origem (Remetente)</label>
+                <input
+                  type="email"
+                  value={smtpConfig.user}
+                  onChange={(e) => setSmtpConfig((prev) => ({ ...prev, user: e.target.value }))}
+                  placeholder="seuemail@gmail.com"
+                  autoComplete="new-password"
+                  style={{ width: "100%", minHeight: "44px", padding: "0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
+                />
+              </div>
 
-            <div style={{ gridColumn: "1 / -1" }}>
-              <button type="submit" className={styles.saveButton}>
-                <LuSave /> Salvar E-mail Remetente (SMTP)
-              </button>
-            </div>
-          </form>
-        </section>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Senha de App (16 letras) / Senha SMTP</label>
+                <div style={{ position: "relative", display: "flex", alignItems: "center", width: "100%" }}>
+                  <input
+                    type={showSmtpPass ? "text" : "password"}
+                    value={smtpConfig.pass}
+                    onChange={(e) => setSmtpConfig((prev) => ({ ...prev, pass: e.target.value }))}
+                    placeholder="xxxx xxxx xxxx xxxx"
+                    autoComplete="new-password"
+                    style={{ width: "100%", minHeight: "44px", padding: "0.65rem 2.6rem 0.65rem 0.85rem", borderRadius: "8px", border: "1px solid #3c4936", background: "#1c2219", color: "#fff" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSmtpPass((prev) => !prev)}
+                    title={showSmtpPass ? "Ocultar senha SMTP" : "Visualizar senha SMTP"}
+                    style={{
+                      position: "absolute",
+                      right: "0.65rem",
+                      background: "transparent",
+                      border: "none",
+                      color: "#9ca3af",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0.25rem",
+                    }}
+                  >
+                    {showSmtpPass ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ gridColumn: "1 / -1" }}>
+                <button type="submit" className={styles.saveButton}>
+                  <LuSave /> Salvar E-mail Remetente (SMTP)
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
 
         {/* Card de Informações do Sistema */}
         <section className={styles.card}>

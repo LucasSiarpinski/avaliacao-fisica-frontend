@@ -2690,7 +2690,7 @@ export default function AvaliacaoWizardPage() {
             </div>
 
             <div className={styles.emailModalBody}>
-              {/* Banner informando que o PDF é anexado automaticamente + botão de configurar remetente */}
+              {/* Banner limpo informando que o PDF é anexado automaticamente (configurações SMTP restritas ao Admin em Configurações) */}
               <div
                 style={{
                   background: "#1c2618",
@@ -2709,111 +2709,8 @@ export default function AvaliacaoWizardPage() {
                   <span style={{ color: "#a4d864" }}>
                     Laudo_Avaliacao_Fisica_{avaliacao.id}.pdf
                   </span>
-                  <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: "2px" }}>
-                    Remetente:{" "}
-                    {smtpConfig.user ? (
-                      <strong style={{ color: "#4ade80" }}>{smtpConfig.user}</strong>
-                    ) : (
-                      <span style={{ color: "#fbbf24" }}>
-                        Padrão do servidor (.env) ou configure seu e-mail ao lado
-                      </span>
-                    )}
-                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowSmtpPanel((prev) => !prev)}
-                  style={{
-                    background: "#263222",
-                    border: "1px solid #5d812e",
-                    color: "#a4d864",
-                    padding: "0.4rem 0.75rem",
-                    borderRadius: "6px",
-                    fontSize: "0.8rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  ⚙️ {showSmtpPanel ? "Ocultar Config. E-mail" : "Configurar E-mail de Origem"}
-                </button>
               </div>
-
-              {showSmtpPanel && (
-                <div
-                  style={{
-                    background: "#141a12",
-                    border: "1px solid #3b522f",
-                    borderRadius: "8px",
-                    padding: "1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.75rem",
-                  }}
-                >
-                  <div style={{ fontSize: "0.82rem", color: "#a4d864", fontWeight: 700 }}>
-                    Configurar E-mail Remetente (SMTP) — envia o PDF diretamente para a caixa de entrada
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "0.6rem" }}>
-                    <div className={styles.formGroup}>
-                      <label>Servidor SMTP</label>
-                      <input
-                        type="text"
-                        value={smtpConfig.host}
-                        onChange={(e) => setSmtpConfig({ ...smtpConfig, host: e.target.value })}
-                        placeholder="smtp.gmail.com"
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Porta</label>
-                      <input
-                        type="number"
-                        value={smtpConfig.port}
-                        onChange={(e) => setSmtpConfig({ ...smtpConfig, port: e.target.value })}
-                        placeholder="587"
-                      />
-                    </div>
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label>Seu E-mail Remetente (ex: Gmail)</label>
-                    <input
-                      type="email"
-                      value={smtpConfig.user}
-                      onChange={(e) => setSmtpConfig({ ...smtpConfig, user: e.target.value })}
-                      placeholder="seuemail@gmail.com"
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label>Senha de App do E-mail (16 dígitos no Gmail)</label>
-                    <input
-                      type="password"
-                      value={smtpConfig.pass}
-                      onChange={(e) => setSmtpConfig({ ...smtpConfig, pass: e.target.value })}
-                      placeholder="xxxx xxxx xxxx xxxx"
-                    />
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
-                    <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                      💡 No Gmail, gere em: Conta Google ➔ Segurança ➔ Verificação em 2 etapas ➔ Senhas de app.
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleSaveSmtpInline}
-                      style={{
-                        background: "#a4d864",
-                        color: "#141a12",
-                        border: "none",
-                        borderRadius: "6px",
-                        padding: "0.45rem 0.9rem",
-                        fontWeight: 700,
-                        fontSize: "0.82rem",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Salvar E-mail Remetente
-                    </button>
-                  </div>
-                </div>
-              )}
 
               <div className={styles.formGroup}>
                 <label htmlFor="emailDestinoInput">E-mail do Destinatário (Aluno) *</label>
