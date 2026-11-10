@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import styles from '../professores.module.css';
 import toast from 'react-hot-toast';
 import api from '../../../../services/api';
@@ -23,6 +24,8 @@ export default function FormProfessorPage() {
         status: 'ACTIVE',
         campusId: '',
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [fieldsUnlocked, setFieldsUnlocked] = useState(isEditing);
     const [campus, setCampus] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pageLoading, setPageLoading] = useState(isEditing);
@@ -184,6 +187,8 @@ export default function FormProfessorPage() {
                     name="email" 
                     value={formData.email} 
                     onChange={handleChange} 
+                    onFocus={() => setFieldsUnlocked(true)}
+                    readOnly={!isEditing && !fieldsUnlocked}
                     className={styles.formInput} 
                     type="email" 
                     placeholder="email@unoesc.edu.br"
@@ -192,16 +197,41 @@ export default function FormProfessorPage() {
                 />
 
                 <label className={styles.formLabel}>Senha:</label>
-                <input 
-                    name="password" 
-                    value={formData.password} 
-                    onChange={handleChange} 
-                    className={styles.formInput} 
-                    type="password"
-                    autoComplete="new-password"
-                    required={!isEditing}
-                    placeholder={isEditing ? "Deixe em branco para não alterar" : "Senha obrigatória"}
-                />
+                <div style={{ position: "relative", display: "flex", alignItems: "center", width: "100%" }}>
+                    <input 
+                        name="password" 
+                        value={formData.password} 
+                        onChange={handleChange} 
+                        onFocus={() => setFieldsUnlocked(true)}
+                        readOnly={!isEditing && !fieldsUnlocked}
+                        className={styles.formInput} 
+                        style={{ width: "100%", paddingRight: "2.75rem" }}
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        required={!isEditing}
+                        placeholder={isEditing ? "Deixe em branco para não alterar" : "Senha obrigatória"}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        title={showPassword ? "Ocultar senha" : "Visualizar senha"}
+                        style={{
+                            position: "absolute",
+                            right: "0.75rem",
+                            background: "transparent",
+                            border: "none",
+                            color: "#9ca3af",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: "0.25rem",
+                            fontSize: "1.1rem",
+                        }}
+                    >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                </div>
 
                 <label className={styles.formLabel}>Nível de Acesso (Permissão):</label>
                 <select name="role" value={formData.role} onChange={handleChange} className={styles.formSelect}>
