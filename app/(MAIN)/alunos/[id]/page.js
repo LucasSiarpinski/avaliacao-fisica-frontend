@@ -91,6 +91,7 @@ export default function AlunoDetalhePage() {
     peso: "",
     objetivos: "",
     historicoMedico: "",
+    lesoes: "",
     medicamentosEmUso: "",
     habitos: "",
     observacoes: "",
@@ -254,11 +255,29 @@ export default function AlunoDetalhePage() {
           const dataFormatada = response.data.dataNasc
             ? response.data.dataNasc.split("T")[0]
             : "";
+          const rawHist = response.data.historicoMedico || "";
+          let doencasExtraidas = rawHist;
+          let lesoesExtraidas = "";
+          if (rawHist.includes(" || Lesões: ")) {
+            const parts = rawHist.split(" || Lesões: ");
+            doencasExtraidas = parts[0].replace(/^Doenças:\s*/i, "").trim();
+            lesoesExtraidas = (parts[1] || "").trim();
+          } else if (
+            rawHist &&
+            /^(cotovelo|joelho|ombro|coluna|lombar|tornozelo|punho|quadril|cervical|tendinite|bursite|entorse|fratura|cirurgia|h[eé]rnia|les[aã]o)$/i.test(
+              rawHist.trim()
+            )
+          ) {
+            lesoesExtraidas = rawHist.trim();
+            doencasExtraidas = "Nenhuma patologia crônica relatada";
+          }
           setAluno({
             ...response.data,
             dataNasc: dataFormatada,
             cpf: maskCPF(response.data.cpf || ""),
             telefone: maskPhone(response.data.telefone || ""),
+            historicoMedico: doencasExtraidas,
+            lesoes: lesoesExtraidas,
           });
         } catch (error) {
           toast.error("Não foi possível carregar os dados do aluno.");
@@ -342,14 +361,32 @@ export default function AlunoDetalhePage() {
       }
     }
 
+    // Validação estruturada de Anamnese (evita respostas de uma única palavra solta como "Crescer" ou "Cotovelo")
+    if (aluno.objetivos && aluno.objetivos.trim().length > 0 && aluno.objetivos.trim().length < 8) {
+      toast.error(
+        "Na aba Anamnese, descreva o Objetivo do aluno de forma mais específica (ex: 'Hipertrofia muscular e ganho de força')."
+      );
+      setActiveTab("avaliacoes");
+      return;
+    }
+
     setIsSaving(true);
     try {
+      const historicoCombinado = aluno.lesoes?.trim()
+        ? `${aluno.historicoMedico?.trim() || "Nenhuma patologia crônica relatada"} || Lesões: ${aluno.lesoes.trim()}`
+        : aluno.historicoMedico?.trim() || "";
+      const payloadToSave = {
+        ...aluno,
+        historicoMedico: historicoCombinado,
+      };
+      delete payloadToSave.lesoes;
+
       if (isCreating) {
-        const response = await api.post("/api/alunos", aluno);
+        const response = await api.post("/api/alunos", payloadToSave);
         toast.success("Aluno cadastrado com sucesso!");
         router.push(`/alunos/${response.data.id}`);
       } else {
-        await api.put(`/api/alunos/${id}`, aluno);
+        await api.put(`/api/alunos/${id}`, payloadToSave);
         toast.success("Dados do aluno atualizados com sucesso!");
       }
     } catch (error) {
@@ -961,54 +998,174 @@ export default function AlunoDetalhePage() {
         )}
 
         {activeTab === "avaliacoes" && (
-          // Reutilizamos a classe formGrid para manter o layout
           <div className={styles.formGrid}>
-            
-            {/* --- SEÇÃO DE ANAMNESE (MOVIDA PARA CÁ) --- */}
-            <h3 className={styles.formSectionTitle}>Anamnese</h3>
+            <h3 className={styles.formSectionTitle}>Questionário de Anamnese e Histórico de Saúde</h3>
+
             <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-              <label htmlFor="objetivos">Objetivos</label>
+              <label htmlFor="objetivos">
+                Objetivos Principais com o Treinamento *
+              </label>
+              <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
+                {[
+                  "Hipertrofia muscular e ganho de força",
+                  "Redução do percentual de gordura e emagrecimento",
+                  "Condicionamento cardiorrespiratório e saúde geral",
+                  "Reabilitação física e fortalecimento articular",
+                ].map((sug) => (
+                  <button
+                    key={sug}
+                    type="button"
+                    onClick={() =>
+                      setAluno((prev) => ({
+                        ...prev,
+                        objetivos: prev.objetivos
+                          ? `${prev.objetivos.replace(/;\s*$/, "")}; ${sug}`
+                          : sug,
+                      }))
+                    }
+                    style={{
+                      background: "#1f291c",
+                      border: "1px solid #3c4f35",
+                      color: "#a4d864",
+                      borderRadius: "6px",
+                      padding: "0.25rem 0.6rem",
+                      fontSize: "0.75rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    + {sug}
+                  </button>
+                ))}
+              </div>
               <textarea
                 id="objetivos"
                 name="objetivos"
+                rows={2}
+                placeholder="Descreva os objetivos estruturados do aluno (ex: Hipertrofia muscular, redução de gordura corporal e melhora postural)..."
                 value={aluno.objetivos || ""}
                 onChange={handleChange}
               ></textarea>
             </div>
+
             <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-              <label htmlFor="habitos">Hábitos (fumante, álcool, etc.)</label>
+              <label htmlFor="lesoes">
+                Lesões, Cirurgias ou Limitações Osteomioarticulares
+              </label>
+              <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
+                {[
+                  "Nenhuma lesão ou limitação articular relatada",
+                  "Desconforto articular em cotovelo/ombro",
+                  "Condromalácia / desconforto em joelho",
+                  "Lombalgia / desconforto na coluna lombar",
+                ].map((sug) => (
+                  <button
+                    key={sug}
+                    type="button"
+                    onClick={() =>
+                      setAluno((prev) => ({
+                        ...prev,
+                        lesoes: sug,
+                      }))
+                    }
+                    style={{
+                      background: "#1f291c",
+                      border: "1px solid #3c4f35",
+                      color: "#cbd5e1",
+                      borderRadius: "6px",
+                      padding: "0.25rem 0.6rem",
+                      fontSize: "0.75rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    + {sug}
+                  </button>
+                ))}
+              </div>
               <textarea
-                id="habitos"
-                name="habitos"
-                value={aluno.habitos || ""}
+                id="lesoes"
+                name="lesoes"
+                rows={2}
+                placeholder="Informe lesões articulares, musculares ou cirurgias prévias (ex: Tendinite no cotovelo direito, reconstrução de LCA, ou 'Nenhuma lesão relatada')..."
+                value={aluno.lesoes || ""}
                 onChange={handleChange}
               ></textarea>
             </div>
+
             <div className={`${styles.formGroup} ${styles.fullWidth}`}>
               <label htmlFor="historicoMedico">
-                Histórico Médico (lesões, cirurgias, doenças)
+                Histórico de Doenças Crônicas / Patologias Diagnosticadas
               </label>
+              <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
+                {[
+                  "Nenhuma patologia crônica diagnosticada",
+                  "Hipertensão arterial controlada",
+                  "Diabetes mellitus / resistência à insulina",
+                  "Asma / bronquite alérgica",
+                ].map((sug) => (
+                  <button
+                    key={sug}
+                    type="button"
+                    onClick={() =>
+                      setAluno((prev) => ({
+                        ...prev,
+                        historicoMedico: sug,
+                      }))
+                    }
+                    style={{
+                      background: "#1f291c",
+                      border: "1px solid #3c4f35",
+                      color: "#cbd5e1",
+                      borderRadius: "6px",
+                      padding: "0.25rem 0.6rem",
+                      fontSize: "0.75rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    + {sug}
+                  </button>
+                ))}
+              </div>
               <textarea
                 id="historicoMedico"
                 name="historicoMedico"
+                rows={2}
+                placeholder="Informe doenças cardiovasculares, metabólicas ou respiratórias (ex: Hipertensão, diabetes, dislipidemia, ou 'Nenhuma patologia crônica relatada')..."
                 value={aluno.historicoMedico || ""}
                 onChange={handleChange}
               ></textarea>
             </div>
+
             <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-              <label htmlFor="medicamentosEmUso">Medicamentos em Uso</label>
+              <label htmlFor="medicamentosEmUso">Medicamentos de Uso Contínuo</label>
               <textarea
                 id="medicamentosEmUso"
                 name="medicamentosEmUso"
+                rows={2}
+                placeholder="Informe medicamentos em uso e dosagem (ex: Losartana 50mg, ou 'Não utiliza medicamentos contínuos')..."
                 value={aluno.medicamentosEmUso || ""}
                 onChange={handleChange}
               ></textarea>
             </div>
+
             <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-              <label htmlFor="observacoes">Observações Gerais</label>
+              <label htmlFor="habitos">Prática de Exercícios e Hábitos de Vida (Sono, Tabagismo, Álcool, Rotina)</label>
+              <textarea
+                id="habitos"
+                name="habitos"
+                rows={2}
+                placeholder="Ex: Pratica musculação 4x/semana, não tabagista, consumo social de álcool, sono de 7h/noite..."
+                value={aluno.habitos || ""}
+                onChange={handleChange}
+              ></textarea>
+            </div>
+
+            <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+              <label htmlFor="observacoes">Observações Clínicas Adicionais</label>
               <textarea
                 id="observacoes"
                 name="observacoes"
+                rows={2}
+                placeholder="Observações complementares da triagem clínica..."
                 value={aluno.observacoes || ""}
                 onChange={handleChange}
               ></textarea>

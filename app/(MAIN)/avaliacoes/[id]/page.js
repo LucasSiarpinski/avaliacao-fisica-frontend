@@ -71,6 +71,7 @@ export default function AvaliacaoWizardPage() {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailDestino, setEmailDestino] = useState("");
   const [emailAssunto, setEmailAssunto] = useState("");
+  const [emailMensagem, setEmailMensagem] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showSmtpPanel, setShowSmtpPanel] = useState(false);
   const [smtpConfig, setSmtpConfig] = useState({
@@ -148,8 +149,63 @@ export default function AvaliacaoWizardPage() {
       const response = await api.get(`/api/avaliacoes/${id}`);
       const data = response.data;
       const tfSalvos = data.resultados?.testesFisicos || {};
+      const perimSalva = data.resultados?.perimetriaInferior || {};
+      const anamSalva = data.resultados?.anamneseComplementar || {};
+
+      // Separação inteligente de Histórico de Doenças vs Lesões
+      const rawHist = data.historicoMedico || "";
+      let doencasExtraidas = rawHist;
+      let lesoesExtraidas = anamSalva.lesoes || "";
+      if (rawHist.includes(" || Lesões: ")) {
+        const parts = rawHist.split(" || Lesões: ");
+        doencasExtraidas = parts[0].replace(/^Doenças:\s*/i, "").trim();
+        if (!lesoesExtraidas) lesoesExtraidas = (parts[1] || "").trim();
+      } else if (
+        !lesoesExtraidas &&
+        rawHist &&
+        /^(cotovelo|joelho|ombro|coluna|lombar|tornozelo|punho|quadril|cervical|tendinite|bursite|entorse|fratura|cirurgia|h[eé]rnia|les[aã]o)$/i.test(
+          rawHist.trim()
+        )
+      ) {
+        lesoesExtraidas = `Histórico articular/muscular em ${rawHist.trim().toLowerCase()}`;
+        doencasExtraidas = "Nenhuma patologia crônica relatada";
+      }
+
+      let objetivosNormalizados = data.objetivos || "";
+      if (/^crescer$/i.test(objetivosNormalizados.trim())) {
+        objetivosNormalizados = "Hipertrofia muscular (ganho de massa magra)";
+      }
+
       setAvaliacao({
         ...data,
+        historicoMedico: doencasExtraidas,
+        lesoes: lesoesExtraidas,
+        objetivos: objetivosNormalizados,
+        registroAvaliador: data.resultados?.registroAvaliador || "",
+        circCoxaProximalD:
+          perimSalva.circCoxaProximalD !== undefined && perimSalva.circCoxaProximalD !== null
+            ? String(perimSalva.circCoxaProximalD)
+            : "",
+        circCoxaProximalE:
+          perimSalva.circCoxaProximalE !== undefined && perimSalva.circCoxaProximalE !== null
+            ? String(perimSalva.circCoxaProximalE)
+            : "",
+        circCoxaMedialD:
+          perimSalva.circCoxaMedialD !== undefined && perimSalva.circCoxaMedialD !== null
+            ? String(perimSalva.circCoxaMedialD)
+            : "",
+        circCoxaMedialE:
+          perimSalva.circCoxaMedialE !== undefined && perimSalva.circCoxaMedialE !== null
+            ? String(perimSalva.circCoxaMedialE)
+            : "",
+        circPanturrilhaD:
+          perimSalva.circPanturrilhaD !== undefined && perimSalva.circPanturrilhaD !== null
+            ? String(perimSalva.circPanturrilhaD)
+            : "",
+        circPanturrilhaE:
+          perimSalva.circPanturrilhaE !== undefined && perimSalva.circPanturrilhaE !== null
+            ? String(perimSalva.circPanturrilhaE)
+            : "",
         resistenciaAbdominal:
           tfSalvos.resistenciaAbdominal !== undefined && tfSalvos.resistenciaAbdominal !== null
             ? String(tfSalvos.resistenciaAbdominal)
@@ -306,7 +362,10 @@ export default function AvaliacaoWizardPage() {
       parseFloat(avaliacao.circCintura) > 0 || 
       parseFloat(avaliacao.circAbdomem) > 0 || 
       parseFloat(avaliacao.circQuadril) > 0 ||
-      parseFloat(avaliacao.circBracoRelaxadoD) > 0
+      parseFloat(avaliacao.circBracoRelaxadoD) > 0 ||
+      parseFloat(avaliacao.circCoxaProximalD) > 0 ||
+      parseFloat(avaliacao.circCoxaMedialD) > 0 ||
+      parseFloat(avaliacao.circPanturrilhaD) > 0
     );
     const step2 = p2Filled ? "green" : p2Partial ? "yellow" : "gray";
 
@@ -325,17 +384,46 @@ export default function AvaliacaoWizardPage() {
     if (!avaliacao) return false;
     setIsSaving(true);
     try {
+      const toNumOrNull = (val) => {
+        if (val === undefined || val === null || val === "") return null;
+        const n = parseFloat(val);
+        return isNaN(n) ? null : n;
+      };
+
+      const perimetriaInferior = {
+        circCoxaProximalD: toNumOrNull(avaliacao.circCoxaProximalD),
+        circCoxaProximalE: toNumOrNull(avaliacao.circCoxaProximalE),
+        circCoxaMedialD: toNumOrNull(avaliacao.circCoxaMedialD),
+        circCoxaMedialE: toNumOrNull(avaliacao.circCoxaMedialE),
+        circPanturrilhaD: toNumOrNull(avaliacao.circPanturrilhaD),
+        circPanturrilhaE: toNumOrNull(avaliacao.circPanturrilhaE),
+      };
+
+      const anamneseComplementar = {
+        lesoes: (avaliacao.lesoes || "").trim(),
+        doencas: (avaliacao.historicoMedico || "").trim(),
+        objetivos: (avaliacao.objetivos || "").trim(),
+      };
+
       const resultadosCalculados = {
         ...(avaliacao.resultados || {}),
         imc: imcData,
         rcq: rcqData,
         composicao: composicaoData,
         testesFisicos: testesFisicosData,
+        perimetriaInferior,
+        anamneseComplementar,
+        registroAvaliador: (avaliacao.registroAvaliador || "").trim(),
         calculadoEm: new Date().toISOString(),
       };
 
+      const historicoCombinado = avaliacao.lesoes?.trim()
+        ? `${avaliacao.historicoMedico?.trim() || "Nenhuma patologia crônica relatada"} || Lesões: ${avaliacao.lesoes.trim()}`
+        : avaliacao.historicoMedico?.trim() || "";
+
       await api.put(`/api/avaliacoes/${id}`, {
         ...avaliacao,
+        historicoMedico: historicoCombinado,
         resultados: resultadosCalculados,
       });
 
@@ -357,7 +445,7 @@ export default function AvaliacaoWizardPage() {
     }
   };
 
-  // Gera o resumo textual estruturado para envio do relatório por e-mail
+  // Gera o resumo padrão conciso (4 linhas) para o corpo do e-mail, pois o Laudo completo segue em PDF anexo
   const gerarResumoRelatorioTexto = useCallback(() => {
     if (!avaliacao) return "";
     const dataAval = new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR");
@@ -366,40 +454,16 @@ export default function AvaliacaoWizardPage() {
       `Laudo Técnico Nº #${avaliacao.id} | Data da Coleta: ${dataAval}`,
       `Avaliado(a): ${aluno?.nome || "---"} | Matrícula: ${aluno?.matricula || "---"}`,
       `Avaliador(a) Responsável: ${avaliacao.avaliador?.name || "Administrador"}`,
-      `--------------------------------------------------`,
-      `1. TRIAGEM PREVENTIVA — PAR-Q:`,
-      parqResumo.respondido
-        ? `• Questões respondidas: ${parqResumo.respondidas} de 7 | Respostas afirmativas: ${parqResumo.afirmativas === 0 ? "Nenhuma" : parqResumo.afirmativas}\n• Resultado: ${parqResumo.temAlerta ? "Atenção: identificada resposta afirmativa no PAR-Q" : "Sem indicação de alerta na triagem preventiva"}`
-        : `• Status: Questionário não registrado`,
-      ``,
-      `2. RESUMO DA COMPOSIÇÃO CORPORAL:`,
-      `• Estatura: ${avaliacao.altura ? `${avaliacao.altura}` : "--"} | Massa Corporal: ${avaliacao.peso ? `${avaliacao.peso} kg` : "--"}`,
-      `• IMC: ${imcData ? `${imcData.valor} kg/m² (${imcData.classificacao})` : "Não calculado"}`,
-      `• RCQ: ${rcqData ? `${rcqData.valor} (${rcqData.risco})` : "Não calculado"}`,
-      composicaoData.completo
-        ? `• % de Gordura: ${composicaoData.percGordura}% (${composicaoData.classificacaoGordura})\n• Densidade Corporal: ${composicaoData.densidadeCorporal} g/cm³ (Jackson & Pollock — 7 dobras / Equação de Siri)\n• Massa Livre de Gordura: ${composicaoData.massaMagra ?? "--"} kg | Massa Gorda: ${composicaoData.massaGorda ?? "--"} kg`
-        : `• Protocolo Jackson & Pollock (7 dobras cutâneas): parcial/não mensurado nesta sessão.`,
-      ``,
-      `3. TESTES FÍSICOS NEUROMOTORES:`,
-      testesFisicosData.abdominal
-        ? `• Resistência abdominal — 1 minuto: ${testesFisicosData.abdominal.repeticoes} repetições | ${testesFisicosData.abdominal.classificacao} (${testesFisicosData.abdominal.pontuacao} pontos)`
-        : `• Resistência abdominal — 1 minuto: Não realizado`,
-      testesFisicosData.preensao
-        ? `• Força de preensão manual — dinamometria: D: ${testesFisicosData.preensao.direita ?? "--"} kgf / E: ${testesFisicosData.preensao.esquerda ?? "--"} kgf | ${testesFisicosData.preensao.classificacao} (${testesFisicosData.preensao.pontuacao} pontos)`
-        : `• Força de preensão manual — dinamometria: Não realizado`,
-      ``,
-      `4. PARECER TÉCNICO E ORIENTAÇÕES DO AVALIADOR:`,
-      avaliacao.observacoes ||
-        "Os dados foram coletados conforme os protocolos disponíveis no sistema. Recomenda-se o acompanhamento periódico da composição corporal e a realização de nova avaliação conforme o planejamento da academia.",
     ];
     return linhas.join("\n");
-  }, [avaliacao, aluno, imcData, rcqData, composicaoData, testesFisicosData, parqResumo]);
+  }, [avaliacao, aluno]);
 
   const handleOpenEmailModal = () => {
     setEmailDestino(aluno?.email || "");
     setEmailAssunto(
       `Laudo Técnico de Avaliação Física — ${aluno?.nome || "Aluno"} (UNOESC)`
     );
+    setEmailMensagem(gerarResumoRelatorioTexto());
     setShowEmailModal(true);
   };
 
@@ -424,7 +488,12 @@ export default function AvaliacaoWizardPage() {
     setSendingEmail(true);
     try {
       await handleSave(false);
-      const mensagem = gerarResumoRelatorioTexto();
+      const mensagem = (emailMensagem || "").trim() || gerarResumoRelatorioTexto();
+      const toNumOrNull = (val) => {
+        if (val === undefined || val === null || val === "") return null;
+        const n = parseFloat(val);
+        return isNaN(n) ? null : n;
+      };
       const avaliacaoCompleta = {
         ...avaliacao,
         resultados: {
@@ -433,6 +502,20 @@ export default function AvaliacaoWizardPage() {
           rcq: rcqData,
           composicao: composicaoData,
           testesFisicos: testesFisicosData,
+          perimetriaInferior: {
+            circCoxaProximalD: toNumOrNull(avaliacao.circCoxaProximalD),
+            circCoxaProximalE: toNumOrNull(avaliacao.circCoxaProximalE),
+            circCoxaMedialD: toNumOrNull(avaliacao.circCoxaMedialD),
+            circCoxaMedialE: toNumOrNull(avaliacao.circCoxaMedialE),
+            circPanturrilhaD: toNumOrNull(avaliacao.circPanturrilhaD),
+            circPanturrilhaE: toNumOrNull(avaliacao.circPanturrilhaE),
+          },
+          anamneseComplementar: {
+            lesoes: (avaliacao.lesoes || "").trim(),
+            doencas: (avaliacao.historicoMedico || "").trim(),
+            objetivos: (avaliacao.objetivos || "").trim(),
+          },
+          registroAvaliador: (avaliacao.registroAvaliador || "").trim(),
         },
       };
 
@@ -490,7 +573,7 @@ export default function AvaliacaoWizardPage() {
 
   const handleOpenGmailWeb = async () => {
     await handleSave(false);
-    const body = encodeURIComponent(gerarResumoRelatorioTexto());
+    const body = encodeURIComponent((emailMensagem || "").trim() || gerarResumoRelatorioTexto());
     const subject = encodeURIComponent(
       emailAssunto || `Laudo Técnico de Avaliação Física — ${aluno?.nome || "Aluno"} (UNOESC)`
     );
@@ -502,7 +585,7 @@ export default function AvaliacaoWizardPage() {
 
   const handleOpenMailto = async () => {
     await handleSave(false);
-    const body = encodeURIComponent(gerarResumoRelatorioTexto());
+    const body = encodeURIComponent((emailMensagem || "").trim() || gerarResumoRelatorioTexto());
     const subject = encodeURIComponent(
       emailAssunto || `Relatório de Avaliação Física - ${aluno?.nome || "Aluno"}`
     );
@@ -842,7 +925,7 @@ export default function AvaliacaoWizardPage() {
               />
             </div>
 
-            {/* Acordeão de Anamnese / PAR-Q para consulta rápida */}
+            {/* Acordeão de Anamnese / PAR-Q para consulta e ajuste rápido */}
             <div className={styles.fullWidth} style={{ marginTop: "1.5rem" }}>
               <button
                 type="button"
@@ -862,25 +945,77 @@ export default function AvaliacaoWizardPage() {
                 }}
               >
                 <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <FaInfoCircle /> Consultar Histórico Clínico & PAR-Q do Aluno
+                  <FaInfoCircle /> Consultar / Ajustar Anamnese Estruturada & PAR-Q do Aluno
                 </span>
                 {showMedicalSnapshot ? <FaChevronUp /> : <FaChevronDown />}
               </button>
 
               {showMedicalSnapshot && (
-                <div style={{ background: "#1c221a", padding: "1.25rem", borderRadius: "8px", border: "1px solid #2e3a2b", marginTop: "0.75rem" }}>
-                  <p style={{ margin: "0 0 0.5rem 0", color: "#cbd5e1" }}>
-                    <strong>Objetivos:</strong> {avaliacao.objetivos || "Não informado"}
-                  </p>
-                  <p style={{ margin: "0 0 0.5rem 0", color: "#cbd5e1" }}>
-                    <strong>Histórico Médico:</strong> {avaliacao.historicoMedico || "Nenhum histórico informado"}
-                  </p>
-                  <p style={{ margin: "0 0 0.5rem 0", color: "#cbd5e1" }}>
-                    <strong>Medicamentos em uso:</strong> {avaliacao.medicamentosEmUso || "Nenhum"}
-                  </p>
-                  <p style={{ margin: "0", color: "#cbd5e1" }}>
-                    <strong>Hábitos:</strong> {avaliacao.habitos || "Não informado"}
-                  </p>
+                <div
+                  className={styles.formGrid}
+                  style={{
+                    background: "#1c221a",
+                    padding: "1.25rem",
+                    borderRadius: "8px",
+                    border: "1px solid #2e3a2b",
+                    marginTop: "0.75rem",
+                  }}
+                >
+                  <div className={styles.formGroup}>
+                    <label htmlFor="objetivosWiz">Objetivos com o Treinamento</label>
+                    <input
+                      type="text"
+                      id="objetivosWiz"
+                      name="objetivos"
+                      placeholder="Ex: Hipertrofia muscular e ganho de força"
+                      value={avaliacao.objetivos || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="lesoesWiz">Lesões, Cirurgias ou Limitações Físicas</label>
+                    <input
+                      type="text"
+                      id="lesoesWiz"
+                      name="lesoes"
+                      placeholder="Ex: Tendinite no cotovelo ou 'Nenhuma lesão relatada'"
+                      value={avaliacao.lesoes || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="historicoMedicoWiz">Histórico de Doenças / Patologias</label>
+                    <input
+                      type="text"
+                      id="historicoMedicoWiz"
+                      name="historicoMedico"
+                      placeholder="Ex: Nenhuma patologia crônica diagnosticada"
+                      value={avaliacao.historicoMedico || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="medicamentosEmUsoWiz">Uso de Medicamentos</label>
+                    <input
+                      type="text"
+                      id="medicamentosEmUsoWiz"
+                      name="medicamentosEmUso"
+                      placeholder="Ex: Não utiliza medicamentos contínuos"
+                      value={avaliacao.medicamentosEmUso || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                    <label htmlFor="habitosWiz">Prática de Exercícios e Hábitos Relevantes</label>
+                    <input
+                      type="text"
+                      id="habitosWiz"
+                      name="habitos"
+                      placeholder="Ex: Musculação 4x/semana, não tabagista, sono regular"
+                      value={avaliacao.habitos || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -960,7 +1095,7 @@ export default function AvaliacaoWizardPage() {
             </h3>
 
             <div className={styles.formGroup}>
-              <label htmlFor="circBracoRelaxadoD">Braço Relaxado Direito</label>
+              <label htmlFor="circBracoRelaxadoD">Braço Relaxado Direito (cm)</label>
               <input 
                 type="number" 
                 step="0.1" 
@@ -973,7 +1108,7 @@ export default function AvaliacaoWizardPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="circBracoRelaxadoE">Braço Relaxado Esquerdo</label>
+              <label htmlFor="circBracoRelaxadoE">Braço Relaxado Esquerdo (cm)</label>
               <input 
                 type="number" 
                 step="0.1" 
@@ -982,6 +1117,88 @@ export default function AvaliacaoWizardPage() {
                 placeholder="Ex: 33.5" 
                 value={avaliacao.circBracoRelaxadoE || ""} 
                 onChange={handleChange} 
+              />
+            </div>
+
+            <h3 className={styles.formSectionTitle}>
+              <FaRulerVertical /> Membros Inferiores — Coxa e Panturrilha (cm)
+            </h3>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaProximalD">Coxa Proximal Direita (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaProximalD"
+                id="circCoxaProximalD"
+                placeholder="Ex: 58.0"
+                value={avaliacao.circCoxaProximalD || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaProximalE">Coxa Proximal Esquerda (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaProximalE"
+                id="circCoxaProximalE"
+                placeholder="Ex: 57.5"
+                value={avaliacao.circCoxaProximalE || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaMedialD">Coxa Medial Direita (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaMedialD"
+                id="circCoxaMedialD"
+                placeholder="Ex: 53.0"
+                value={avaliacao.circCoxaMedialD || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaMedialE">Coxa Medial Esquerda (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaMedialE"
+                id="circCoxaMedialE"
+                placeholder="Ex: 52.5"
+                value={avaliacao.circCoxaMedialE || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circPanturrilhaD">Panturrilha Direita (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circPanturrilhaD"
+                id="circPanturrilhaD"
+                placeholder="Ex: 38.5"
+                value={avaliacao.circPanturrilhaD || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circPanturrilhaE">Panturrilha Esquerda (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circPanturrilhaE"
+                id="circPanturrilhaE"
+                placeholder="Ex: 38.5"
+                value={avaliacao.circPanturrilhaE || ""}
+                onChange={handleChange}
               />
             </div>
           </div>
@@ -1321,19 +1538,33 @@ export default function AvaliacaoWizardPage() {
               </div>
             </div>
 
-            {/* Parecer do Avaliador */}
+            {/* Parecer Técnico e Considerações Finais do Avaliador */}
             <div className={styles.formGroup} style={{ marginTop: "1rem" }}>
               <label htmlFor="observacoes" style={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>
-                Parecer Técnico e Recomendações do Avaliador
+                Considerações Finais / Parecer Técnico Detalhado do Avaliador
               </label>
               <textarea
                 id="observacoes"
                 name="observacoes"
                 rows="4"
-                placeholder="Insira as orientações de treino, observações metabólicas e metas para a próxima reavaliação..."
+                placeholder="Insira as considerações finais, análise da composição corporal, prescrição de treinamento e metas para a próxima reavaliação..."
                 value={avaliacao.observacoes || ""}
                 onChange={handleChange}
               ></textarea>
+            </div>
+
+            <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
+              <label htmlFor="registroAvaliador" style={{ fontSize: "0.9rem", fontWeight: 600, color: "#cbd5e1" }}>
+                Identificação Profissional / CREF ou Assinatura Digital (Opcional)
+              </label>
+              <input
+                type="text"
+                id="registroAvaliador"
+                name="registroAvaliador"
+                placeholder="Ex: CREF 012345-G/SC — Assinado Digitalmente"
+                value={avaliacao.registroAvaliador || ""}
+                onChange={handleChange}
+              />
             </div>
 
             {/* Ações Inteligentes de Emissão do Laudo */}
@@ -1532,7 +1763,7 @@ export default function AvaliacaoWizardPage() {
               />
             </div>
 
-            {/* Acordeão de Anamnese / PAR-Q para consulta rápida */}
+            {/* Acordeão de Anamnese / PAR-Q para consulta e ajuste rápido */}
             <div className={styles.fullWidth} style={{ marginTop: "1.5rem" }}>
               <button
                 type="button"
@@ -1552,25 +1783,77 @@ export default function AvaliacaoWizardPage() {
                 }}
               >
                 <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <FaInfoCircle /> Consultar Histórico Clínico & PAR-Q do Aluno
+                  <FaInfoCircle /> Consultar / Ajustar Anamnese Estruturada & PAR-Q do Aluno
                 </span>
                 {showMedicalSnapshot ? <FaChevronUp /> : <FaChevronDown />}
               </button>
 
               {showMedicalSnapshot && (
-                <div style={{ background: "#1c221a", padding: "1.25rem", borderRadius: "8px", border: "1px solid #2e3a2b", marginTop: "0.75rem" }}>
-                  <p style={{ margin: "0 0 0.5rem 0", color: "#cbd5e1" }}>
-                    <strong>Objetivos:</strong> {avaliacao.objetivos || "Não informado"}
-                  </p>
-                  <p style={{ margin: "0 0 0.5rem 0", color: "#cbd5e1" }}>
-                    <strong>Histórico Médico:</strong> {avaliacao.historicoMedico || "Nenhum histórico informado"}
-                  </p>
-                  <p style={{ margin: "0 0 0.5rem 0", color: "#cbd5e1" }}>
-                    <strong>Medicamentos em uso:</strong> {avaliacao.medicamentosEmUso || "Nenhum"}
-                  </p>
-                  <p style={{ margin: "0", color: "#cbd5e1" }}>
-                    <strong>Hábitos:</strong> {avaliacao.habitos || "Não informado"}
-                  </p>
+                <div
+                  className={styles.formGrid}
+                  style={{
+                    background: "#1c221a",
+                    padding: "1.25rem",
+                    borderRadius: "8px",
+                    border: "1px solid #2e3a2b",
+                    marginTop: "0.75rem",
+                  }}
+                >
+                  <div className={styles.formGroup}>
+                    <label htmlFor="objetivosSingle">Objetivos com o Treinamento</label>
+                    <input
+                      type="text"
+                      id="objetivosSingle"
+                      name="objetivos"
+                      placeholder="Ex: Hipertrofia muscular e ganho de força"
+                      value={avaliacao.objetivos || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="lesoesSingle">Lesões, Cirurgias ou Limitações Físicas</label>
+                    <input
+                      type="text"
+                      id="lesoesSingle"
+                      name="lesoes"
+                      placeholder="Ex: Tendinite no cotovelo ou 'Nenhuma lesão relatada'"
+                      value={avaliacao.lesoes || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="historicoMedicoSingle">Histórico de Doenças / Patologias</label>
+                    <input
+                      type="text"
+                      id="historicoMedicoSingle"
+                      name="historicoMedico"
+                      placeholder="Ex: Nenhuma patologia crônica diagnosticada"
+                      value={avaliacao.historicoMedico || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="medicamentosEmUsoSingle">Uso de Medicamentos</label>
+                    <input
+                      type="text"
+                      id="medicamentosEmUsoSingle"
+                      name="medicamentosEmUso"
+                      placeholder="Ex: Não utiliza medicamentos contínuos"
+                      value={avaliacao.medicamentosEmUso || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                    <label htmlFor="habitosSingle">Prática de Exercícios e Hábitos Relevantes</label>
+                    <input
+                      type="text"
+                      id="habitosSingle"
+                      name="habitos"
+                      placeholder="Ex: Musculação 4x/semana, não tabagista, sono regular"
+                      value={avaliacao.habitos || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -1613,12 +1896,12 @@ export default function AvaliacaoWizardPage() {
             </h3>
 
             <div className={styles.formGroup}>
-              <label htmlFor="circCintura">Cintura (cm) *</label>
+              <label htmlFor="circCinturaSingle">Cintura (cm) *</label>
               <input 
                 type="number" 
                 step="0.1" 
                 name="circCintura" 
-                id="circCintura" 
+                id="circCinturaSingle" 
                 placeholder="Ex: 82.5" 
                 value={avaliacao.circCintura || ""} 
                 onChange={handleChange} 
@@ -1626,12 +1909,12 @@ export default function AvaliacaoWizardPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="circAbdomem">Abdômen (cm)</label>
+              <label htmlFor="circAbdomemSingle">Abdômen (cm)</label>
               <input 
                 type="number" 
                 step="0.1" 
                 name="circAbdomem" 
-                id="circAbdomem" 
+                id="circAbdomemSingle" 
                 placeholder="Ex: 86.0" 
                 value={avaliacao.circAbdomem || ""} 
                 onChange={handleChange} 
@@ -1639,12 +1922,12 @@ export default function AvaliacaoWizardPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="circQuadril">Quadril (cm) *</label>
+              <label htmlFor="circQuadrilSingle">Quadril (cm) *</label>
               <input 
                 type="number" 
                 step="0.1" 
                 name="circQuadril" 
-                id="circQuadril" 
+                id="circQuadrilSingle" 
                 placeholder="Ex: 98.0" 
                 value={avaliacao.circQuadril || ""} 
                 onChange={handleChange} 
@@ -1656,12 +1939,12 @@ export default function AvaliacaoWizardPage() {
             </h3>
 
             <div className={styles.formGroup}>
-              <label htmlFor="circBracoRelaxadoD">Braço Relaxado Direito</label>
+              <label htmlFor="circBracoRelaxadoDSingle">Braço Relaxado Direito (cm)</label>
               <input 
                 type="number" 
                 step="0.1" 
                 name="circBracoRelaxadoD" 
-                id="circBracoRelaxadoD" 
+                id="circBracoRelaxadoDSingle" 
                 placeholder="Ex: 34.0" 
                 value={avaliacao.circBracoRelaxadoD || ""} 
                 onChange={handleChange} 
@@ -1669,15 +1952,97 @@ export default function AvaliacaoWizardPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="circBracoRelaxadoE">Braço Relaxado Esquerdo</label>
+              <label htmlFor="circBracoRelaxadoESingle">Braço Relaxado Esquerdo (cm)</label>
               <input 
                 type="number" 
                 step="0.1" 
                 name="circBracoRelaxadoE" 
-                id="circBracoRelaxadoE" 
+                id="circBracoRelaxadoESingle" 
                 placeholder="Ex: 33.5" 
                 value={avaliacao.circBracoRelaxadoE || ""} 
                 onChange={handleChange} 
+              />
+            </div>
+
+            <h3 className={styles.formSectionTitle}>
+              <FaRulerVertical /> Membros Inferiores — Coxa e Panturrilha (cm)
+            </h3>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaProximalDSingle">Coxa Proximal Direita (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaProximalD"
+                id="circCoxaProximalDSingle"
+                placeholder="Ex: 58.0"
+                value={avaliacao.circCoxaProximalD || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaProximalESingle">Coxa Proximal Esquerda (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaProximalE"
+                id="circCoxaProximalESingle"
+                placeholder="Ex: 57.5"
+                value={avaliacao.circCoxaProximalE || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaMedialDSingle">Coxa Medial Direita (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaMedialD"
+                id="circCoxaMedialDSingle"
+                placeholder="Ex: 53.0"
+                value={avaliacao.circCoxaMedialD || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circCoxaMedialESingle">Coxa Medial Esquerda (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circCoxaMedialE"
+                id="circCoxaMedialESingle"
+                placeholder="Ex: 52.5"
+                value={avaliacao.circCoxaMedialE || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circPanturrilhaDSingle">Panturrilha Direita (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circPanturrilhaD"
+                id="circPanturrilhaDSingle"
+                placeholder="Ex: 38.5"
+                value={avaliacao.circPanturrilhaD || ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="circPanturrilhaESingle">Panturrilha Esquerda (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                name="circPanturrilhaE"
+                id="circPanturrilhaESingle"
+                placeholder="Ex: 38.5"
+                value={avaliacao.circPanturrilhaE || ""}
+                onChange={handleChange}
               />
             </div>
           </div>
@@ -2029,19 +2394,33 @@ export default function AvaliacaoWizardPage() {
               </div>
             </div>
 
-            {/* Parecer do Avaliador */}
+            {/* Parecer Técnico e Considerações Finais do Avaliador */}
             <div className={styles.formGroup} style={{ marginTop: "1rem" }}>
               <label htmlFor="observacoes" style={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>
-                Parecer Técnico e Recomendações do Avaliador
+                Considerações Finais / Parecer Técnico Detalhado do Avaliador
               </label>
               <textarea
                 id="observacoes"
                 name="observacoes"
                 rows="4"
-                placeholder="Insira as orientações de treino, observações metabólicas e metas para a próxima reavaliação..."
+                placeholder="Insira as considerações finais, análise da composição corporal, prescrição de treinamento e metas para a próxima reavaliação..."
                 value={avaliacao.observacoes || ""}
                 onChange={handleChange}
               ></textarea>
+            </div>
+
+            <div className={styles.formGroup} style={{ marginTop: "0.75rem" }}>
+              <label htmlFor="registroAvaliador" style={{ fontSize: "0.9rem", fontWeight: 600, color: "#cbd5e1" }}>
+                Identificação Profissional / CREF ou Assinatura Digital (Opcional)
+              </label>
+              <input
+                type="text"
+                id="registroAvaliador"
+                name="registroAvaliador"
+                placeholder="Ex: CREF 012345-G/SC — Assinado Digitalmente"
+                value={avaliacao.registroAvaliador || ""}
+                onChange={handleChange}
+              />
             </div>
 
             {/* Ações Inteligentes de Emissão do Laudo */}
@@ -2278,36 +2657,49 @@ export default function AvaliacaoWizardPage() {
           <table className={styles.printTable}>
             <thead>
               <tr>
-                <th style={{ width: "32%" }}>Item</th>
-                <th>Resultado</th>
+                <th style={{ width: "34%" }}>Item Clínico / Anamnese</th>
+                <th>Registro Estruturado</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style={{ fontWeight: 700 }}>Histórico de doenças</td>
-                <td>{avaliacao.historicoMedico || aluno?.anamnese?.historicoMedico || "Não informado"}</td>
+                <td style={{ fontWeight: 700 }}>Histórico de doenças / patologias</td>
+                <td>
+                  {avaliacao.historicoMedico ||
+                    aluno?.anamnese?.historicoMedico ||
+                    "Nenhuma patologia crônica relatada"}
+                </td>
               </tr>
               <tr>
-                <td style={{ fontWeight: 700 }}>Uso de medicamentos</td>
-                <td>{avaliacao.medicamentosEmUso || aluno?.anamnese?.medicamentos || "Não informado"}</td>
+                <td style={{ fontWeight: 700 }}>Lesões, cirurgias ou limitações físicas</td>
+                <td>
+                  {avaliacao.lesoes ||
+                    avaliacao.resultados?.anamneseComplementar?.lesoes ||
+                    aluno?.anamnese?.lesoes ||
+                    "Nenhuma lesão ou limitação osteomioarticular relatada"}
+                </td>
               </tr>
               <tr>
-                <td style={{ fontWeight: 700 }}>Lesões, limitações ou objetivos</td>
-                <td>{avaliacao.objetivos || aluno?.anamnese?.lesoes || "Não informado"}</td>
+                <td style={{ fontWeight: 700 }}>Uso de medicamentos contínuos</td>
+                <td>
+                  {avaliacao.medicamentosEmUso ||
+                    aluno?.anamnese?.medicamentos ||
+                    "Não utiliza medicamentos contínuos"}
+                </td>
               </tr>
               <tr>
-                <td style={{ fontWeight: 700 }}>Prática de exercícios e hábitos</td>
+                <td style={{ fontWeight: 700 }}>Objetivos com o treinamento</td>
+                <td>{avaliacao.objetivos || "Condicionamento físico e promoção da saúde"}</td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 700 }}>Prática de exercícios e hábitos de vida</td>
                 <td>{avaliacao.habitos || "Informada no cadastro"}</td>
-              </tr>
-              <tr>
-                <td style={{ fontWeight: 700 }}>Observações clínicas</td>
-                <td>{avaliacao.observacoes ? "Registradas no parecer técnico" : "Sem observações adicionais"}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {/* 4. RESUMO DA COMPOSIÇÃO CORPORAL */}
+        {/* 4. RESUMO DA COMPOSIÇÃO CORPORAL + GRÁFICO DE PIZZA */}
         <div className={styles.printSection}>
           <h3 className={styles.printSectionTitle}>4. RESUMO DA COMPOSIÇÃO CORPORAL</h3>
           <div className={styles.printKpiGrid}>
@@ -2362,34 +2754,122 @@ export default function AvaliacaoWizardPage() {
               <span className={styles.printKpiSub}>Equação de Siri (1961)</span>
             </div>
           </div>
-          <div
-            style={{
-              marginTop: "4px",
-              padding: "4px 8px",
-              background: "#f8fafc",
-              border: "1px solid #cbd5e1",
-              borderRadius: "4px",
-              fontSize: "8pt",
-              color: "#1e293b",
-              display: "flex",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "8px",
-            }}
-          >
-            <span>
-              <strong>Protocolo:</strong> Jackson & Pollock — 7 dobras cutâneas
-            </span>
-            <span>
-              <strong>Equação utilizada:</strong> Siri
-            </span>
-            <span>
-              <strong>Densidade corporal:</strong>{" "}
-              {composicaoData.densidadeCorporal
-                ? `${composicaoData.densidadeCorporal} g/cm³`
-                : "Não calculada"}
-            </span>
-          </div>
+
+          {/* Gráfico de Pizza Vetorial da Composição Corporal (Massa Gorda vs Massa Livre de Gordura) */}
+          {(() => {
+            const pesoTotal = parseFloat(avaliacao.peso) || 0;
+            const mg = parseFloat(composicaoData.massaGorda) || 0;
+            const mm = parseFloat(composicaoData.massaMagra) || (pesoTotal > 0 ? Math.max(pesoTotal - mg, 0) : 0);
+            const percFat =
+              parseFloat(composicaoData.percGordura) ||
+              (pesoTotal > 0 && mg > 0 ? Number(((mg / pesoTotal) * 100).toFixed(1)) : 0);
+            const percLean = percFat > 0 ? Number((100 - percFat).toFixed(1)) : 100;
+
+            const cx = 42;
+            const cy = 42;
+            const r = 36;
+            const clampedFat = Math.min(Math.max(percFat, 0.5), 99.5);
+            const rad = (clampedFat / 100) * 2 * Math.PI;
+            const x1 = cx;
+            const y1 = cy - r;
+            const x2 = cx + r * Math.sin(rad);
+            const y2 = cy - r * Math.cos(rad);
+            const largeArc = clampedFat > 50 ? 1 : 0;
+            const slicePath = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+
+            return (
+              <div
+                style={{
+                  marginTop: "5px",
+                  padding: "6px 10px",
+                  background: "#f8fafc",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <svg
+                    width="74"
+                    height="74"
+                    viewBox="0 0 84 84"
+                    aria-label="Gráfico de Pizza de Composição Corporal"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <circle cx={cx} cy={cy} r={r} fill="#2e7d32" />
+                    {percFat > 0 && (
+                      <path
+                        d={slicePath}
+                        fill="#f59e0b"
+                        stroke="#ffffff"
+                        strokeWidth="1.5"
+                      />
+                    )}
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={r}
+                      fill="none"
+                      stroke="#1e293b"
+                      strokeWidth="0.8"
+                    />
+                  </svg>
+                  <div style={{ fontSize: "8pt", color: "#0f172a", lineHeight: 1.45 }}>
+                    <div style={{ fontWeight: 800, color: "#1b5e20", marginBottom: "2px", fontSize: "8.3pt" }}>
+                      DISTRIBUIÇÃO DA COMPOSIÇÃO CORPORAL (GRÁFICO DE PROPORÇÃO)
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          width: "9px",
+                          height: "9px",
+                          borderRadius: "2px",
+                          background: "#2e7d32",
+                        }}
+                      ></span>
+                      <span>
+                        <strong>Massa Livre de Gordura (Magra):</strong>{" "}
+                        {mm > 0 ? `${mm.toFixed(1)} kg (${percLean}%)` : "--"}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          width: "9px",
+                          height: "9px",
+                          borderRadius: "2px",
+                          background: "#f59e0b",
+                        }}
+                      ></span>
+                      <span>
+                        <strong>Massa Gorda (Tecido Adiposo):</strong>{" "}
+                        {mg > 0 ? `${mg.toFixed(1)} kg (${percFat}%)` : "--"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: "7.6pt", color: "#334155", textAlign: "right", lineHeight: 1.4 }}>
+                  <div>
+                    <strong>Protocolo:</strong> Jackson & Pollock (7 dobras)
+                  </div>
+                  <div>
+                    <strong>Equação:</strong> Siri (1961) •{" "}
+                    <strong>Densidade:</strong>{" "}
+                    {composicaoData.densidadeCorporal
+                      ? `${composicaoData.densidadeCorporal} g/cm³`
+                      : "Não calculada"}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* 5 e 6. PERIMETRIA E DOBRAS CUTÂNEAS */}
@@ -2425,15 +2905,35 @@ export default function AvaliacaoWizardPage() {
                   </td>
                 </tr>
                 <tr>
-                  <td>Braço relaxado direito</td>
+                  <td>Braço relaxado (Direito / Esquerdo)</td>
                   <td style={{ textAlign: "right", fontWeight: 700 }}>
-                    {avaliacao.circBracoRelaxadoD ? `${avaliacao.circBracoRelaxadoD} cm` : "--"}
+                    {avaliacao.circBracoRelaxadoD || avaliacao.circBracoRelaxadoE
+                      ? `${avaliacao.circBracoRelaxadoD ? `${avaliacao.circBracoRelaxadoD} cm` : "--"} / ${avaliacao.circBracoRelaxadoE ? `${avaliacao.circBracoRelaxadoE} cm` : "--"}`
+                      : "--"}
                   </td>
                 </tr>
                 <tr>
-                  <td>Braço relaxado esquerdo</td>
+                  <td>Coxa proximal (Direita / Esquerda)</td>
                   <td style={{ textAlign: "right", fontWeight: 700 }}>
-                    {avaliacao.circBracoRelaxadoE ? `${avaliacao.circBracoRelaxadoE} cm` : "--"}
+                    {avaliacao.circCoxaProximalD || avaliacao.circCoxaProximalE
+                      ? `${avaliacao.circCoxaProximalD ? `${avaliacao.circCoxaProximalD} cm` : "--"} / ${avaliacao.circCoxaProximalE ? `${avaliacao.circCoxaProximalE} cm` : "--"}`
+                      : "--"}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Coxa medial (Direita / Esquerda)</td>
+                  <td style={{ textAlign: "right", fontWeight: 700 }}>
+                    {avaliacao.circCoxaMedialD || avaliacao.circCoxaMedialE
+                      ? `${avaliacao.circCoxaMedialD ? `${avaliacao.circCoxaMedialD} cm` : "--"} / ${avaliacao.circCoxaMedialE ? `${avaliacao.circCoxaMedialE} cm` : "--"}`
+                      : "--"}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Panturrilha (Direita / Esquerda)</td>
+                  <td style={{ textAlign: "right", fontWeight: 700 }}>
+                    {avaliacao.circPanturrilhaD || avaliacao.circPanturrilhaE
+                      ? `${avaliacao.circPanturrilhaD ? `${avaliacao.circPanturrilhaD} cm` : "--"} / ${avaliacao.circPanturrilhaE ? `${avaliacao.circPanturrilhaE} cm` : "--"}`
+                      : "--"}
                   </td>
                 </tr>
               </tbody>
@@ -2633,13 +3133,15 @@ export default function AvaliacaoWizardPage() {
           )}
         </div>
 
-        {/* 9. PARECER TÉCNICO E ORIENTAÇÕES DO AVALIADOR */}
+        {/* 9. CONSIDERAÇÕES FINAIS E PARECER TÉCNICO DO AVALIADOR */}
         <div className={styles.printSection}>
-          <h3 className={styles.printSectionTitle}>9. PARECER TÉCNICO E ORIENTAÇÕES DO AVALIADOR</h3>
+          <h3 className={styles.printSectionTitle}>
+            9. CONSIDERAÇÕES FINAIS E PARECER TÉCNICO DO AVALIADOR
+          </h3>
           <div className={styles.printNotesBox}>
             <p style={{ margin: 0, whiteSpace: "pre-line" }}>
               {avaliacao.observacoes ||
-                "Os dados foram coletados conforme os protocolos disponíveis no sistema. Recomenda-se o acompanhamento periódico da composição corporal e a realização de nova avaliação conforme o planejamento da academia."}
+                "Os dados cineantropométricos e neuromotores foram coletados conforme os protocolos padronizados no sistema. Recomenda-se o acompanhamento periódico da composição corporal, prescrição individualizada de treinamento e realização de nova avaliação física conforme planejamento."}
             </p>
             {parqResumo.temAlerta && (
               <p style={{ margin: "4px 0 0 0", color: "#991b1b", fontWeight: 700 }}>
@@ -2649,21 +3151,26 @@ export default function AvaliacaoWizardPage() {
           </div>
         </div>
 
-        {/* ASSINATURAS E IDENTIFICAÇÃO FINAL */}
+        {/* ASSINATURAS FÍSICA OU DIGITAL E IDENTIFICAÇÃO FINAL */}
         <div className={styles.printSignatures}>
           <div className={styles.printSignBlock}>
             <div className={styles.printSignLine}></div>
             <p className={styles.printSignName}>
-              Avaliador responsável: {avaliacao.avaliador?.name || "Administrador"}
+              Avaliador(a) Responsável: {avaliacao.avaliador?.name || "Administrador"}
             </p>
-            <p className={styles.printSignRole}>Profissional de Educação Física / Avaliador</p>
+            <p className={styles.printSignRole}>
+              {avaliacao.registroAvaliador ||
+                avaliacao.resultados?.registroAvaliador ||
+                "Profissional de Educação Física / Avaliador — Assinatura Física ou Digital"}
+            </p>
           </div>
 
           <div className={styles.printSignBlock}>
             <div className={styles.printSignLine}></div>
-            <p className={styles.printSignName}>{aluno?.nome || "Avaliado"}</p>
+            <p className={styles.printSignName}>{aluno?.nome || "Avaliado(a)"}</p>
             <p className={styles.printSignRole}>
-              Assinatura ou ciência do avaliado • Código #{avaliacao.id}-{new Date(avaliacao.dataAvaliacao).getFullYear()}
+              Assinatura física ou digital do(a) avaliado(a) • Código UNOESC-LAUDO-#{avaliacao.id}-
+              {new Date(avaliacao.dataAvaliacao).getFullYear()}
             </p>
           </div>
         </div>
@@ -2705,7 +3212,7 @@ export default function AvaliacaoWizardPage() {
                 }}
               >
                 <div style={{ fontSize: "0.84rem", color: "#cbd5e1" }}>
-                  📎 <strong>Anexo automático:</strong>{" "}
+                  📎 <strong>Anexo automático (idêntico ao Laudo impresso):</strong>{" "}
                   <span style={{ color: "#a4d864" }}>
                     Laudo_Avaliacao_Fisica_{avaliacao.id}.pdf
                   </span>
@@ -2737,9 +3244,9 @@ export default function AvaliacaoWizardPage() {
               <div className={styles.formGroup}>
                 <label>Resumo no Corpo do E-mail (além do Laudo completo em PDF anexo)</label>
                 <textarea
-                  rows="6"
-                  value={gerarResumoRelatorioTexto()}
-                  readOnly
+                  rows="4"
+                  value={emailMensagem}
+                  onChange={(e) => setEmailMensagem(e.target.value)}
                   className={styles.emailPreviewBox}
                 />
               </div>

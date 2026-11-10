@@ -1,24 +1,7 @@
 import { NextResponse } from "next/server";
-import { createRequire } from "module";
-import PDFDocument from "pdfkit";
-import "pdfkit/standard-fonts/Helvetica";
-import "pdfkit/standard-fonts/HelveticaBold";
-import "pdfkit/standard-fonts/HelveticaOblique";
-import "pdfkit/standard-fonts/HelveticaBoldOblique";
 import nodemailer from "nodemailer";
 
 export const runtime = "nodejs";
-
-// Garante que o Node File Tracer (NFT) da Vercel inclua os módulos CJS das fontes padrão do PDFKit no bundle serverless (/var/task)
-try {
-  const req = createRequire(import.meta.url);
-  req("pdfkit/standard-fonts/Helvetica");
-  req("pdfkit/standard-fonts/HelveticaBold");
-  req("pdfkit/standard-fonts/HelveticaOblique");
-  req("pdfkit/standard-fonts/HelveticaBoldOblique");
-} catch {
-  // Ignorado se o ambiente resolver apenas via ESM
-}
 
 function maskCPF(cpf) {
   if (!cpf) return "Não informado";
@@ -52,345 +35,70 @@ function calcularIdadeValida(dataNasc) {
   return idade;
 }
 
-function gerarPdfLaudoBuffer(avaliacao, historicoAvaliacoes = []) {
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: "A4", margin: 40 });
-      const chunks = [];
-      doc.on("data", (chunk) => chunks.push(chunk));
-      doc.on("end", () => resolve(Buffer.concat(chunks)));
-      doc.on("error", reject);
-
-      const aluno = avaliacao.aluno || {};
-      const avaliador = avaliacao.avaliador || {};
-      const res = avaliacao.resultados || {};
-      const imc = res.imc || null;
-      const rcq = res.rcq || null;
-      const comp = res.composicao || {};
-      const tf = res.testesFisicos || {};
-
-      const idade = calcularIdadeValida(aluno.dataNasc);
-      const generoLabel = String(aluno.genero || "M").toUpperCase().startsWith("F")
-        ? "Feminino"
-        : "Masculino";
-
-      const dataColeta = avaliacao.dataAvaliacao
-        ? new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR")
-        : new Date().toLocaleDateString("pt-BR");
-      const dataEmissao = new Date().toLocaleDateString("pt-BR");
-
-      const drawSectionTitle = (title) => {
-        doc.moveDown(0.5);
-        doc
-          .font("Helvetica-Bold")
-          .fontSize(10)
-          .fillColor("#1b5e20")
-          .text(title.toUpperCase());
-        doc
-          .moveTo(40, doc.y + 2)
-          .lineTo(555, doc.y + 2)
-          .strokeColor("#2e7d32")
-          .lineWidth(1)
-          .stroke();
-        doc.moveDown(0.4);
-        doc.fillColor("#1e293b").font("Helvetica").fontSize(9);
-      };
-
-      // CABEÇALHO DO RELATÓRIO
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(13)
-        .fillColor("#1b5e20")
-        .text("UNOESC — UNIVERSIDADE DO OESTE DE SANTA CATARINA", { align: "left" });
-      doc
-        .font("Helvetica")
-        .fontSize(8.5)
-        .fillColor("#475569")
-        .text("UNOESC Portal — Sistema de Avaliação Física e Cineantropometria");
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(9)
-        .fillColor("#2e7d32")
-        .text(
-          `Laudo Técnico Nº #${avaliacao.id}   |   Data da coleta: ${dataColeta}   |   Data de emissão: ${dataEmissao}`
-        );
-
-      doc.moveDown(0.4);
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(11.5)
-        .fillColor("#0f172a")
-        .text("LAUDO TÉCNICO DE AVALIAÇÃO FÍSICA", { align: "center" });
-      doc
-        .font("Helvetica")
-        .fontSize(9)
-        .fillColor("#475569")
-        .text("Avaliação Física e Composição Corporal", { align: "center" });
-      doc.moveDown(0.3);
-
-      // 1. DADOS DE IDENTIFICAÇÃO DO AVALIADO
-      drawSectionTitle("1. Dados de Identificação do Avaliado");
-      doc
-        .font("Helvetica-Bold")
-        .text("Nome: ", { continued: true })
-        .font("Helvetica")
-        .text(`${aluno.nome || "---"}    `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Matrícula: ", { continued: true })
-        .font("Helvetica")
-        .text(`${aluno.matricula || "---"}`);
-      doc
-        .font("Helvetica-Bold")
-        .text("Idade: ", { continued: true })
-        .font("Helvetica")
-        .text(`${idade ? `${idade} anos` : "Não informada"}    `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Gênero: ", { continued: true })
-        .font("Helvetica")
-        .text(`${generoLabel}    `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("CPF: ", { continued: true })
-        .font("Helvetica")
-        .text(`${maskCPF(aluno.cpf)}    `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Telefone: ", { continued: true })
-        .font("Helvetica")
-        .text(`${maskPhone(aluno.telefone)}`);
-      doc
-        .font("Helvetica-Bold")
-        .text("Avaliador Responsável: ", { continued: true })
-        .font("Helvetica")
-        .text(`${avaliador.name || "Administrador"}`);
-
-      // 2. TRIAGEM PREVENTIVA — QUESTIONÁRIO PAR-Q
-      drawSectionTitle("2. Triagem Preventiva — Questionário PAR-Q");
-      const parqObj =
-        avaliacao.respostasParq && typeof avaliacao.respostasParq === "object"
-          ? avaliacao.respostasParq
-          : aluno.parq && typeof aluno.parq === "object"
-          ? aluno.parq
-          : null;
-      const qKeys = ["q1", "q2", "q3", "q4", "q5", "q6", "q7"];
-      let respondidas = 0;
-      let afirmativas = 0;
-      if (parqObj) {
-        qKeys.forEach((k) => {
-          const val = parqObj[k];
-          if (val === "SIM" || val === "NAO" || val === true || val === false) {
-            respondidas++;
-          }
-          if (val === "SIM" || val === true) {
-            afirmativas++;
-          }
-        });
-      }
-      const statusParq =
-        respondidas > 0 ? "Questionário respondido" : "Não registrado";
-      const resultadoParq =
-        afirmativas > 0
-          ? "Alerta identificado na triagem preventiva"
-          : "Sem indicação de alerta na triagem preventiva";
-
-      doc
-        .font("Helvetica-Bold")
-        .text("Status: ", { continued: true })
-        .font("Helvetica")
-        .text(`${statusParq}   |   `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Questões respondidas: ", { continued: true })
-        .font("Helvetica")
-        .text(`${respondidas} de 7   |   `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Respostas afirmativas: ", { continued: true })
-        .font("Helvetica")
-        .text(afirmativas > 0 ? `${afirmativas} ("Sim")` : "Nenhuma");
-      doc
-        .font("Helvetica-Bold")
-        .text("Resultado: ", { continued: true })
-        .font("Helvetica")
-        .text(resultadoParq);
-
-      if (afirmativas > 0) {
-        doc
-          .font("Helvetica-Bold")
-          .fillColor("#b91c1c")
-          .text(
-            "Atenção: foi identificada resposta afirmativa no PAR-Q. Recomenda-se avaliação de profissional de saúde antes da realização de atividades físicas intensas."
-          )
-          .fillColor("#1e293b")
-          .font("Helvetica");
-      }
-
-      // 3. ANAMNESE E HISTÓRICO DE SAÚDE
-      drawSectionTitle("3. Anamnese e Histórico de Saúde");
-      doc
-        .font("Helvetica-Bold")
-        .text("Histórico de doenças: ", { continued: true })
-        .font("Helvetica")
-        .text(avaliacao.historicoMedico || "Não informado");
-      doc
-        .font("Helvetica-Bold")
-        .text("Uso de medicamentos: ", { continued: true })
-        .font("Helvetica")
-        .text(avaliacao.medicamentosEmUso || "Não informado");
-      doc
-        .font("Helvetica-Bold")
-        .text("Lesões, limitações ou objetivos: ", { continued: true })
-        .font("Helvetica")
-        .text(avaliacao.objetivos || "Não informado");
-      doc
-        .font("Helvetica-Bold")
-        .text("Prática de exercícios e hábitos relevantes: ", { continued: true })
-        .font("Helvetica")
-        .text(avaliacao.habitos || "Informada no cadastro");
-
-      // 4. RESUMO DA COMPOSIÇÃO CORPORAL
-      drawSectionTitle("4. Resumo da Composição Corporal");
-      doc
-        .font("Helvetica-Bold")
-        .text("Estatura: ", { continued: true })
-        .font("Helvetica")
-        .text(`${avaliacao.altura ? `${avaliacao.altura}` : "--"}   |   `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Massa corporal: ", { continued: true })
-        .font("Helvetica")
-        .text(`${avaliacao.peso ? `${avaliacao.peso} kg` : "--"}   |   `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("IMC: ", { continued: true })
-        .font("Helvetica")
-        .text(`${imc ? `${imc.valor} kg/m² (${imc.classificacao})` : "--"}`);
-      doc
-        .font("Helvetica-Bold")
-        .text("Relação cintura-quadril (RCQ): ", { continued: true })
-        .font("Helvetica")
-        .text(`${rcq ? `${rcq.valor} (${rcq.risco})` : "--"}   |   `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Percentual de gordura: ", { continued: true })
-        .font("Helvetica")
-        .text(
-          `${comp.percGordura ? `${comp.percGordura}% (${comp.classificacaoGordura || ""})` : "--"}`
-        );
-      doc
-        .font("Helvetica-Bold")
-        .text("Massa livre de gordura: ", { continued: true })
-        .font("Helvetica")
-        .text(`${comp.massaMagra ? `${comp.massaMagra} kg` : "--"}   |   `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Massa gorda: ", { continued: true })
-        .font("Helvetica")
-        .text(`${comp.massaGorda ? `${comp.massaGorda} kg` : "--"}   |   `, { continued: true })
-        .font("Helvetica-Bold")
-        .text("Densidade corporal: ", { continued: true })
-        .font("Helvetica")
-        .text(`${comp.densidadeCorporal ? `${comp.densidadeCorporal} g/cm³` : "--"}`);
-      doc
-        .font("Helvetica-Bold")
-        .text("Protocolo: ", { continued: true })
-        .font("Helvetica")
-        .text("Jackson & Pollock — 7 dobras cutâneas   |   ", { continued: true })
-        .font("Helvetica-Bold")
-        .text("Equação utilizada: ", { continued: true })
-        .font("Helvetica")
-        .text("Siri");
-
-      // 5. PERIMETRIA E CIRCUNFERÊNCIAS CORPORAIS (cm)
-      drawSectionTitle("5. Perimetria e Circunferências Corporais (cm)");
-      doc.text(
-        `Cintura: ${avaliacao.circCintura ? `${avaliacao.circCintura} cm` : "--"}   |   Abdômen: ${avaliacao.circAbdomem ? `${avaliacao.circAbdomem} cm` : "--"}   |   Quadril: ${avaliacao.circQuadril ? `${avaliacao.circQuadril} cm` : "--"}`
-      );
-      doc.text(
-        `Braço relaxado direito: ${avaliacao.circBracoRelaxadoD ? `${avaliacao.circBracoRelaxadoD} cm` : "--"}   |   Braço relaxado esquerdo: ${avaliacao.circBracoRelaxadoE ? `${avaliacao.circBracoRelaxadoE} cm` : "--"}`
-      );
-
-      // 6. DOBRAS CUTÂNEAS (mm) — PROTOCOLO DE JACKSON & POLLOCK
-      drawSectionTitle("6. Dobras Cutâneas (mm) — Protocolo de Jackson & Pollock");
-      doc
-        .font("Helvetica-Oblique")
-        .fontSize(8.5)
-        .text("Jackson & Pollock — protocolo de 7 dobras cutâneas")
-        .font("Helvetica")
-        .fontSize(9);
-      doc.text(
-        `Tríceps: ${avaliacao.dcTriceps ?? "--"} mm  |  Subescapular: ${avaliacao.dcSubescapular ?? "--"} mm  |  Peitoral torácica: ${avaliacao.dcPeitoral ?? "--"} mm  |  Axilar média: ${avaliacao.dcAxilarMedia ?? "--"} mm`
-      );
-      doc.text(
-        `Supra-ilíaca: ${avaliacao.dcSuprailiaca ?? "--"} mm  |  Abdominal: ${avaliacao.dcAbdominal ?? "--"} mm  |  Coxa medial: ${avaliacao.dcCoxa ?? "--"} mm  |  Somatório das sete dobras: ${comp.somaDobras ? `${comp.somaDobras} mm` : "--"}`
-      );
-
-      // 7. TESTES FÍSICOS NEUROMOTORES
-      drawSectionTitle("7. Testes Físicos Neuromotores");
-      doc.text(
-        `• Resistência abdominal — 1 minuto: ${tf.abdominal ? `${tf.abdominal.repeticoes} repetições  |  Classificação: ${tf.abdominal.classificacao}  |  Pontuação: ${tf.abdominal.pontuacao} pontos` : "Não avaliado"}`
-      );
-      doc.text(
-        `• Força de preensão manual — dinamometria: ${tf.preensao ? `D: ${tf.preensao.direita ?? "--"} kgf / E: ${tf.preensao.esquerda ?? "--"} kgf  |  Classificação: ${tf.preensao.classificacao}  |  Pontuação: ${tf.preensao.pontuacao} pontos` : "Não avaliado"}`
-      );
-
-      // 8. HISTÓRICO E EVOLUÇÃO DAS AVALIAÇÕES
-      drawSectionTitle("8. Histórico e Evolução das Avaliações");
-      const avaliacoesConcluidas = (historicoAvaliacoes || []).filter(
-        (a) => a.peso && a.altura
-      );
-      if (avaliacoesConcluidas.length <= 1) {
-        doc.text(
-          "Este é o primeiro registro do avaliado. Ainda não existem avaliações anteriores para comparação."
-        );
-      } else {
-        avaliacoesConcluidas.slice(0, 5).forEach((item) => {
-          const dt = new Date(item.dataAvaliacao).toLocaleDateString("pt-BR");
-          const imcVal = item.resultados?.imc?.valor ?? "--";
-          const fatVal = item.resultados?.composicao?.percGordura
-            ? `${item.resultados.composicao.percGordura}%`
-            : "--";
-          const leanVal = item.resultados?.composicao?.massaMagra
-            ? `${item.resultados.composicao.massaMagra} kg`
-            : "--";
-          doc.text(
-            `Data: ${dt}   |   Massa corporal: ${item.peso} kg   |   IMC: ${imcVal}   |   Gordura corporal: ${fatVal}   |   Massa livre de gordura: ${leanVal}`
-          );
-        });
-      }
-
-      // 9. PARECER TÉCNICO E ORIENTAÇÕES DO AVALIADOR
-      drawSectionTitle("9. Parecer Técnico e Orientações do Avaliador");
-      const textoPadrao =
-        "Os dados foram coletados conforme os protocolos disponíveis no sistema. Recomenda-se o acompanhamento periódico da composição corporal e a realização de nova avaliação conforme o planejamento da academia.";
-      doc.text(avaliacao.observacoes || textoPadrao);
-      if (afirmativas > 0) {
-        doc
-          .moveDown(0.2)
-          .font("Helvetica-Oblique")
-          .text(
-            "Nota preventiva (PAR-Q): Foi registrada resposta afirmativa na triagem preventiva. Orienta-se avaliação clínica antes de exercícios de alta intensidade."
-          )
-          .font("Helvetica");
-      }
-
-      // ASSINATURAS E IDENTIFICAÇÃO FINAL
-      doc.moveDown(1.4);
-      doc
-        .font("Helvetica-Bold")
-        .text(`Avaliador responsável: ${avaliador.name || "Administrador"}`, {
-          continued: true,
-        })
-        .text("          Assinatura do avaliado: ___________________________");
-      doc
-        .font("Helvetica")
-        .fontSize(8)
-        .fillColor("#64748b")
-        .text(
-          `Profissional de Educação Física / Avaliador   |   Código de validação: UNOESC-LAUDO-${avaliacao.id}`
-        );
-
-      doc.end();
-    } catch (err) {
-      reject(err);
-    }
-  });
+function hexToRgbPdf(hex) {
+  const clean = String(hex || "#000000").replace("#", "");
+  const r = (parseInt(clean.substring(0, 2), 16) || 0) / 255;
+  const g = (parseInt(clean.substring(2, 4), 16) || 0) / 255;
+  const b = (parseInt(clean.substring(4, 6), 16) || 0) / 255;
+  return `${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)}`;
 }
 
-// Fallback nativo PDF 1.4 (zero dependências externas de arquivos de fonte) caso o serverless da Vercel bloqueie acesso a standard-fonts
-function gerarPdfNativoFallback(avaliacao, historicoAvaliacoes = []) {
+function pdfEscape(str) {
+  const clean = String(str ?? "")
+    .replace(/—|–/g, "-")
+    .replace(/•/g, "\xb7")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+  let out = "";
+  for (let i = 0; i < clean.length; i++) {
+    const code = clean.charCodeAt(i);
+    const ch = clean[i];
+    if (ch === "(" || ch === ")" || ch === "\\") {
+      out += "\\" + ch;
+    } else if (code >= 32 && code <= 126) {
+      out += ch;
+    } else if (code >= 160 && code <= 255) {
+      out += "\\" + code.toString(8).padStart(3, "0");
+    } else {
+      out += " ";
+    }
+  }
+  return out;
+}
+
+function estimateTextWidth(text, fontSize, isBold = false) {
+  const s = String(text ?? "");
+  const avgFactor = isBold ? 0.54 : 0.5;
+  return s.length * fontSize * avgFactor;
+}
+
+function wrapText(text, maxWidthPt, fontSize) {
+  const words = String(text ?? "")
+    .replace(/\r?\n/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return [""];
+  const lines = [];
+  let current = words[0];
+  for (let i = 1; i < words.length; i++) {
+    const candidate = `${current} ${words[i]}`;
+    if (estimateTextWidth(candidate, fontSize, false) <= maxWidthPt) {
+      current = candidate;
+    } else {
+      lines.push(current);
+      current = words[i];
+    }
+  }
+  lines.push(current);
+  return lines;
+}
+
+/**
+ * Gera o PDF Oficial Vetorial A4 idêntico à visualização de impressão do sistema (laudoPreviewOnScreen),
+ * utilizando primitivas gráficas nativas do padrão PDF 1.4 (tabelas, cards KPI, gráfico de pizza vetorial,
+ * cabeçalho institucional UNOESC e assinaturas) sem depender de arquivos externos .cjs/.afm no serverless.
+ */
+export function gerarPdfOficialIdenticoSistema(avaliacao, historicoAvaliacoes = []) {
   const aluno = avaliacao?.aluno || {};
   const avaliador = avaliacao?.avaliador || {};
   const res = avaliacao?.resultados || {};
@@ -398,83 +106,779 @@ function gerarPdfNativoFallback(avaliacao, historicoAvaliacoes = []) {
   const rcq = res.rcq || null;
   const comp = res.composicao || {};
   const tf = res.testesFisicos || {};
+  const perimInf = res.perimetriaInferior || {};
+  const anamComp = res.anamneseComplementar || {};
+
   const idade = calcularIdadeValida(aluno.dataNasc);
-  const generoLabel = String(aluno.genero || "M").toUpperCase().startsWith("F") ? "Feminino" : "Masculino";
+  const generoLabel = String(aluno.genero || "M").toUpperCase().startsWith("F")
+    ? "Feminino"
+    : "Masculino";
   const dataColeta = avaliacao?.dataAvaliacao
     ? new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR")
     : new Date().toLocaleDateString("pt-BR");
+  const anoColeta = avaliacao?.dataAvaliacao
+    ? new Date(avaliacao.dataAvaliacao).getFullYear()
+    : new Date().getFullYear();
+  const dataEmissao = new Date().toLocaleDateString("pt-BR");
 
-  const esc = (str) => {
-    const clean = String(str ?? "")
-      .replace(/—|–/g, "-")
-      .replace(/•/g, "*")
-      .replace(/[“”]/g, '"')
-      .replace(/[‘’]/g, "'");
-    let out = "";
-    for (let i = 0; i < clean.length; i++) {
-      const code = clean.charCodeAt(i);
-      if (clean[i] === "(" || clean[i] === ")" || clean[i] === "\\") {
-        out += "\\" + clean[i];
-      } else if (code >= 32 && code <= 126) {
-        out += clean[i];
-      } else if (code >= 160 && code <= 255) {
-        out += "\\" + code.toString(8).padStart(3, "0");
-      } else {
-        out += " ";
-      }
+  // Separação estruturada de Doenças vs Lesões vs Objetivos
+  const rawHist = avaliacao?.historicoMedico || aluno?.anamnese?.historicoMedico || "";
+  let doencasTexto = rawHist;
+  let lesoesTexto = avaliacao?.lesoes || anamComp.lesoes || aluno?.anamnese?.lesoes || "";
+  if (rawHist.includes(" || Lesões: ")) {
+    const parts = rawHist.split(" || Lesões: ");
+    doencasTexto = parts[0].replace(/^Doenças:\s*/i, "").trim();
+    if (!lesoesTexto) lesoesTexto = (parts[1] || "").trim();
+  } else if (
+    !lesoesTexto &&
+    rawHist &&
+    /^(cotovelo|joelho|ombro|coluna|lombar|tornozelo|punho|quadril|cervical|tendinite|bursite|entorse|fratura|cirurgia|h[eé]rnia|les[aã]o)$/i.test(
+      rawHist.trim()
+    )
+  ) {
+    lesoesTexto = `Histórico articular/muscular em ${rawHist.trim().toLowerCase()}`;
+    doencasTexto = "Nenhuma patologia crônica relatada";
+  }
+  if (!doencasTexto) doencasTexto = "Nenhuma patologia crônica relatada";
+  if (!lesoesTexto) lesoesTexto = "Nenhuma lesão ou limitação osteomioarticular relatada";
+
+  let objetivosTexto = avaliacao?.objetivos || anamComp.objetivos || "Condicionamento físico e promoção da saúde";
+  if (/^crescer$/i.test(objetivosTexto.trim())) {
+    objetivosTexto = "Hipertrofia muscular (ganho de massa magra)";
+  }
+
+  // Perimetria completa (Tronco, Superiores e Inferiores)
+  const cCoxaProxD = avaliacao?.circCoxaProximalD ?? perimInf.circCoxaProximalD;
+  const cCoxaProxE = avaliacao?.circCoxaProximalE ?? perimInf.circCoxaProximalE;
+  const cCoxaMedD = avaliacao?.circCoxaMedialD ?? perimInf.circCoxaMedialD;
+  const cCoxaMedE = avaliacao?.circCoxaMedialE ?? perimInf.circCoxaMedialE;
+  const cPantD = avaliacao?.circPanturrilhaD ?? perimInf.circPanturrilhaD;
+  const cPantE = avaliacao?.circPanturrilhaE ?? perimInf.circPanturrilhaE;
+
+  // PAR-Q
+  const parqObj =
+    avaliacao?.respostasParq && typeof avaliacao.respostasParq === "object"
+      ? avaliacao.respostasParq
+      : aluno?.parq && typeof aluno.parq === "object"
+      ? aluno.parq
+      : {
+          q1: avaliacao?.parq_q1,
+          q2: avaliacao?.parq_q2,
+          q3: avaliacao?.parq_q3,
+          q4: avaliacao?.parq_q4,
+          q5: avaliacao?.parq_q5,
+          q6: avaliacao?.parq_q6,
+          q7: avaliacao?.parq_q7,
+        };
+  let respondidas = 0;
+  let afirmativas = 0;
+  ["q1", "q2", "q3", "q4", "q5", "q6", "q7"].forEach((k) => {
+    const val = parqObj?.[k];
+    if (val === "SIM" || val === "NAO" || val === true || val === false) respondidas++;
+    if (val === "SIM" || val === true) afirmativas++;
+  });
+
+  const ops = [];
+  const marginX = 28;
+  const pageW = 595.28;
+  const contentW = pageW - marginX * 2; // 539.28 pt
+
+  const fillRect = (x, yBottom, w, h, fillHex, strokeHex = null, lineWidth = 0.6) => {
+    ops.push("q");
+    if (fillHex) ops.push(`${hexToRgbPdf(fillHex)} rg`);
+    if (strokeHex) {
+      ops.push(`${hexToRgbPdf(strokeHex)} RG`);
+      ops.push(`${lineWidth} w`);
     }
-    return out;
+    ops.push(`${x.toFixed(2)} ${yBottom.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re`);
+    if (fillHex && strokeHex) ops.push("B");
+    else if (fillHex) ops.push("f");
+    else if (strokeHex) ops.push("S");
+    ops.push("Q");
   };
 
-  const lines = [
-    { bold: true, size: 13, text: "UNOESC - UNIVERSIDADE DO OESTE DE SANTA CATARINA" },
-    { bold: false, size: 9, text: "Sistema de Avaliacao Fisica e Cineantropometria - Laudo Tecnico Oficial" },
-    { bold: true, size: 9.5, text: `Laudo No #${avaliacao?.id || 1}  |  Data da coleta: ${dataColeta}` },
-    { bold: true, size: 11, text: "--------------------------------------------------------------------------------" },
-    { bold: true, size: 10, text: "1. DADOS DE IDENTIFICACAO DO AVALIADO" },
-    { bold: false, size: 9, text: `Nome: ${aluno.nome || "---"}   |   Matricula: ${aluno.matricula || "---"}` },
-    { bold: false, size: 9, text: `Idade: ${idade ? `${idade} anos` : "Nao informada"}   |   Genero: ${generoLabel}   |   CPF: ${maskCPF(aluno.cpf)}` },
-    { bold: false, size: 9, text: `Telefone: ${maskPhone(aluno.telefone)}   |   Avaliador: ${avaliador.name || "Administrador"}` },
-    { bold: true, size: 10, text: "2. ANAMNESE E HISTORICO DE SAUDE" },
-    { bold: false, size: 9, text: `Historico medico: ${avaliacao?.historicoMedico || "Nao informado"}` },
-    { bold: false, size: 9, text: `Medicamentos em uso: ${avaliacao?.medicamentosEmUso || "Nao informado"}` },
-    { bold: false, size: 9, text: `Objetivos / Observacoes: ${avaliacao?.objetivos || "Nao informado"}` },
-    { bold: true, size: 10, text: "3. RESUMO DA COMPOSICAO CORPORAL" },
-    { bold: false, size: 9, text: `Estatura: ${avaliacao?.altura || "--"} m   |   Massa corporal: ${avaliacao?.peso ? `${avaliacao.peso} kg` : "--"}   |   IMC: ${imc ? `${imc.valor} kg/m2 (${imc.classificacao})` : "--"}` },
-    { bold: false, size: 9, text: `RCQ: ${rcq ? `${rcq.valor} (${rcq.risco})` : "--"}   |   % Gordura (Pollock 7 / Siri): ${comp.percGordura ? `${comp.percGordura}% (${comp.classificacaoGordura || ""})` : "--"}` },
-    { bold: false, size: 9, text: `Massa Magra: ${comp.massaMagra ? `${comp.massaMagra} kg` : "--"}   |   Massa Gorda: ${comp.massaGorda ? `${comp.massaGorda} kg` : "--"}   |   Densidade: ${comp.densidadeCorporal ? `${comp.densidadeCorporal} g/cm3` : "--"}` },
-    { bold: true, size: 10, text: "4. PERIMETRIA E CIRCUNFERENCIAS CORPORAIS (cm)" },
-    { bold: false, size: 9, text: `Cintura: ${avaliacao?.circCintura ?? "--"} cm  |  Abdomen: ${avaliacao?.circAbdomem ?? "--"} cm  |  Quadril: ${avaliacao?.circQuadril ?? "--"} cm` },
-    { bold: false, size: 9, text: `Braco relaxado direito: ${avaliacao?.circBracoRelaxadoD ?? "--"} cm  |  Braco relaxado esquerdo: ${avaliacao?.circBracoRelaxadoE ?? "--"} cm` },
-    { bold: true, size: 10, text: "5. DOBRAS CUTANEAS (mm) - PROTOCOLO DE JACKSON & POLLOCK (7 DOBRAS)" },
-    { bold: false, size: 9, text: `Triceps: ${avaliacao?.dcTriceps ?? "--"} mm  |  Subescapular: ${avaliacao?.dcSubescapular ?? "--"} mm  |  Peitoral: ${avaliacao?.dcPeitoral ?? "--"} mm  |  Axilar media: ${avaliacao?.dcAxilarMedia ?? "--"} mm` },
-    { bold: false, size: 9, text: `Supra-iliaca: ${avaliacao?.dcSuprailiaca ?? "--"} mm  |  Abdominal: ${avaliacao?.dcAbdominal ?? "--"} mm  |  Coxa: ${avaliacao?.dcCoxa ?? "--"} mm  |  Soma 7 DC: ${comp.somaDobras ? `${comp.somaDobras} mm` : "--"}` },
-    { bold: true, size: 10, text: "6. TESTES FISICOS NEUROMOTORES" },
-    { bold: false, size: 9, text: `Resistencia abdominal (1 min): ${tf.abdominal ? `${tf.abdominal.repeticoes} rep - ${tf.abdominal.classificacao} (${tf.abdominal.pontuacao} pts)` : "Nao avaliado"}` },
-    { bold: false, size: 9, text: `Preensao manual (dinamometria): ${tf.preensao ? `D: ${tf.preensao.direita ?? "--"} kgf / E: ${tf.preensao.esquerda ?? "--"} kgf - ${tf.preensao.classificacao}` : "Nao avaliado"}` },
-    { bold: true, size: 10, text: "7. PARECER TECNICO DO AVALIADOR" },
-    { bold: false, size: 9, text: avaliacao?.observacoes || "Recomenda-se o acompanhamento periodico da composicao corporal conforme planejamento." },
-    { bold: true, size: 9, text: `Avaliador Responsavel: ${avaliador.name || "Administrador"}   |   Codigo: UNOESC-LAUDO-${avaliacao?.id || 1}` },
+  const drawLine = (x1, y1, x2, y2, strokeHex, lineWidth = 1) => {
+    ops.push("q");
+    ops.push(`${hexToRgbPdf(strokeHex)} RG`);
+    ops.push(`${lineWidth} w`);
+    ops.push(`${x1.toFixed(2)} ${y1.toFixed(2)} m ${x2.toFixed(2)} ${y2.toFixed(2)} l S`);
+    ops.push("Q");
+  };
+
+  // Fontes: /F1 = Helvetica, /F2 = Helvetica-Bold, /F3 = Helvetica-Oblique
+  const drawText = (text, x, yBaseline, size = 8, font = "F1", colorHex = "#0f172a", align = "left", maxW = 0) => {
+    const str = String(text ?? "");
+    const isBold = font === "F2";
+    let finalX = x;
+    if (align === "center" && maxW > 0) {
+      const w = estimateTextWidth(str, size, isBold);
+      finalX = x + Math.max(0, (maxW - w) / 2);
+    } else if (align === "right" && maxW > 0) {
+      const w = estimateTextWidth(str, size, isBold);
+      finalX = x + Math.max(0, maxW - w);
+    }
+    ops.push("BT");
+    ops.push(`${hexToRgbPdf(colorHex)} rg`);
+    ops.push(`/${font} ${size} Tf`);
+    ops.push(`1 0 0 1 ${finalX.toFixed(2)} ${yBaseline.toFixed(2)} Tm (${pdfEscape(str)}) Tj`);
+    ops.push("ET");
+  };
+
+  const drawSectionHeader = (title, yTop) => {
+    const barH = 11;
+    const yBottom = yTop - barH;
+    fillRect(marginX, yBottom, 3.2, barH, "#2e7d32", null);
+    drawText(title.toUpperCase(), marginX + 8, yBottom + 2.2, 8.2, "F2", "#1b5e20");
+    return yBottom - 3;
+  };
+
+  let curY = 815;
+
+  // =========================================================================
+  // CABEÇALHO INSTITUCIONAL (Idêntico ao .printHeader)
+  // =========================================================================
+  fillRect(marginX, curY - 22, 58, 20, "#2e7d32", null);
+  drawText("UNOESC", marginX, curY - 15.5, 11, "F2", "#ffffff", "center", 58);
+
+  drawText("Universidade do Oeste de Santa Catarina", marginX + 66, curY - 10, 10.5, "F2", "#1b5e20");
+  drawText(
+    "UNOESC Portal - Sistema de Avaliacao Fisica · Laboratorio de Cineantropometria",
+    marginX + 66,
+    curY - 20,
+    7.5,
+    "F1",
+    "#475569"
+  );
+
+  drawText(
+    `Laudo Tecnico No #${avaliacao?.id || 1}`,
+    marginX + contentW - 160,
+    curY - 7,
+    8.5,
+    "F2",
+    "#2e7d32",
+    "right",
+    160
+  );
+  drawText(
+    `Data da coleta: ${dataColeta}`,
+    marginX + contentW - 160,
+    curY - 15.5,
+    7.2,
+    "F1",
+    "#64748b",
+    "right",
+    160
+  );
+  drawText(
+    `Data de emissao: ${dataEmissao}`,
+    marginX + contentW - 160,
+    curY - 23.5,
+    7.2,
+    "F1",
+    "#64748b",
+    "right",
+    160
+  );
+
+  curY -= 28;
+  drawLine(marginX, curY, marginX + contentW, curY, "#2e7d32", 1.8);
+
+  // BANNER DE TÍTULO CENTRAL
+  curY -= 13;
+  drawText("LAUDO TÉCNICO DE AVALIAÇÃO FÍSICA", marginX, curY, 10.5, "F2", "#0f172a", "center", contentW);
+  curY -= 4;
+  drawLine(marginX, curY, marginX + contentW, curY, "#cbd5e1", 0.7);
+  curY -= 9;
+  drawText("Avaliação Física e Composição Corporal", marginX, curY, 8, "F2", "#475569", "center", contentW);
+  curY -= 8;
+
+  // =========================================================================
+  // 1. DADOS DE IDENTIFICAÇÃO DO AVALIADO
+  // =========================================================================
+  curY = drawSectionHeader("1. DADOS DE IDENTIFICAÇÃO DO AVALIADO", curY);
+  const rowH = 12.5;
+  const c1W = contentW * 0.2;
+  const c2W = contentW * 0.43;
+  const c3W = contentW * 0.17;
+  const c4W = contentW * 0.2;
+
+  const drawFourColRow = (yTop, l1, v1, l2, v2) => {
+    const yb = yTop - rowH;
+    fillRect(marginX, yb, c1W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + c1W, yb, c2W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + c1W + c2W, yb, c3W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + c1W + c2W + c3W, yb, c4W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    drawText(l1, marginX + 5, yb + 3.5, 7.6, "F2", "#1e293b");
+    drawText(v1, marginX + c1W + 5, yb + 3.5, 7.6, "F1", "#1e293b");
+    drawText(l2, marginX + c1W + c2W + 5, yb + 3.5, 7.6, "F2", "#1e293b");
+    drawText(v2, marginX + c1W + c2W + c3W + 5, yb + 3.5, 7.6, "F1", "#1e293b");
+    return yb;
+  };
+
+  curY = drawFourColRow(curY, "Nome:", aluno.nome || "---", "Matrícula:", aluno.matricula || "---");
+  curY = drawFourColRow(
+    curY,
+    "Idade:",
+    idade ? `${idade} anos` : "Não informada",
+    "Gênero / Sexo:",
+    generoLabel
+  );
+  curY = drawFourColRow(curY, "CPF:", maskCPF(aluno.cpf), "Telefone:", maskPhone(aluno.telefone));
+  {
+    const yb = curY - rowH;
+    fillRect(marginX, yb, c1W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + c1W, yb, contentW - c1W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    drawText("Avaliador responsável:", marginX + 5, yb + 3.5, 7.6, "F2", "#1e293b");
+    drawText(avaliador.name || "Administrador", marginX + c1W + 5, yb + 3.5, 7.6, "F1", "#1e293b");
+    curY = yb;
+  }
+  curY -= 6;
+
+  // =========================================================================
+  // 2. TRIAGEM PREVENTIVA — QUESTIONÁRIO PAR-Q
+  // =========================================================================
+  curY = drawSectionHeader("2. TRIAGEM PREVENTIVA — QUESTIONÁRIO PAR-Q", curY);
+  const p1W = contentW * 0.22;
+  const p2W = contentW * 0.28;
+  const p3W = contentW * 0.22;
+  const p4W = contentW * 0.28;
+  {
+    const yb1 = curY - rowH;
+    fillRect(marginX, yb1, p1W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + p1W, yb1, p2W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + p1W + p2W, yb1, p3W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + p1W + p2W + p3W, yb1, p4W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    drawText("Status:", marginX + 5, yb1 + 3.5, 7.6, "F2", "#1e293b");
+    drawText(
+      respondidas > 0 ? "Questionário respondido" : "Não registrado",
+      marginX + p1W + 5,
+      yb1 + 3.5,
+      7.6,
+      "F1",
+      "#1e293b"
+    );
+    drawText("Questões respondidas:", marginX + p1W + p2W + 5, yb1 + 3.5, 7.6, "F2", "#1e293b");
+    drawText(`${respondidas} de 7`, marginX + p1W + p2W + p3W + 5, yb1 + 3.5, 7.6, "F1", "#1e293b");
+
+    const yb2 = yb1 - rowH;
+    const corParq = afirmativas > 0 ? "#b91c1c" : "#15803d";
+    fillRect(marginX, yb2, p1W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + p1W, yb2, p2W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + p1W + p2W, yb2, p3W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    fillRect(marginX + p1W + p2W + p3W, yb2, p4W, rowH, "#ffffff", "#e2e8f0", 0.5);
+    drawText("Respostas afirmativas:", marginX + 5, yb2 + 3.5, 7.6, "F2", "#1e293b");
+    drawText(
+      afirmativas === 0 ? "Nenhuma" : `${afirmativas} resposta(s) "Sim"`,
+      marginX + p1W + 5,
+      yb2 + 3.5,
+      7.6,
+      "F2",
+      corParq
+    );
+    drawText("Resultado:", marginX + p1W + p2W + 5, yb2 + 3.5, 7.6, "F2", "#1e293b");
+    drawText(
+      afirmativas > 0 ? "Alerta identificado na triagem" : "Sem indicação de alerta na triagem",
+      marginX + p1W + p2W + p3W + 5,
+      yb2 + 3.5,
+      7.4,
+      "F2",
+      corParq
+    );
+    curY = yb2;
+  }
+  curY -= 6;
+
+  // =========================================================================
+  // 3. ANAMNESE E HISTÓRICO DE SAÚDE (Com Objetivos e Lesões separados)
+  // =========================================================================
+  curY = drawSectionHeader("3. ANAMNESE E HISTÓRICO DE SAÚDE", curY);
+  const aCol1 = contentW * 0.34;
+  const aCol2 = contentW * 0.66;
+  {
+    const yh = curY - rowH;
+    fillRect(marginX, yh, aCol1, rowH, "#f1f5f9", "#cbd5e1", 0.5);
+    fillRect(marginX + aCol1, yh, aCol2, rowH, "#f1f5f9", "#cbd5e1", 0.5);
+    drawText("Item Clínico / Anamnese", marginX + 5, yh + 3.5, 7.6, "F2", "#0f172a");
+    drawText("Registro Estruturado", marginX + aCol1 + 5, yh + 3.5, 7.6, "F2", "#0f172a");
+    curY = yh;
+
+    const anamRows = [
+      ["Histórico de doenças / patologias", doencasTexto],
+      ["Lesões, cirurgias ou limitações físicas", lesoesTexto],
+      [
+        "Uso de medicamentos contínuos",
+        avaliacao?.medicamentosEmUso || "Não utiliza medicamentos contínuos",
+      ],
+      ["Objetivos com o treinamento", objetivosTexto],
+      ["Prática de exercícios e hábitos de vida", avaliacao?.habitos || "Informada no cadastro"],
+    ];
+
+    for (const [label, val] of anamRows) {
+      const yr = curY - rowH;
+      fillRect(marginX, yr, aCol1, rowH, "#ffffff", "#e2e8f0", 0.5);
+      fillRect(marginX + aCol1, yr, aCol2, rowH, "#ffffff", "#e2e8f0", 0.5);
+      drawText(label, marginX + 5, yr + 3.5, 7.5, "F2", "#1e293b");
+      drawText(String(val).slice(0, 88), marginX + aCol1 + 5, yr + 3.5, 7.5, "F1", "#1e293b");
+      curY = yr;
+    }
+  }
+  curY -= 6;
+
+  // =========================================================================
+  // 4. RESUMO DA COMPOSIÇÃO CORPORAL (8 Cards KPI + Gráfico de Pizza)
+  // =========================================================================
+  curY = drawSectionHeader("4. RESUMO DA COMPOSIÇÃO CORPORAL", curY);
+  const kpiGap = 5;
+  const kpiW = (contentW - kpiGap * 3) / 4;
+  const kpiH = 29;
+
+  const kpisRow1 = [
+    ["ESTATURA", avaliacao?.altura ? `${avaliacao.altura}` : "--", "Estatímetro"],
+    ["MASSA CORPORAL", avaliacao?.peso ? `${avaliacao.peso} kg` : "--", "Balança Antropométrica"],
+    [
+      "IMC E CLASSIFICAÇÃO",
+      imc ? `${imc.valor} kg/m²` : "--",
+      imc?.classificacao || "Pendente",
+    ],
+    [
+      "RELAÇÃO CINTURA-QUADRIL",
+      rcq ? `${rcq.valor}` : "--",
+      rcq?.risco || "Não calculado",
+    ],
   ];
 
-  let y = 790;
-  const ops = ["BT"];
-  for (const l of lines) {
-    const fontKey = l.bold ? "/F2" : "/F1";
-    y -= l.bold ? 20 : 15;
-    ops.push(`${fontKey} ${l.size} Tf`);
-    ops.push(`1 0 0 1 42 ${y} Tm (${esc(l.text)}) Tj`);
+  const kpisRow2 = [
+    [
+      "PERCENTUAL DE GORDURA",
+      comp.percGordura ? `${comp.percGordura}%` : "--",
+      comp.classificacaoGordura || "Não calculado",
+    ],
+    [
+      "MASSA LIVRE DE GORDURA",
+      comp.massaMagra ? `${comp.massaMagra} kg` : "--",
+      "Massa Magra",
+    ],
+    [
+      "MASSA GORDA",
+      comp.massaGorda ? `${comp.massaGorda} kg` : "--",
+      "Tecido Adiposo",
+    ],
+    [
+      "DENSIDADE CORPORAL",
+      comp.densidadeCorporal ? `${comp.densidadeCorporal} g/cm³` : "--",
+      "Equação de Siri (1961)",
+    ],
+  ];
+
+  const drawKpiRow = (yTop, items) => {
+    const yb = yTop - kpiH;
+    items.forEach(([title, val, sub], idx) => {
+      const kx = marginX + idx * (kpiW + kpiGap);
+      fillRect(kx, yb, kpiW, kpiH, "#f8fafc", "#cbd5e1", 0.6);
+      drawText(title, kx + 5, yb + 21, 6, "F2", "#64748b");
+      drawText(val, kx + 5, yb + 10.5, 9.2, "F2", "#0f172a");
+      drawText(sub, kx + 5, yb + 3, 6.5, "F2", "#2e7d32");
+    });
+    return yb;
+  };
+
+  curY = drawKpiRow(curY, kpisRow1);
+  curY -= 4;
+  curY = drawKpiRow(curY, kpisRow2);
+  curY -= 4;
+
+  // Box do Gráfico de Pizza de Composição Corporal (Massa Gorda vs Massa Livre de Gordura)
+  const chartBoxH = 44;
+  const chartYb = curY - chartBoxH;
+  fillRect(marginX, chartYb, contentW, chartBoxH, "#f8fafc", "#cbd5e1", 0.6);
+
+  const pesoTotal = parseFloat(avaliacao?.peso) || 0;
+  const mg = parseFloat(comp.massaGorda) || 0;
+  const mm = parseFloat(comp.massaMagra) || (pesoTotal > 0 ? Math.max(pesoTotal - mg, 0) : 0);
+  const percFat =
+    parseFloat(comp.percGordura) ||
+    (pesoTotal > 0 && mg > 0 ? Number(((mg / pesoTotal) * 100).toFixed(1)) : 0);
+  const percLean = percFat > 0 ? Number((100 - percFat).toFixed(1)) : 100;
+
+  // Desenha o Gráfico de Pizza (círculo em #2e7d32 + fatia de Massa Gorda em #f59e0b)
+  const pieCx = marginX + 26;
+  const pieCy = chartYb + chartBoxH / 2;
+  const pieR = 16.5;
+
+  const drawPolygonCircle = (cx, cy, r, fillHex, strokeHex = null) => {
+    const steps = 40;
+    ops.push("q");
+    ops.push(`${hexToRgbPdf(fillHex)} rg`);
+    if (strokeHex) {
+      ops.push(`${hexToRgbPdf(strokeHex)} RG`);
+      ops.push("0.6 w");
+    }
+    for (let i = 0; i <= steps; i++) {
+      const a = (i / steps) * 2 * Math.PI;
+      const px = cx + r * Math.cos(a);
+      const py = cy + r * Math.sin(a);
+      ops.push(`${px.toFixed(2)} ${py.toFixed(2)} ${i === 0 ? "m" : "l"}`);
+    }
+    ops.push(strokeHex ? "B" : "f");
+    ops.push("Q");
+  };
+
+  const drawPieSlice = (cx, cy, r, perc, fillHex) => {
+    const clamped = Math.min(Math.max(perc, 1), 99);
+    const steps = 24;
+    const startAngle = Math.PI / 2; // Topo (90 graus em coordenadas PDF onde Y cresce para cima)
+    const endAngle = startAngle - (clamped / 100) * 2 * Math.PI; // Sentido horário
+    ops.push("q");
+    ops.push(`${hexToRgbPdf(fillHex)} rg`);
+    ops.push("1 1 1 RG 1 w");
+    ops.push(`${cx.toFixed(2)} ${cy.toFixed(2)} m`);
+    for (let i = 0; i <= steps; i++) {
+      const a = startAngle + (endAngle - startAngle) * (i / steps);
+      const px = cx + r * Math.cos(a);
+      const py = cy + r * Math.sin(a);
+      ops.push(`${px.toFixed(2)} ${py.toFixed(2)} l`);
+    }
+    ops.push("h B");
+    ops.push("Q");
+  };
+
+  drawPolygonCircle(pieCx, pieCy, pieR, "#2e7d32", "#1e293b");
+  if (percFat > 0) {
+    drawPieSlice(pieCx, pieCy, pieR, percFat, "#f59e0b");
   }
-  ops.push("ET");
+
+  // Legenda do Gráfico de Pizza
+  const legX = marginX + 52;
+  drawText(
+    "DISTRIBUIÇÃO DA COMPOSIÇÃO CORPORAL (GRÁFICO DE PROPORÇÃO)",
+    legX,
+    chartYb + 32,
+    7.5,
+    "F2",
+    "#1b5e20"
+  );
+  fillRect(legX, chartYb + 19, 7, 7, "#2e7d32", null);
+  drawText(
+    `Massa Livre de Gordura (Magra): ${mm > 0 ? `${mm.toFixed(1)} kg (${percLean}%)` : "--"}`,
+    legX + 11,
+    chartYb + 20,
+    7.4,
+    "F2",
+    "#0f172a"
+  );
+  fillRect(legX, chartYb + 8, 7, 7, "#f59e0b", null);
+  drawText(
+    `Massa Gorda (Tecido Adiposo): ${mg > 0 ? `${mg.toFixed(1)} kg (${percFat}%)` : "--"}`,
+    legX + 11,
+    chartYb + 9,
+    7.4,
+    "F2",
+    "#0f172a"
+  );
+
+  // Info do protocolo à direita dentro do card da Seção 4
+  drawText(
+    "Protocolo: Jackson & Pollock (7 dobras)",
+    marginX + contentW - 185,
+    chartYb + 24,
+    7.2,
+    "F2",
+    "#334155",
+    "right",
+    178
+  );
+  drawText(
+    `Equação: Siri (1961) · Densidade: ${comp.densidadeCorporal ? `${comp.densidadeCorporal} g/cm³` : "Não calculada"}`,
+    marginX + contentW - 185,
+    chartYb + 12,
+    7.2,
+    "F1",
+    "#334155",
+    "right",
+    178
+  );
+
+  curY = chartYb - 6;
+
+  // =========================================================================
+  // 5 E 6. PERIMETRIA (COM MEMBROS INFERIORES) E DOBRAS CUTÂNEAS (2 COLUNAS)
+  // =========================================================================
+  const colGap = 10;
+  const halfW = (contentW - colGap) / 2;
+  const leftX = marginX;
+  const rightX = marginX + halfW + colGap;
+
+  // Títulos lado a lado
+  fillRect(leftX, curY - 11, 3.2, 11, "#2e7d32", null);
+  drawText("5. PERIMETRIA E CIRCUNFERÊNCIAS (CM)", leftX + 8, curY - 8.8, 7.8, "F2", "#1b5e20");
+
+  fillRect(rightX, curY - 11, 3.2, 11, "#2e7d32", null);
+  drawText("6. DOBRAS CUTÂNEAS (MM) — POLLOCK 7", rightX + 8, curY - 8.8, 7.8, "F2", "#1b5e20");
+
+  const tablesTopY = curY - 14;
+  const subRowH = 11.8;
+
+  // Coluna Esquerda: Seção 5 (Perimetria Completa: Tronco, Superiores e Inferiores)
+  let leftY = tablesTopY;
+  {
+    const yh = leftY - subRowH;
+    fillRect(leftX, yh, halfW * 0.66, subRowH, "#f1f5f9", "#cbd5e1", 0.5);
+    fillRect(leftX + halfW * 0.66, yh, halfW * 0.34, subRowH, "#f1f5f9", "#cbd5e1", 0.5);
+    drawText("Região Corporal", leftX + 4, yh + 3.2, 7.3, "F2", "#0f172a");
+    drawText("Medida (cm)", leftX + halfW * 0.66, yh + 3.2, 7.3, "F2", "#0f172a", "right", halfW * 0.34 - 4);
+    leftY = yh;
+
+    const fmtPair = (d, e) =>
+      d || e ? `${d ? `${d}` : "--"} / ${e ? `${e}` : "--"} cm` : "--";
+
+    const perimRows = [
+      ["Cintura", avaliacao?.circCintura ? `${avaliacao.circCintura} cm` : "--"],
+      ["Abdômen", avaliacao?.circAbdomem ? `${avaliacao.circAbdomem} cm` : "--"],
+      ["Quadril", avaliacao?.circQuadril ? `${avaliacao.circQuadril} cm` : "--"],
+      [
+        "Braço relaxado (D / E)",
+        fmtPair(avaliacao?.circBracoRelaxadoD, avaliacao?.circBracoRelaxadoE),
+      ],
+      ["Coxa proximal (D / E)", fmtPair(cCoxaProxD, cCoxaProxE)],
+      ["Coxa medial (D / E)", fmtPair(cCoxaMedD, cCoxaMedE)],
+      ["Panturrilha (D / E)", fmtPair(cPantD, cPantE)],
+    ];
+
+    for (const [reg, med] of perimRows) {
+      const yr = leftY - subRowH;
+      fillRect(leftX, yr, halfW * 0.66, subRowH, "#ffffff", "#e2e8f0", 0.5);
+      fillRect(leftX + halfW * 0.66, yr, halfW * 0.34, subRowH, "#ffffff", "#e2e8f0", 0.5);
+      drawText(reg, leftX + 4, yr + 3.2, 7.2, "F1", "#1e293b");
+      drawText(med, leftX + halfW * 0.66, yr + 3.2, 7.2, "F2", "#1e293b", "right", halfW * 0.34 - 4);
+      leftY = yr;
+    }
+  }
+
+  // Coluna Direita: Seção 6 (Dobras Cutâneas Pollock 7)
+  let rightY = tablesTopY;
+  const dobrasRowH = 10.5;
+  {
+    const yh = rightY - dobrasRowH;
+    fillRect(rightX, yh, halfW * 0.66, dobrasRowH, "#f1f5f9", "#cbd5e1", 0.5);
+    fillRect(rightX + halfW * 0.66, yh, halfW * 0.34, dobrasRowH, "#f1f5f9", "#cbd5e1", 0.5);
+    drawText("Dobra Cutânea", rightX + 4, yh + 2.8, 7.2, "F2", "#0f172a");
+    drawText("Espessura (mm)", rightX + halfW * 0.66, yh + 2.8, 7.2, "F2", "#0f172a", "right", halfW * 0.34 - 4);
+    rightY = yh;
+
+    const dobrasRows = [
+      ["Tríceps", avaliacao?.dcTriceps ? `${avaliacao.dcTriceps} mm` : "--"],
+      ["Subescapular", avaliacao?.dcSubescapular ? `${avaliacao.dcSubescapular} mm` : "--"],
+      ["Peitoral torácica", avaliacao?.dcPeitoral ? `${avaliacao.dcPeitoral} mm` : "--"],
+      ["Axilar média", avaliacao?.dcAxilarMedia ? `${avaliacao.dcAxilarMedia} mm` : "--"],
+      ["Supra-ilíaca", avaliacao?.dcSuprailiaca ? `${avaliacao.dcSuprailiaca} mm` : "--"],
+      ["Abdominal", avaliacao?.dcAbdominal ? `${avaliacao.dcAbdominal} mm` : "--"],
+      ["Coxa medial", avaliacao?.dcCoxa ? `${avaliacao.dcCoxa} mm` : "--"],
+      [
+        "Somatório das sete dobras:",
+        comp.somaDobras ? `${comp.somaDobras} mm` : "--",
+      ],
+    ];
+
+    dobrasRows.forEach(([nomeDobra, valDobra], idx) => {
+      const isLast = idx === dobrasRows.length - 1;
+      const bg = isLast ? "#f8fafc" : "#ffffff";
+      const yr = rightY - dobrasRowH;
+      fillRect(rightX, yr, halfW * 0.66, dobrasRowH, bg, "#e2e8f0", 0.5);
+      fillRect(rightX + halfW * 0.66, yr, halfW * 0.34, dobrasRowH, bg, "#e2e8f0", 0.5);
+      drawText(nomeDobra, rightX + 4, yr + 2.8, 7.1, isLast ? "F2" : "F1", "#1e293b");
+      drawText(valDobra, rightX + halfW * 0.66, yr + 2.8, 7.1, "F2", "#1e293b", "right", halfW * 0.34 - 4);
+      rightY = yr;
+    });
+  }
+
+  curY = Math.min(leftY, rightY) - 6;
+
+  // =========================================================================
+  // 7. TESTES FÍSICOS NEUROMOTORES
+  // =========================================================================
+  curY = drawSectionHeader("7. TESTES FÍSICOS NEUROMOTORES", curY);
+  const t1W = contentW * 0.38;
+  const t2W = contentW * 0.26;
+  const t3W = contentW * 0.2;
+  const t4W = contentW * 0.16;
+  {
+    const yh = curY - rowH;
+    fillRect(marginX, yh, t1W, rowH, "#f1f5f9", "#cbd5e1", 0.5);
+    fillRect(marginX + t1W, yh, t2W, rowH, "#f1f5f9", "#cbd5e1", 0.5);
+    fillRect(marginX + t1W + t2W, yh, t3W, rowH, "#f1f5f9", "#cbd5e1", 0.5);
+    fillRect(marginX + t1W + t2W + t3W, yh, t4W, rowH, "#f1f5f9", "#cbd5e1", 0.5);
+    drawText("Teste/protocolo", marginX + 5, yh + 3.5, 7.5, "F2", "#0f172a");
+    drawText("Resultado obtido", marginX + t1W + 5, yh + 3.5, 7.5, "F2", "#0f172a");
+    drawText("Classificação", marginX + t1W + t2W + 5, yh + 3.5, 7.5, "F2", "#0f172a");
+    drawText("Pontuação", marginX + t1W + t2W + t3W, yh + 3.5, 7.5, "F2", "#0f172a", "right", t4W - 5);
+    curY = yh;
+
+    const tfRows = [
+      [
+        "Resistência abdominal — 1 minuto",
+        tf.abdominal ? `${tf.abdominal.repeticoes} repetições` : "--",
+        tf.abdominal ? tf.abdominal.classificacao : "Não avaliado",
+        tf.abdominal ? `${tf.abdominal.pontuacao} pontos` : "--",
+      ],
+      [
+        "Força de preensão manual — dinamometria",
+        tf.preensao
+          ? `D: ${tf.preensao.direita ?? "--"} kgf / E: ${tf.preensao.esquerda ?? "--"} kgf`
+          : "--",
+        tf.preensao ? tf.preensao.classificacao : "Não avaliado",
+        tf.preensao ? `${tf.preensao.pontuacao} pontos` : "--",
+      ],
+    ];
+
+    for (const [p, r, c, pt] of tfRows) {
+      const yr = curY - rowH;
+      fillRect(marginX, yr, t1W, rowH, "#ffffff", "#e2e8f0", 0.5);
+      fillRect(marginX + t1W, yr, t2W, rowH, "#ffffff", "#e2e8f0", 0.5);
+      fillRect(marginX + t1W + t2W, yr, t3W, rowH, "#ffffff", "#e2e8f0", 0.5);
+      fillRect(marginX + t1W + t2W + t3W, yr, t4W, rowH, "#ffffff", "#e2e8f0", 0.5);
+      drawText(p, marginX + 5, yr + 3.5, 7.4, "F1", "#1e293b");
+      drawText(r, marginX + t1W + 5, yr + 3.5, 7.4, "F2", "#1e293b");
+      drawText(c, marginX + t1W + t2W + 5, yr + 3.5, 7.4, "F1", "#1e293b");
+      drawText(pt, marginX + t1W + t2W + t3W, yr + 3.5, 7.4, "F2", "#1e293b", "right", t4W - 5);
+      curY = yr;
+    }
+  }
+  curY -= 6;
+
+  // =========================================================================
+  // 8. HISTÓRICO E EVOLUÇÃO DAS AVALIAÇÕES
+  // =========================================================================
+  curY = drawSectionHeader("8. HISTÓRICO E EVOLUÇÃO DAS AVALIAÇÕES", curY);
+  const avaliacoesConcluidas = (historicoAvaliacoes || []).filter((a) => a.peso && a.altura);
+  if (avaliacoesConcluidas.length <= 1) {
+    const boxH = 18;
+    const yb = curY - boxH;
+    fillRect(marginX, yb, contentW, boxH, "#f8fafc", "#cbd5e1", 0.5);
+    drawText(
+      "Este é o primeiro registro do avaliado. Ainda não existem avaliações anteriores para comparação.",
+      marginX + 6,
+      yb + 6,
+      7.5,
+      "F1",
+      "#334155"
+    );
+    curY = yb;
+  } else {
+    const hW = contentW / 5;
+    const yh = curY - 11.5;
+    ["Data", "Massa corporal", "IMC", "Gordura corporal", "Massa livre de gordura"].forEach(
+      (col, idx) => {
+        fillRect(marginX + idx * hW, yh, hW, 11.5, "#f1f5f9", "#cbd5e1", 0.5);
+        drawText(col, marginX + idx * hW + 4, yh + 3, 7.2, "F2", "#0f172a");
+      }
+    );
+    curY = yh;
+    avaliacoesConcluidas.slice(0, 3).forEach((item) => {
+      const yr = curY - 11.5;
+      const isCurrent = Number(item.id) === Number(avaliacao?.id);
+      const dt = new Date(item.dataAvaliacao).toLocaleDateString("pt-BR") + (isCurrent ? " (Atual)" : "");
+      const imcV = item.resultados?.imc?.valor ?? (isCurrent ? imc?.valor : "--") ?? "--";
+      const fatV = item.resultados?.composicao?.percGordura
+        ? `${item.resultados.composicao.percGordura}%`
+        : isCurrent && comp.percGordura
+        ? `${comp.percGordura}%`
+        : "--";
+      const leanV = item.resultados?.composicao?.massaMagra
+        ? `${item.resultados.composicao.massaMagra} kg`
+        : isCurrent && comp.massaMagra
+        ? `${comp.massaMagra} kg`
+        : "--";
+      const vals = [dt, item.peso ? `${item.peso} kg` : "--", String(imcV), fatV, leanV];
+      vals.forEach((v, idx) => {
+        fillRect(marginX + idx * hW, yr, hW, 11.5, "#ffffff", "#e2e8f0", 0.5);
+        drawText(v, marginX + idx * hW + 4, yr + 3, 7.1, idx === 0 && isCurrent ? "F2" : "F1", "#1e293b");
+      });
+      curY = yr;
+    });
+  }
+  curY -= 6;
+
+  // =========================================================================
+  // 9. CONSIDERAÇÕES FINAIS E PARECER TÉCNICO DO AVALIADOR
+  // =========================================================================
+  curY = drawSectionHeader("9. CONSIDERAÇÕES FINAIS E PARECER TÉCNICO DO AVALIADOR", curY);
+  const textoParecer =
+    avaliacao?.observacoes ||
+    "Os dados cineantropométricos e neuromotores foram coletados conforme os protocolos padronizados no sistema. Recomenda-se o acompanhamento periódico da composição corporal, prescrição individualizada de treinamento e realização de nova avaliação física conforme planejamento.";
+  const parecerLines = wrapText(textoParecer, contentW - 14, 7.5).slice(0, 3);
+  const parecerBoxH = Math.max(26, parecerLines.length * 10 + 8);
+  const parecerYb = curY - parecerBoxH;
+  fillRect(marginX, parecerYb, contentW, parecerBoxH, "#f8fafc", "#cbd5e1", 0.6);
+  parecerLines.forEach((line, idx) => {
+    drawText(line, marginX + 6, curY - 10 - idx * 9.5, 7.4, "F1", "#1e293b");
+  });
+  curY = parecerYb;
+
+  // =========================================================================
+  // ASSINATURAS FÍSICA OU DIGITAL E IDENTIFICAÇÃO FINAL
+  // =========================================================================
+  const signLineY = Math.max(44, curY - 22);
+  const signBlockW = contentW * 0.44;
+  const signLeftX = marginX;
+  const signRightX = marginX + contentW - signBlockW;
+
+  drawLine(signLeftX, signLineY, signLeftX + signBlockW, signLineY, "#334155", 0.8);
+  drawText(
+    `Avaliador(a) Responsável: ${avaliador.name || "Administrador"}`,
+    signLeftX,
+    signLineY - 9,
+    7.6,
+    "F2",
+    "#0f172a",
+    "center",
+    signBlockW
+  );
+  drawText(
+    avaliacao?.registroAvaliador ||
+      res.registroAvaliador ||
+      "Profissional de Educação Física / Avaliador - Assinatura Física ou Digital",
+    signLeftX,
+    signLineY - 17,
+    6.6,
+    "F1",
+    "#64748b",
+    "center",
+    signBlockW
+  );
+
+  drawLine(signRightX, signLineY, signRightX + signBlockW, signLineY, "#334155", 0.8);
+  drawText(
+    aluno.nome || "Avaliado(a)",
+    signRightX,
+    signLineY - 9,
+    7.6,
+    "F2",
+    "#0f172a",
+    "center",
+    signBlockW
+  );
+  drawText(
+    `Assinatura física ou digital do(a) avaliado(a) · Código UNOESC-LAUDO-#${avaliacao?.id || 1}-${anoColeta}`,
+    signRightX,
+    signLineY - 17,
+    6.6,
+    "F1",
+    "#64748b",
+    "center",
+    signBlockW
+  );
+
   const streamContent = ops.join("\n");
 
   const objs = [
     "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
     "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
-    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj\n",
+    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 4 0 R /F2 5 0 R /F3 6 0 R >> >> /Contents 7 0 R >>\nendobj\n",
     "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n",
     "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\nendobj\n",
-    `6 0 obj\n<< /Length ${Buffer.byteLength(streamContent, "latin1")} >>\nstream\n${streamContent}\nendstream\nendobj\n`,
+    "6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>\nendobj\n",
+    `7 0 obj\n<< /Length ${Buffer.byteLength(streamContent, "latin1")} >>\nstream\n${streamContent}\nendstream\nendobj\n`,
   ];
 
   let pdf = "%PDF-1.4\n";
@@ -512,13 +916,10 @@ export async function POST(request) {
       );
     }
 
-    let pdfBuffer;
-    try {
-      pdfBuffer = await gerarPdfLaudoBuffer(avaliacao, historicoAvaliacoes || []);
-    } catch (pdfErr) {
-      console.warn("Fallback PDF nativo ativado devido a erro de fonte no ambiente serverless:", pdfErr.message);
-      pdfBuffer = gerarPdfNativoFallback(avaliacao, historicoAvaliacoes || []);
-    }
+    const pdfBuffer = gerarPdfOficialIdenticoSistema(
+      avaliacao,
+      historicoAvaliacoes || []
+    );
 
     const host = (smtpConfig?.host || process.env.SMTP_HOST || "smtp.gmail.com").trim();
     let user = (
@@ -538,15 +939,24 @@ export async function POST(request) {
     const nomeAluno = (avaliacao?.aluno?.nome || "Aluno").replace(/[^a-zA-Z0-9_-]/g, "_");
     const filename = `Laudo_Avaliacao_Fisica_${nomeAluno}_#${avaliacao?.id || 1}.pdf`;
 
+    const dataColetaPadrao = avaliacao?.dataAvaliacao
+      ? new Date(avaliacao.dataAvaliacao).toLocaleDateString("pt-BR")
+      : new Date().toLocaleDateString("pt-BR");
+
+    const resumoPadrao = [
+      `LAUDO TÉCNICO DE AVALIAÇÃO FÍSICA — UNOESC PORTAL`,
+      `Laudo Técnico Nº #${avaliacao?.id || 1} | Data da Coleta: ${dataColetaPadrao}`,
+      `Avaliado(a): ${avaliacao?.aluno?.nome || "---"} | Matrícula: ${avaliacao?.aluno?.matricula || "---"}`,
+      `Avaliador(a) Responsável: ${avaliacao?.avaliador?.name || "Administrador"}`,
+    ].join("\n");
+
     const mailOptions = {
       from: `"UNOESC Avaliação Física" <${user}>`,
       to: emailDestino,
       subject:
         assunto ||
         `Laudo Técnico de Avaliação Física — ${avaliacao?.aluno?.nome || "Aluno"} (UNOESC)`,
-      text:
-        mensagem ||
-        `Olá, ${avaliacao?.aluno?.nome || "Aluno"}!\n\nSegue em anexo o seu Laudo Técnico de Avaliação Física e Composição Corporal em formato PDF.\n\nAtenciosamente,\n${avaliacao?.avaliador?.name || "Laboratório de Avaliação Física — UNOESC"}`,
+      text: (mensagem || "").trim() || resumoPadrao,
       attachments: [
         {
           filename,
@@ -605,4 +1015,3 @@ export async function POST(request) {
     );
   }
 }
-
