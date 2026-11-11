@@ -54,14 +54,15 @@ api.interceptors.response.use(
   (error) => {
     // Se a requisição deu erro...
     if (error.response) {
-      // Se for um erro 401 (Não autorizado / Token Expirado)
-      if (error.response.status === 401) {
-        console.warn("Sessão expirada ou não autorizada. Redirecionando para login...");
+      // Se for um erro 401 ou 403 (Sessão / Token Expirado ou Inválido)
+      if (error.response.status === 401 || error.response.status === 403) {
+        console.warn("Sessão expirada ou não autorizada (401/403). Redirecionando para login...");
         
         // Verifica se não estamos já na página de login para evitar loop infinito
         if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-          // Limpa qualquer vestígio do AuthContext no localStorage (opcional)
+          // Limpa tokens e dados do usuário salvos no localStorage
           localStorage.removeItem('user'); 
+          localStorage.removeItem('token');
           
           // Redireciona o usuário "à força" para a tela de login
           window.location.href = '/login';
