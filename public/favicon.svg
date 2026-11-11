@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14532d" />
+      <stop offset="100%" stop-color="#052e16" />
+    </linearGradient>
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80" />
+      <stop offset="100%" stop-color="#22c55e" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#22c55e" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" stroke="#16a34a" stroke-width="12" />
+
+  <!-- Heart Shape -->
+  <path 
+    d="M256 440 C170 360, 64 280, 64 180 C64 110, 115 64, 185 64 C225 64, 245 85, 256 100 C267 85, 287 64, 327 64 C397 64, 448 110, 448 180 C448 280, 342 360, 256 440 Z" 
+    fill="rgba(34, 197, 94, 0.15)" 
+    stroke="#22c55e" 
+    stroke-width="16" 
+    stroke-linejoin="round"
+  />
+
+  <!-- ECG Pulse / Heartbeat Line -->
+  <polyline 
+    points="90,240 170,240 210,140 245,340 280,180 310,270 340,240 422,240" 
+    fill="none" 
+    stroke="url(#pulseGrad)" 
+    stroke-width="26" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Small Activity Dot -->
+  <circle cx="422" cy="240" r="14" fill="#86efac" />
+</svg>

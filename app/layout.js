@@ -7,6 +7,14 @@ import './globals.css';
 export const metadata = {
   title: 'Avaliação Física - UNOESC',
   description: 'Sistema de Avaliação Física e Cineantropometria',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport = {
